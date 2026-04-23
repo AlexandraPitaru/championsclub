@@ -1,0 +1,83 @@
+----SALES ADVISOR+SERVICE ADVISOR(same flow)
+CORE
+User can register actions thru an add activity/log sales button (easy way)
+						FORMULAR tip activitate:
+						 car sale
+						 finance contract
+						 service package
+						 insurance
+						 cantitate
+						 dată
+						 valoare
+						 eventual client type / produs (contract de leasing
+										credit auto
+										insurance add-on
+										maintenance package
+										service add-on	
+										produs financiar eligibil)
+
+User can view personal profile.
+User can view total points and earned points over time.
+User can view current level (Bronze / Silver / Gold).
+User can view progress toward monthly target.
+User can view activity history.
+User can view leaderboard / ranking among peers.
+
+Rewards & engagement
+User can view available rewards / offers.
+User can redeem points for rewards.
+
+AI & notifications
+User can receive AI-generated performance feedback.
+User can receive personalized sales tips and recommendations.
+User can receive notifications, such as:
+					points earned
+					progress toward next level
+					nearing target completion
+
+Future scope
+Activities can be automatically imported from ERP / CRM / internal systems.
+
+
+-----MANAGER
+
+CORE
+Manager can view all employees.
+Manager can view employee activity.
+Manager can view team performance dashboard.
+Manager can view individual employee performance details.
+
+Monitoring & performance
+Manager can identify top performers and low performers.
+Manager can identify employees at risk of missing targets.
+Manager can view team performance over time (daily / weekly / monthly).
+
+AI support
+Manager can receive AI-generated business insights and recommendations.
+
+Alerts
+Manager can receive alerts for:
+				inactivity
+				performance drop
+				underperformance vs target
+User management
+Manager can create new employees.
+Manager can edit employee details.
+Manager can deactivate employees.
+
+----SYSTEM
+System can store and manage users and roles.
+System can store and track activities.
+System can calculate points based on activity rules.
+System can assign levels (Bronze / Silver / Gold).
+System can update dashboards in real time.
+System can generate notifications.
+System can generate AI summaries and recommendations.
+
+NICE-TO-HAVE 
+leaderboard
+reward redemption complet
+AI chat (nu doar insights)
+filtre avansate în dashboard
+mock CRM sync button
+badge-uri fancy

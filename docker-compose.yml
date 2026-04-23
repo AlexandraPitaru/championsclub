@@ -1,0 +1,61 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    container_name: championsclub-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://backend:8000}
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    networks:
+      - championsclub-network
+
+  backend:
+    build:
+      context: ./backend
+    container_name: championsclub-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-championsclub}:${POSTGRES_PASSWORD:-championsclub_dev_password}@postgres:5432/${POSTGRES_DB:-championsclub}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    networks:
+      - championsclub-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: championsclub-postgres
+    restart: unless-stopped
+    
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-championsclub}
+      POSTGRES_USER: ${POSTGRES_USER:-championsclub}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-championsclub_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-championsclub} -d ${POSTGRES_DB:-championsclub}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - championsclub-network
+
+networks:
+  championsclub-network:
+    name: championsclub-network
+
+volumes:
+  postgres_data:
