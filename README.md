@@ -30,8 +30,8 @@ README-ul de mai jos este facut ca sa nu existe confuzii dupa clone. Exista doua
 ## Pasul 1. Clone repository-ul
 
 ```bash
+cd "project_folder_name"
 git clone <URL_REPOSITORY>
-cd "Final Project"
 ```
 
 ## Pasul 2. Configureaza `.env`

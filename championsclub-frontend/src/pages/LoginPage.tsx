@@ -1,31 +1,144 @@
+import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<{
+    username?: string;
+    password?: string;
+    form?: string;
+  }>({});
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const nextErrors: {
+      username?: string;
+      password?: string;
+    } = {};
+
+    if (!username.trim()) {
+      nextErrors.username = "Username is required.";
+    }
+
+    if (!password.trim()) {
+      nextErrors.password = "Password is required.";
+    }
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      return;
+    }
+
+    const normalizedUsername = username.trim().toLowerCase();
+
+    if (normalizedUsername === "manager") {
+      navigate("/dashboard");
+      return;
+    }
+
+    if (normalizedUsername === "advisor") {
+      navigate("/advisor/101");
+      return;
+    }
+
+    setErrors({
+      form: "Invalid username. Use manager or advisor to access the mock views.",
+    });
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-100 px-6">
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-3xl font-bold text-slate-900">ChampionsClub</h1>
+        <h1 className="m-0 text-3xl font-bold text-slate-900">ChampionsClub</h1>
         <p className="mt-2 text-slate-600">
-          AI-powered sales management platform
+          Sign in as a manager or sales advisor to access the platform.
+        </p>
+        <p className="mt-3 rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-700">
+          Mock access: <strong>manager</strong> for the manager dashboard or <strong>advisor</strong> for the sales advisor view. Any non-empty password is accepted.
         </p>
 
-        <div className="mt-8 space-y-4">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="w-full rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-700"
-          >
-            Continue as Manager
-          </button>
+        <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
+          <div className="space-y-2">
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-slate-700"
+            >
+              Username
+            </label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              value={username}
+              onChange={(event) => {
+                setUsername(event.target.value);
+                setErrors((currentErrors) => ({
+                  ...currentErrors,
+                  username: undefined,
+                  form: undefined,
+                }));
+              }}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              aria-invalid={Boolean(errors.username)}
+              aria-describedby={errors.username ? "username-error" : undefined}
+              autoComplete="username"
+            />
+            {errors.username ? (
+              <p id="username-error" className="text-sm text-red-600">
+                {errors.username}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-slate-700"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                setErrors((currentErrors) => ({
+                  ...currentErrors,
+                  password: undefined,
+                  form: undefined,
+                }));
+              }}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
+              aria-invalid={Boolean(errors.password)}
+              aria-describedby={errors.password ? "password-error" : undefined}
+              autoComplete="current-password"
+            />
+            {errors.password ? (
+              <p id="password-error" className="text-sm text-red-600">
+                {errors.password}
+              </p>
+            ) : null}
+          </div>
+
+          {errors.form ? (
+            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {errors.form}
+            </p>
+          ) : null}
 
           <button
-            onClick={() => navigate("/advisor/101")}
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 font-semibold text-slate-900 transition hover:bg-slate-50"
+            type="submit"
+            className="w-full rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
           >
-            Continue as Advisor
+            Login
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );
