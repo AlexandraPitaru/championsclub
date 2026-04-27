@@ -25,6 +25,8 @@ services:
     environment:
       APP_ENV: ${APP_ENV:-development}
       DATABASE_URL: postgresql://${POSTGRES_USER:-championsclub}:${POSTGRES_PASSWORD:-championsclub_dev_password}@postgres:5432/${POSTGRES_DB:-championsclub}
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     networks:
