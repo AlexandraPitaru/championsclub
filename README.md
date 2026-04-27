@@ -56,6 +56,7 @@ Valorile implicite sunt:
 FRONTEND_PORT=5173
 VITE_API_URL=http://backend:8000
 APP_ENV=development
+AUTO_SEED=true
 BACKEND_PORT=8000
 POSTGRES_DB=championsclub
 POSTGRES_USER=championsclub
@@ -68,6 +69,7 @@ Modifica `.env` doar daca:
 - unul dintre porturile `5173`, `8000`, `5432` este deja ocupat
 - vrei alte credentiale pentru Postgres
 - rulezi frontend local si backend local, caz in care `VITE_API_URL` trebuie sa fie `http://localhost:8000`
+- vrei sa opresti seed-ul automat la pornirea prin Docker, caz in care `AUTO_SEED=false`
 
 ## Varianta A. Dezvoltare locala
 
@@ -182,6 +184,8 @@ Se vor porni:
 - frontend-ul pe `http://localhost:5173`
 - backend-ul pe `http://localhost:8000`
 - postgres pe `localhost:5432`
+
+La prima pornire cu Docker, daca baza este goala si `AUTO_SEED=true`, backend-ul va popula automat baza cu date demo. Daca baza are deja date, seed-ul nu mai ruleaza.
 
 Pentru varianta Docker, `VITE_API_URL` ramane:
 
