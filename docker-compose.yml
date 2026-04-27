@@ -24,7 +24,11 @@ services:
         condition: service_healthy
     environment:
       APP_ENV: ${APP_ENV:-development}
+      AUTO_SEED: ${AUTO_SEED:-true}
       DATABASE_URL: postgresql://${POSTGRES_USER:-championsclub}:${POSTGRES_PASSWORD:-championsclub_dev_password}@postgres:5432/${POSTGRES_DB:-championsclub}
+    volumes:
+      - .:/app
+    working_dir: /app/backend
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     networks:
@@ -43,7 +47,6 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./data/init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-championsclub} -d ${POSTGRES_DB:-championsclub}"]
       interval: 10s
