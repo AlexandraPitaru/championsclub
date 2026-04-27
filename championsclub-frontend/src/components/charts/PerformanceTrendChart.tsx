@@ -16,11 +16,15 @@ type PerformanceTrendChartProps = {
     sales: number;
     target: number;
   }[];
+  chartIdSuffix?: string;
 };
 
 export default function PerformanceTrendChart({
   data,
+  chartIdSuffix = "main",
 }: PerformanceTrendChartProps) {
+  const gradientId = `salesGradient-${chartIdSuffix}`;
+
   return (
     <Card className="h-[360px]">
       <div className="mb-4">
@@ -36,7 +40,7 @@ export default function PerformanceTrendChart({
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
             <defs>
-              <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#0f172a" stopOpacity={0.25} />
                 <stop offset="95%" stopColor="#0f172a" stopOpacity={0.02} />
               </linearGradient>
@@ -51,7 +55,7 @@ export default function PerformanceTrendChart({
               type="monotone"
               dataKey="sales"
               stroke="#0f172a"
-              fill="url(#salesGradient)"
+              fill={`url(#${gradientId})`}
               strokeWidth={3}
             />
             <Line

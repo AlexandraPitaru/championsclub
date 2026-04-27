@@ -17,8 +17,8 @@ export default function Topbar() {
             <option>This Month</option>
           </select>
 
-          <button className="relative rounded-full border border-slate-200 p-2 text-slate-600 hover:bg-slate-100">
-            <Bell className="h-5 w-5" />
+          <button className="relative rounded-full border border-slate-200 p-[clamp(0.5rem,0.7vw,0.8rem)] text-slate-600 transition hover:bg-slate-100">
+            <Bell className="h-[clamp(1rem,1.2vw,1.35rem)] w-[clamp(1rem,1.2vw,1.35rem)]" />
             <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
               3
             </span>

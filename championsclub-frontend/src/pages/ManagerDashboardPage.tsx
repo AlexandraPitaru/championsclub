@@ -37,7 +37,10 @@ export default function ManagerDashboardPage() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[2fr_1fr]">
-          <PerformanceTrendChart data={performanceTrend} />
+          <div className="space-y-6">
+            <PerformanceTrendChart data={performanceTrend} chartIdSuffix="primary" />
+            <PerformanceTrendChart data={performanceTrend} chartIdSuffix="secondary" />
+          </div>
           <PriorityAlertsPanel alerts={alerts} />
         </section>
 

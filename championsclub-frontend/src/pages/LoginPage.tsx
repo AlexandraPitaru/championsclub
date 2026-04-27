@@ -1,26 +1,27 @@
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import type React from "react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{
-    username?: string;
+    email?: string;
     password?: string;
     form?: string;
   }>({});
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
 
     const nextErrors: {
-      username?: string;
+      email?: string;
       password?: string;
     } = {};
 
-    if (!username.trim()) {
-      nextErrors.username = "Username is required.";
+    if (!email.trim()) {
+      nextErrors.email = "Email is required.";
     }
 
     if (!password.trim()) {
@@ -33,20 +34,20 @@ export default function LoginPage() {
       return;
     }
 
-    const normalizedUsername = username.trim().toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (normalizedUsername === "manager") {
+    if (normalizedEmail === "manager") {
       navigate("/dashboard");
       return;
     }
 
-    if (normalizedUsername === "advisor") {
-      navigate("/advisor/101");
+    if (normalizedEmail === "advisor") {
+      navigate("/advisor-dashboard");
       return;
     }
 
     setErrors({
-      form: "Invalid username. Use manager or advisor to access the mock views.",
+      form: "Invalid email. Use manager or advisor to access the mock views.",
     });
   }
 
@@ -67,29 +68,29 @@ export default function LoginPage() {
               htmlFor="username"
               className="block text-sm font-medium text-slate-700"
             >
-              Username
+              Email address
             </label>
             <input
               id="username"
-              name="username"
+              name="email"
               type="text"
-              value={username}
+              value={email}
               onChange={(event) => {
-                setUsername(event.target.value);
+                setEmail(event.target.value);
                 setErrors((currentErrors) => ({
                   ...currentErrors,
-                  username: undefined,
+                  email: undefined,
                   form: undefined,
                 }));
               }}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-200"
-              aria-invalid={Boolean(errors.username)}
-              aria-describedby={errors.username ? "username-error" : undefined}
-              autoComplete="username"
+              aria-invalid={Boolean(errors.email)}
+              aria-describedby={errors.email ? "email-error" : undefined}
+              autoComplete="email"
             />
-            {errors.username ? (
-              <p id="username-error" className="text-sm text-red-600">
-                {errors.username}
+            {errors.email ? (
+              <p id="email-error" className="text-sm text-red-600">
+                {errors.email}
               </p>
             ) : null}
           </div>
@@ -134,7 +135,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
+            className="w-full rounded-xl bg-slate-900 px-[clamp(1rem,1.6vw,1.5rem)] py-[clamp(0.75rem,1vw,1.1rem)] text-[clamp(0.95rem,1vw,1.08rem)] font-semibold text-white transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-2"
           >
             Login
           </button>

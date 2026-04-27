@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import Card from "../../components/ui/Card";
 
+
+
 type AlertItem = {
   id: string;
   title: string;
@@ -73,7 +75,7 @@ export default function PriorityAlertsPanel({
 
             <button
               onClick={() => navigate(`/advisor/${alert.advisorId}`)}
-              className="mt-4 text-sm font-semibold text-slate-900 hover:underline"
+              className="mt-4 text-[clamp(0.9rem,0.9vw,1rem)] font-semibold text-slate-900 transition hover:underline"
             >
               View advisor
             </button>
