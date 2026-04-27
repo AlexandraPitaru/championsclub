@@ -3,6 +3,7 @@ from faker import Faker
 from sqlmodel import Session, delete
 
 from app.database import engine, create_db_and_tables
+from app.security import hash_password
 from app.models import (
     Dealership,
     Department,
@@ -347,7 +348,7 @@ def create_users(session: Session, dealerships, departments):
             first_name=fake.first_name(),
             last_name=fake.last_name(),
             email=f"manager{dealership.dealership_id}@championsclub.demo",
-            password="manager123",
+            password=hash_password("manager123"),
             phone=fake.phone_number(),
             employee_number=f"MGR{dealership.dealership_id:04}",
             rank=calculate_rank(points),
@@ -386,7 +387,7 @@ def create_users(session: Session, dealerships, departments):
             first_name=first_name,
             last_name=last_name,
             email=f"user{i + 1}@championsclub.demo",
-            password="advisor123",
+            password=hash_password("advisor123"),
             phone=fake.phone_number(),
             employee_number=f"EMP{i + 1:04}",
             rank=calculate_rank(points),

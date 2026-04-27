@@ -16,6 +16,9 @@ class Settings:
         "postgresql://championsclub:championsclub_dev_password@localhost:5432/championsclub",
     )
     auto_seed: bool = _get_bool_env("AUTO_SEED", False)
+    secret_key: str = os.getenv("SECRET_KEY", "change-me-in-production")
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 
 
 settings = Settings()
