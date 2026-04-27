@@ -14,6 +14,7 @@ class AppUser(SQLModel, table=True):
     first_name: str
     last_name: str
     email: str = Field(index=True, unique=True)
+    password: str
     phone: str | None = None
     employee_number: str = Field(index=True, unique=True)
 
