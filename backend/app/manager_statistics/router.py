@@ -3,26 +3,25 @@ from sqlmodel import Session
 
 from app.database import get_session
 from app.models.app_user import AppUser
-from app.manager_statistics import UserKpiResponse, TeamKpiResponse
+from app.manager_statistics.schemas import UserKpiResponse, TeamKpiResponse
 from app.manager_statistics.service import get_user_kpis, get_team_kpis
 
 router = APIRouter(prefix="/api/manager", tags=["manager-statistics"])
+
 
 def get_current_user(
     x_user_id: int | None = Header(default=None),
     session: Session = Depends(get_session),
 ) -> AppUser:
-    
-    #MUST BE CONNECTED TO GET USER FROM AUTHENTICATION SYSTEM
-    
+
     if x_user_id is None:
         raise HTTPException(status_code=401, detail="Authentication required")
-    
+
     user = session.get(AppUser, x_user_id)
 
     if user is None:
         raise HTTPException(status_code=401, detail="Invalid user ID")
-    
+
     return user
 
 @router.get("/users/{user_id}/kpis", response_model=UserKpiResponse)
