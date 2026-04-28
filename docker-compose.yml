@@ -1,7 +1,7 @@
 services:
   frontend:
     build:
-      context: ./frontend
+      context: ./championsclub-frontend
     container_name: championsclub-frontend
     restart: unless-stopped
     depends_on:
