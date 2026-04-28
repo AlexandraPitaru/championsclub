@@ -4,6 +4,10 @@ import AIExecutiveSummary from "../features/dashboard/AIExecutiveSummary";
 import KPIStatCard from "../features/dashboard/KPIStatCard";
 import LeaderboardPreview from "../features/dashboard/LeaderboardPreview";
 import PriorityAlertsPanel from "../features/dashboard/PriorityAlertsPanel";
+import { useState } from "react";
+import { advisorOptions } from "../services/mocks/demoData";
+import ManagerFilterBar from "../features/dashboard/ManagerFilterBar";
+
 import {
   alerts,
   dashboardKpis,
@@ -12,6 +16,10 @@ import {
 } from "../services/mocks/demoData";
 
 export default function ManagerDashboardPage() {
+   const [kpiScope, setKpiScope] = useState<"team" | "user">("team");
+  const [kpiInterval, setKpiInterval] = useState<"day" | "week" | "month">("week");
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(101);
+
   return (
     <AppShell>
       <div className="space-y-6">
@@ -23,6 +31,16 @@ export default function ManagerDashboardPage() {
             Overview of team performance, alerts, and coaching opportunities.
           </p>
         </section>
+
+        <ManagerFilterBar
+         scope={kpiScope}
+        interval={kpiInterval}
+        selectedUserId={selectedUserId}
+        advisors={advisorOptions}
+        onScopeChange={setKpiScope}
+        onIntervalChange={setKpiInterval}
+        onUserChange={setSelectedUserId}
+        />
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {dashboardKpis.map((kpi) => (

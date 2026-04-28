@@ -12,10 +12,6 @@ export default function Topbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          <select className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none">
-            <option>This Week</option>
-            <option>This Month</option>
-          </select>
 
           <button className="relative rounded-full border border-slate-200 p-[clamp(0.5rem,0.7vw,0.8rem)] text-slate-600 transition hover:bg-slate-100">
             <Bell className="h-[clamp(1rem,1.2vw,1.35rem)] w-[clamp(1rem,1.2vw,1.35rem)]" />
