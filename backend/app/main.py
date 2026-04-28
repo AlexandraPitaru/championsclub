@@ -22,6 +22,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(manager_statistics_router)
+
 app.include_router(account_router)
 
 def seed_database_if_empty() -> None:

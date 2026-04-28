@@ -8,3 +8,4 @@ dist/
 build/
 coverage/
 infra/db/data/
+backend/app/test_kpis.py
