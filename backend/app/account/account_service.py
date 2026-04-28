@@ -1,10 +1,18 @@
 from datetime import datetime, timezone
+
 from fastapi import HTTPException
 from sqlmodel import Session
 
-from app.account.account_repository import get_user_by_email
-from app.account.account_schemas import UserLoginRequest, UserLoginResponse
-
+from app.account.account_repository import get_user_by_email, get_current_user_profile_row
+from app.account.account_schemas import (
+    UserLoginRequest,
+    UserLoginResponse,
+    CurrentUserResponse,
+    DepartmentSummary,
+    DealershipSummary,
+    ManagerSummary,
+    UserRole,
+)
 
 def login_user(session: Session, request: UserLoginRequest) -> UserLoginResponse:
     if not request.email or not request.password:
@@ -31,3 +39,65 @@ def login_user(session: Session, request: UserLoginRequest) -> UserLoginResponse
         email=user.email,
         role=user.role
     )
+
+
+def get_current_user_profile(session: Session, current_user_id: int) -> CurrentUserResponse:
+    row = get_current_user_profile_row(session, current_user_id)
+
+    if row is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    (
+        user,
+        department_id,
+        department_name,
+        dealership_id,
+        dealership_name,
+        dealer_code,
+        city,
+        country,
+        region,
+        manager_user_id,
+        manager_first_name,
+        manager_last_name,
+        manager_email,
+    ) = row
+
+
+    manager = None
+    if manager_user_id is not None:
+        manager = ManagerSummary(
+            user_id=manager_user_id,
+            first_name=manager_first_name,
+            last_name=manager_last_name,
+            email=manager_email,
+        )
+
+    return CurrentUserResponse(
+        user_id=user.user_id,
+        email=user.email,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        phone=user.phone,
+        employee_number=user.employee_number,
+        role=UserRole(user.role.lower()),
+        rank=user.rank,
+        points=user.points,
+        credit=user.credit,
+        status=user.status,
+        last_login_at=user.last_login_at,
+        department=DepartmentSummary(
+            department_id=department_id,
+            name=department_name,
+        ),
+        dealership=DealershipSummary(
+            dealership_id=dealership_id,
+            name=dealership_name,
+            dealer_code=dealer_code,
+            city=city,
+            country=country,
+            region=region,
+        ),
+        manager=manager,
+    )
+
