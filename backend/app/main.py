@@ -6,10 +6,13 @@ from app.database import create_db_and_tables, engine
 from app.data.seeds.seed import main as run_seed_data
 from app.models import AppUser
 from app import models
+
+from app.manager_statistics.router import router as manager_statistics_router
 from app.account.account_router import router as account_router
 
-
 app = FastAPI(title="ChampionsClub API")
+
+app.include_router(manager_statistics_router)
 
 app.include_router(account_router)
 
