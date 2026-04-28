@@ -6,7 +6,7 @@ import LeaderboardPreview from "../features/dashboard/LeaderboardPreview";
 import PriorityAlertsPanel from "../features/dashboard/PriorityAlertsPanel";
 import { useState } from "react";
 import { advisorOptions } from "../services/mocks/demoData";
-import ManagerFilterBar from "../features/dashboard/ManagerFilterBar";
+import ManagerFilterDrawer from "../features/dashboard/ManagerFilterDrawer";
 
 import {
   alerts,
@@ -21,26 +21,28 @@ export default function ManagerDashboardPage() {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(101);
 
   return (
-    <AppShell>
+    <AppShell showTopbar={false}>
       <div className="space-y-6">
-        <section>
-          <h1 className="text-3xl font-bold text-slate-900">
-            Manager Dashboard
-          </h1>
-          <p className="mt-2 text-slate-600">
-            Overview of team performance, alerts, and coaching opportunities.
-          </p>
-        </section>
+        <section className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-cyan-100">
+              Manager Dashboard
+            </h1>
+            <p className="mt-2 text-slate-400">
+              Overview of team performance, alerts, and coaching opportunities.
+            </p>
+          </div>
 
-        <ManagerFilterBar
-         scope={kpiScope}
-        interval={kpiInterval}
-        selectedUserId={selectedUserId}
-        advisors={advisorOptions}
-        onScopeChange={setKpiScope}
-        onIntervalChange={setKpiInterval}
-        onUserChange={setSelectedUserId}
-        />
+          <ManagerFilterDrawer
+            scope={kpiScope}
+            interval={kpiInterval}
+            selectedUserId={selectedUserId}
+            advisors={advisorOptions}
+            onScopeChange={setKpiScope}
+            onIntervalChange={setKpiInterval}
+            onUserChange={setSelectedUserId}
+          />
+        </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {dashboardKpis.map((kpi) => (

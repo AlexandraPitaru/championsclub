@@ -4,15 +4,15 @@ export default function AIExecutiveSummary() {
   return (
     <Card>
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-slate-900">
+        <h3 className="text-lg font-semibold text-cyan-100">
           AI Executive Summary
         </h3>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-400">
           Data-driven highlights for this period
         </p>
       </div>
 
-      <div className="space-y-3 text-sm leading-6 text-slate-700">
+      <div className="space-y-3 text-sm leading-6 text-slate-300">
         <p>
           Team performance remains stable overall, but one dealership is showing
           a decline in financing conversion and may miss its monthly target.
