@@ -4,8 +4,8 @@ export type LoginRequest = {
 };
 
 export type LoginResponse = {
-  id: string | number;
   email: string;
+  user_id: number;
   role: string;
 };
 
@@ -19,7 +19,11 @@ export async function loginUser(payload: LoginRequest): Promise<LoginResponse> {
   });
 
   if (!response.ok) {
-    throw new Error("Invalid credentials");
+    const errorData = await response.json().catch(() => null);
+
+    throw new Error(
+      errorData?.detail || "Login failed. Please try again."
+    );
   }
 
   return response.json();

@@ -1,0 +1,21 @@
+{
+    "terminal.integrated.profiles.windows": {
+        "PowerShell (Allow Scripts)": {
+            "source": "PowerShell",
+            "args": ["-ExecutionPolicy", "RemoteSigned"]
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "PowerShell (Allow Scripts)",
+    "python-envs.pythonProjects": [
+        {
+            "path": "trainingenv",
+            "envManager": "ms-python.python:venv",
+            "packageManager": "ms-python.python:pip"
+        }
+    ],
+    "python.analysis.extraPaths": [
+        "./trainingenv/conversational_app"
+    ]
+}
+ 
+ 
