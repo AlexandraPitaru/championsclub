@@ -9,8 +9,10 @@ export type LoginResponse = {
   role: string;
 };
 
+const API_BASE_URL = "http://localhost:8000";
+
 export async function loginUser(payload: LoginRequest): Promise<LoginResponse> {
-  const response = await fetch("http://localhost:8000/api/account/login", {
+  const response = await fetch(`${API_BASE_URL}/api/account/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
