@@ -24,7 +24,15 @@ def get_current_user(
 
     return user
 
-@router.get("/users/{user_id}/kpis", response_model=UserKpiResponse)
+@router.get("/dashboard/users/{user_id}/kpis", response_model=UserKpiResponse)
+def read_user_kpis(
+    user_id: int,
+    session: Session = Depends(get_session),
+    current_user: AppUser = Depends(get_current_user),
+):
+    return get_user_kpis(session, current_user, user_id)
+
+@router.get("/profile/users/{user_id}/kpis", response_model=UserKpiResponse)
 def read_user_kpis(
     user_id: int,
     session: Session = Depends(get_session),
@@ -33,7 +41,7 @@ def read_user_kpis(
     return get_user_kpis(session, current_user, user_id)
 
 
-@router.get("/team/kpis", response_model=TeamKpiResponse)
+@router.get("/dashboard/team/kpis", response_model=TeamKpiResponse)
 def read_team_kpis(
     session: Session = Depends(get_session),
     current_user: AppUser = Depends(get_current_user),
