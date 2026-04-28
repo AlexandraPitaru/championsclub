@@ -20,12 +20,12 @@ class UserKpiResponse(BaseModel):
     last_transaction_date: datetime | None
 
 class TeamKpiResponse(BaseModel):
-    deashership_id: int
+    dealership_id: int
     dealership_name: str
 
     total_users: int
     active_users: int
-    totak_transactions: int
+    total_transactions: int
     total_sales_amount: float
     total_points_earned: int
     total_products_sold: int

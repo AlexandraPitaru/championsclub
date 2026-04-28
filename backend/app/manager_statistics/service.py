@@ -65,7 +65,7 @@ def get_team_kpis(session: Session, current_manager: AppUser, dealership_id: int
 
     dealership = session.get(Dealership, dealership_id)
 
-    if dealership is None:
+    if dealership is None or dealership.dealership_id != current_manager.dealership_id:
         raise HTTPException(status_code=404, detail="Dealership not found")
     
     total_users = session.exec(
