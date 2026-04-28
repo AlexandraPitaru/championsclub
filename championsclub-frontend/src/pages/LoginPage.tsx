@@ -39,7 +39,7 @@ export default function LoginPage() {
         return;
       }
 
-      if (role === "advisor") {
+      if (role === "sales_advisor") {
         navigate(`/advisor/${user.user_id}`);
         return;
       }
