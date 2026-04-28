@@ -6,9 +6,9 @@ from app.database import create_db_and_tables, engine
 from app.data.seeds.seed import main as run_seed_data
 from app.models import AppUser
 from app import models
-
-from app.manager_statistics.router import router as manager_statistics_router
 from app.account.account_router import router as account_router
+from app.manager_statistics.manager_statistics_router import router as manager_statistics_router
+
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="ChampionsClub API")
