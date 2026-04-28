@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlmodel import Session
 
 from app.database import get_session
@@ -24,26 +24,31 @@ def get_current_user(
 
     return user
 
+
 @router.get("/dashboard/users/{user_id}/kpis", response_model=UserKpiResponse)
-def read_user_kpis(
+def read_dashboard_user_kpis(
     user_id: int,
+    interval: str = Query(default="all", pattern="^(day|week|month|all)$"),
     session: Session = Depends(get_session),
     current_user: AppUser = Depends(get_current_user),
 ):
-    return get_user_kpis(session, current_user, user_id)
+    return get_user_kpis(session, current_user, user_id, interval)
+
 
 @router.get("/profile/users/{user_id}/kpis", response_model=UserKpiResponse)
-def read_user_kpis(
+def read_profile_user_kpis(
     user_id: int,
+    interval: str = Query(default="all", pattern="^(day|week|month|all)$"),
     session: Session = Depends(get_session),
     current_user: AppUser = Depends(get_current_user),
 ):
-    return get_user_kpis(session, current_user, user_id)
+    return get_user_kpis(session, current_user, user_id, interval)
 
 
 @router.get("/dashboard/team/kpis", response_model=TeamKpiResponse)
 def read_team_kpis(
+    interval: str = Query(default="all", pattern="^(day|week|month|all)$"),
     session: Session = Depends(get_session),
     current_user: AppUser = Depends(get_current_user),
 ):
-    return get_team_kpis(session, current_user)
+    return get_team_kpis(session, current_user, interval)
