@@ -19,14 +19,18 @@ class UserKpiResponse(BaseModel):
     total_products_sold: int
     last_transaction_date: datetime | None
 
-class TeamKpiResponse(BaseModel):
-    dealership_id: int
-    dealership_name: str
-
-    total_users: int
-    active_users: int
+class TeamKpisData(BaseModel):
+    total_employees: int
+    total_points: int
+    average_points: float
+    total_credit: float
     total_transactions: int
     total_sales_amount: float
     total_points_earned: int
     total_products_sold: int
+    last_transaction_date: datetime | None
+
+class TeamKpiResponse(BaseModel):
+    manager_id: int
+    team_kpis: TeamKpisData
     

@@ -2,7 +2,6 @@ from fastapi import HTTPException
 from sqlmodel import Session, select, func
 
 from app.models.app_user import AppUser
-from app.models.dealership import Dealership
 from app.models.sale_transaction import SaleTransaction
 from app.models.sale_transaction_item import SaleTransactionItem
 from app.manager_statistics.schemas import UserKpiResponse, TeamKpiResponse
@@ -59,67 +58,69 @@ def get_user_kpis(session: Session, current_manager: AppUser, user_id: int) -> U
         "last_transaction_date": last_transaction_date,
     }
 
-def get_team_kpis(session: Session, current_manager: AppUser, dealership_id: int) -> TeamKpiResponse:
+def get_team_kpis(session: Session, current_manager: AppUser) -> TeamKpiResponse:
 
     validate_manager(current_manager)
-
-    dealership = session.get(Dealership, dealership_id)
-
-    if dealership is None or dealership.dealership_id != current_manager.dealership_id:
-        raise HTTPException(status_code=404, detail="Dealership not found")
     
-    total_users = session.exec(
-        select(func.count(AppUser.user_id)).where(
-            AppUser.manager_user_id == current_manager.user_id,
-            AppUser.dealership_id == dealership_id
-        )
+    # Get all employees managed by the current manager
+    team_employees = session.exec(
+        select(AppUser).where(AppUser.manager_user_id == current_manager.user_id)
+    ).all()
+    
+    total_employees = len(team_employees)
+    
+    # Calculate KPIs from app_user table
+    user_kpis = session.exec(
+        select(
+            func.coalesce(func.sum(AppUser.points), 0),
+            func.coalesce(func.avg(AppUser.points), 0),
+            func.coalesce(func.sum(AppUser.credit), 0),
+        ).where(AppUser.manager_user_id == current_manager.user_id)
     ).one()
-
-    active_users = session.exec(
-        select(func.count(AppUser.user_id)).where(
-            AppUser.manager_user_id == current_manager.user_id,
-            AppUser.dealership_id == dealership_id,
-            AppUser.status == "active"
-        )
-    ).one()
-
+    
+    total_points = user_kpis[0] or 0
+    average_points = user_kpis[1] or 0.0
+    total_credit = user_kpis[2] or 0.0
+    
+    # Calculate KPIs from sale_transaction table
     sales_result = session.exec(
         select(
             func.count(SaleTransaction.transaction_id),
             func.coalesce(func.sum(SaleTransaction.amount), 0),
-            func.coalesce(func.sum(SaleTransaction.points_earned), 0)
+            func.coalesce(func.sum(SaleTransaction.points_earned), 0),
+            func.max(SaleTransaction.transaction_date),
         )
         .join(AppUser, AppUser.user_id == SaleTransaction.user_id)
-        .where(
-            AppUser.manager_user_id == current_manager.user_id, 
-            AppUser.dealership_id == dealership_id,
-            )
+        .where(AppUser.manager_user_id == current_manager.user_id)
     ).one()
 
     total_transactions = sales_result[0]
     total_sales_amount = sales_result[1]
     total_points_earned = sales_result[2]
+    last_transaction_date = sales_result[3]
 
+    # Calculate sold products from sale_transaction_item
     total_products_sold = session.exec(
         select(func.coalesce(func.sum(SaleTransactionItem.quantity), 0))
             .join(
                 SaleTransaction,
                 SaleTransaction.transaction_id == SaleTransactionItem.transaction_id,
-                )
-            .join(AppUser, AppUser.user_id == SaleTransaction.user_id)
-            .where(
-                AppUser.manager_user_id == current_manager.user_id, 
-                SaleTransaction.dealership_id == dealership_id,
             )
+            .join(AppUser, AppUser.user_id == SaleTransaction.user_id)
+            .where(AppUser.manager_user_id == current_manager.user_id)
     ).one()
 
     return {
-        "dealership_id": dealership.dealership_id,
-        "dealership_name": dealership.name,
-        "total_users": total_users,
-        "active_users": active_users,
-        "total_transactions": sales_result[0],
-        "total_sales_amount": total_sales_amount,
-        "total_points_earned": total_points_earned,
-        "total_products_sold": total_products_sold,
+        "manager_id": current_manager.user_id,
+        "team_kpis": {
+            "total_employees": total_employees,
+            "total_points": total_points,
+            "average_points": average_points,
+            "total_credit": total_credit,
+            "total_transactions": total_transactions,
+            "total_sales_amount": total_sales_amount,
+            "total_points_earned": total_points_earned,
+            "total_products_sold": total_products_sold,
+            "last_transaction_date": last_transaction_date,
+        }
     }

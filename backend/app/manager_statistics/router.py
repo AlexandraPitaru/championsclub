@@ -33,10 +33,9 @@ def read_user_kpis(
     return get_user_kpis(session, current_user, user_id)
 
 
-@router.get("/dealerships/{dealership_id}/kpis", response_model=TeamKpiResponse)
+@router.get("/team/kpis", response_model=TeamKpiResponse)
 def read_team_kpis(
-    dealership_id: int,
     session: Session = Depends(get_session),
     current_user: AppUser = Depends(get_current_user),
 ):
-    return get_team_kpis(session, current_user, dealership_id)
+    return get_team_kpis(session, current_user)
