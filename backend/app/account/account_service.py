@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
 from fastapi import HTTPException
 from sqlmodel import Session
+from sqlmodel import select
 
+from app.models.app_user import AppUser
 from app.account.account_repository import get_user_by_email
 from app.account.account_schemas import UserLoginRequest, UserLoginResponse
 
@@ -31,3 +33,19 @@ def login_user(session: Session, request: UserLoginRequest) -> UserLoginResponse
         email=user.email,
         role=user.role
     )
+
+def get_current_user_by_id(
+    session: Session,
+    user_id: int,
+) -> AppUser:
+    user = session.exec(
+        select(AppUser).where(AppUser.user_id == user_id)
+    ).first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid authenticated user"
+        )
+
+    return user
