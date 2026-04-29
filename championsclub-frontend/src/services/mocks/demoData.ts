@@ -92,17 +92,4 @@ export const leaderboard = [
   },
 ];
 
-export const advisorOptions = [
-  {
-    id: 101,
-    name: "David Enache",
-  },
-  {
-    id: 102,
-    name: "Ioana Matei",
-  },
-  {
-    id: 103,
-    name: "Radu Pavel",
-  },
-];
+export const advisorOptions: Array<{ id: number; name: string }> = [];
