@@ -24,9 +24,7 @@ import {
 import {
   getLeaderboard,
 } from "../services/api/dashboardService";
-import {
-  alerts,
-} from "../services/mocks/demoData";
+import { useManagerNotifications } from "../services/hooks/useManagerNotifications";
 
 const DASHBOARD_FILTERS_STORAGE_KEY = "manager_dashboard_filters";
 
@@ -78,6 +76,13 @@ function getCurrentUserFromStorage(): StoredUser | null {
   }
 }
 
+function getPriorityRank(priority: string): number {
+  if (priority === "high") return 0;
+  if (priority === "medium") return 1;
+  if (priority === "low") return 2;
+  return 99;
+}
+
 export default function ManagerDashboardPage() {
   const initialFilters = loadFiltersFromStorage();
 
@@ -119,6 +124,28 @@ export default function ManagerDashboardPage() {
   kpiInterval,
   selectedUserId
 );
+
+  const { data: notificationsData } = useManagerNotifications({
+    managerId,
+    limit: 10,
+  });
+
+  const dashboardAlerts = useMemo(() => {
+    const notifications = notificationsData?.notifications ?? [];
+
+    return [...notifications]
+      .sort((a, b) => getPriorityRank(a.priority) - getPriorityRank(b.priority))
+      .slice(0, 5)
+      .map((alert) => ({
+        id: String(alert.alert_id),
+        title: alert.title,
+        advisorId: String(alert.user_id),
+        advisorName: alert.employee_name,
+        email: alert.employee_email,
+        summary: alert.message,
+        severity: alert.priority,
+      }));
+  }, [notificationsData]);
 
   // Save filters to localStorage whenever they change
   useEffect(() => {
@@ -307,7 +334,7 @@ export default function ManagerDashboardPage() {
 {!isTrendLoading && !isTrendError && (
   <PerformanceTrendChart data={performanceTrend} />
 )}
-          <PriorityAlertsPanel alerts={alerts} />
+          <PriorityAlertsPanel alerts={dashboardAlerts} />
         </section>
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
