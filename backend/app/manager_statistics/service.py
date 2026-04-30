@@ -6,7 +6,7 @@ from sqlmodel import Session, select, func
 from app.models.app_user import AppUser
 from app.models.sale_transaction import SaleTransaction
 from app.models.sale_transaction_item import SaleTransactionItem
-from app.manager_statistics.schemas import UserKpiResponse, TeamKpiResponse
+from app.manager_statistics.schemas import UserKpiResponse, TeamKpiResponse, ManagedUserResponse
 
 
 def validate_manager(current_user: AppUser):
@@ -173,3 +173,30 @@ def get_team_kpis(
             "last_transaction_date": last_transaction_date,
         },
     }
+
+def get_managed_users(
+    session: Session,
+    current_manager: AppUser,
+) -> list[ManagedUserResponse]:
+    validate_manager(current_manager)
+
+    users = session.exec(
+        select(AppUser)
+        .where(AppUser.manager_user_id == current_manager.user_id)
+        .where(AppUser.role.ilike("sales_advisor"))
+    ).all()
+
+    return [
+        {
+            "user_id": user.user_id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "role": user.role,
+            "current_rank": user.rank,
+            "total_points": user.points,
+            "credit": user.credit,
+            "status": user.status,
+        }
+        for user in users
+    ]
