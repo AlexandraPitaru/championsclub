@@ -68,7 +68,11 @@ export default function AlertsPage() {
               <p className="text-sm text-slate-400">High Priority</p>
             </div>
             <div className="flex-shrink-0 rounded-lg bg-rose-500/20 p-3">
-              <AlertCircle className="h-5 w-5 text-rose-400" />
+              <img
+                src="/alert-icons/high-priority-warning.svg"
+                alt="High priority warning"
+                className="h-5 w-5"
+              />
             </div>
           </Card>
 
@@ -78,7 +82,11 @@ export default function AlertsPage() {
               <p className="text-sm text-slate-400">Medium Priority</p>
             </div>
             <div className="flex-shrink-0 rounded-lg bg-amber-500/20 p-3">
-              <Info className="h-5 w-5 text-amber-400" />
+              <img
+                src="/alert-icons/medium-priority-warning.svg"
+                alt="Medium priority warning"
+                className="h-5 w-5"
+              />
             </div>
           </Card>
 
@@ -88,7 +96,11 @@ export default function AlertsPage() {
               <p className="text-sm text-slate-400">Low Priority</p>
             </div>
             <div className="flex-shrink-0 rounded-lg bg-cyan-500/20 p-3">
-              <TrendingDown className="h-5 w-5 text-cyan-400" />
+              <img
+                src="/alert-icons/low-priority-warning.svg"
+                alt="Low priority warning"
+                className="h-5 w-5"
+              />
             </div>
           </Card>
         </section>
@@ -110,12 +122,22 @@ export default function AlertsPage() {
 
                   <div className="mt-4 grid gap-4 sm:grid-cols-2">
                     <div className="flex items-center gap-2 text-sm">
+                      <img
+                        src="/alert-icons/advisor-small.svg"
+                        alt="Advisor"
+                        className="h-4 w-4"
+                      />
                       <span className="text-slate-400">Advisor</span>
                       <span className="font-medium text-slate-200">
                         {alert.advisorName}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
+                      <img
+                        src="/alert-icons/dealership-small.svg"
+                        alt="Dealership"
+                        className="h-4 w-4"
+                      />
                       <span className="text-slate-400">Dealership</span>
                       <span className="font-medium text-slate-200">
                         {alert.dealership}

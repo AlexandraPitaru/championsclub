@@ -375,7 +375,7 @@ export default function LeaderboardPage() {
                           <img
                             src={getRankBadgeSrc(row.position) ?? ""}
                             alt={`Position ${row.position}`}
-                            className="h-5 w-auto"
+                            className="h-4 w-auto"
                           />
                         ) : (
                           <span>{row.position}</span>
