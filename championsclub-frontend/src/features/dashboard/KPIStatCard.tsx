@@ -21,11 +21,11 @@ export default function KPIStatCard({
       : "text-slate-400";
 
   return (
-    <Card>
-      <p className="text-sm font-medium text-slate-400">{title}</p>
-      <div className="mt-3 flex items-end justify-between">
-        <h3 className="text-3xl font-bold text-cyan-100">{value}</h3>
-        <span className={`text-sm font-semibold ${deltaColor}`}>{delta}</span>
+    <Card className="overflow-hidden">
+      <p className="text-sm font-medium text-slate-400 truncate">{title}</p>
+      <div className="mt-3 flex items-end justify-between gap-2">
+        <h3 className="text-2xl font-bold text-cyan-100">{value}</h3>
+        <span className={`text-sm font-semibold ${deltaColor} whitespace-nowrap`}>{delta}</span>
       </div>
     </Card>
   );

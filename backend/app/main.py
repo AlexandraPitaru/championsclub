@@ -8,6 +8,8 @@ from app.models import AppUser
 from app import models
 from app.account.account_router import router as account_router
 from app.manager_statistics.router import router as manager_statistics_router
+from app.leaderboard.router import router as leaderboard_router
+
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -25,7 +27,7 @@ app.add_middleware(
 )
 
 app.include_router(manager_statistics_router)
-
+app.include_router(leaderboard_router)
 app.include_router(account_router)
 
 def seed_database_if_empty() -> None:

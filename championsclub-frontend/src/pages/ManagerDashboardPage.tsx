@@ -22,9 +22,41 @@ import {
   type KpiScope,
 } from "../services/api/managerStatisticsService";
 import {
+  getLeaderboard,
+} from "../services/api/dashboardService";
+import {
   alerts,
-  leaderboard,
 } from "../services/mocks/demoData";
+
+const DASHBOARD_FILTERS_STORAGE_KEY = "manager_dashboard_filters";
+
+interface DashboardFilters {
+  kpiScope: KpiScope;
+  kpiInterval: KpiInterval;
+}
+
+function loadFiltersFromStorage(): DashboardFilters {
+  try {
+    const saved = localStorage.getItem(DASHBOARD_FILTERS_STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.error("Failed to load dashboard filters from storage:", error);
+  }
+  return {
+    kpiScope: "team",
+    kpiInterval: "week",
+  };
+}
+
+function saveFiltersToStorage(filters: DashboardFilters) {
+  try {
+    localStorage.setItem(DASHBOARD_FILTERS_STORAGE_KEY, JSON.stringify(filters));
+  } catch (error) {
+    console.error("Failed to save dashboard filters to storage:", error);
+  }
+}
 
 type StoredUser = {
   email: string;
@@ -47,8 +79,10 @@ function getCurrentUserFromStorage(): StoredUser | null {
 }
 
 export default function ManagerDashboardPage() {
-  const [kpiScope, setKpiScope] = useState<KpiScope>("team");
-  const [kpiInterval, setKpiInterval] = useState<KpiInterval>("week");
+  const initialFilters = loadFiltersFromStorage();
+
+  const [kpiScope, setKpiScope] = useState<KpiScope>(initialFilters.kpiScope);
+  const [kpiInterval, setKpiInterval] = useState<KpiInterval>(initialFilters.kpiInterval);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   const [advisorOptions, setAdvisorOptions] = useState<AdvisorOption[]>([]);
@@ -57,6 +91,16 @@ export default function ManagerDashboardPage() {
   const [kpiCards, setKpiCards] = useState<DashboardKpiCard[]>([]);
   const [isKpiLoading, setIsKpiLoading] = useState(false);
   const [kpiError, setKpiError] = useState("");
+
+  const [leaderboardPreview, setLeaderboardPreview] = useState<
+    Array<{
+      id: string;
+      name: string;
+      dealership: string;
+      points: number;
+      tier: string;
+    }>
+  >([]);
 
   const currentUser = useMemo(() => getCurrentUserFromStorage(), []);
   
@@ -75,6 +119,14 @@ export default function ManagerDashboardPage() {
   kpiInterval,
   selectedUserId
 );
+
+  // Save filters to localStorage whenever they change
+  useEffect(() => {
+    saveFiltersToStorage({
+      kpiScope,
+      kpiInterval,
+    });
+  }, [kpiScope, kpiInterval]);
 
   useEffect(() => {
     async function loadManagedUsers() {
@@ -153,6 +205,36 @@ export default function ManagerDashboardPage() {
     loadKpis();
   }, [managerId, kpiScope, selectedUserId, kpiInterval]);
 
+  useEffect(() => {
+    async function loadLeaderboardPreview() {
+      try {
+        const response = await getLeaderboard({
+          interval: kpiInterval,
+          sortBy: "points",
+          sortDir: "desc",
+          page: 1,
+          pageSize: 10,
+        });
+
+        // Transform API data to LeaderboardPreview format
+        const transformedData = response.items.slice(0, 5).map((item) => ({
+          id: String(item.user_id),
+          name: `${item.first_name} ${item.last_name}`,
+          dealership: "Team", // API doesn't provide dealership, so using default
+          points: item.points,
+          tier: item.tier,
+        }));
+
+        setLeaderboardPreview(transformedData);
+      } catch (error) {
+        console.error("Failed to load leaderboard preview:", error);
+        setLeaderboardPreview([]);
+      }
+    }
+
+    loadLeaderboardPreview();
+  }, [kpiInterval]);
+
   return (
     <AppShell>
       <div className="space-y-6">
@@ -229,7 +311,7 @@ export default function ManagerDashboardPage() {
         </section>
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <LeaderboardPreview items={leaderboard} />
+          <LeaderboardPreview items={leaderboardPreview} />
           <AIExecutiveSummary />
         </section>
       </div>
