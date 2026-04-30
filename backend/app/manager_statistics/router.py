@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlmodel import Session
 
 from app.database import get_session
 from app.models.app_user import AppUser
-from app.manager_statistics.schemas import UserKpiResponse, TeamKpiResponse
-from app.manager_statistics.service import get_user_kpis, get_team_kpis
+from app.manager_statistics.schemas import UserKpiResponse, TeamKpiResponse, ManagedUserResponse
+from app.manager_statistics.service import get_user_kpis, get_team_kpis, get_managed_users
 
 router = APIRouter(prefix="/api/manager", tags=["manager-statistics"])
 
@@ -24,26 +24,38 @@ def get_current_user(
 
     return user
 
+
 @router.get("/dashboard/users/{user_id}/kpis", response_model=UserKpiResponse)
-def read_user_kpis(
+def read_dashboard_user_kpis(
     user_id: int,
+    interval: str = Query(default="all", pattern="^(day|week|month|all)$"),
     session: Session = Depends(get_session),
     current_user: AppUser = Depends(get_current_user),
 ):
-    return get_user_kpis(session, current_user, user_id)
+    return get_user_kpis(session, current_user, user_id, interval)
+
 
 @router.get("/profile/users/{user_id}/kpis", response_model=UserKpiResponse)
-def read_user_kpis(
+def read_profile_user_kpis(
     user_id: int,
+    interval: str = Query(default="all", pattern="^(day|week|month|all)$"),
     session: Session = Depends(get_session),
     current_user: AppUser = Depends(get_current_user),
 ):
-    return get_user_kpis(session, current_user, user_id)
+    return get_user_kpis(session, current_user, user_id, interval)
 
 
 @router.get("/dashboard/team/kpis", response_model=TeamKpiResponse)
 def read_team_kpis(
+    interval: str = Query(default="all", pattern="^(day|week|month|all)$"),
     session: Session = Depends(get_session),
     current_user: AppUser = Depends(get_current_user),
 ):
-    return get_team_kpis(session, current_user)
+    return get_team_kpis(session, current_user, interval)
+
+@router.get("/dashboard/users", response_model=list[ManagedUserResponse])
+def read_managed_users(
+    session: Session = Depends(get_session),
+    current_user: AppUser = Depends(get_current_user),
+):
+    return get_managed_users(session, current_user)

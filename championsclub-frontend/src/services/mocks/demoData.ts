@@ -91,3 +91,5 @@ export const leaderboard = [
     tier: "Silver",
   },
 ];
+
+export const advisorOptions: Array<{ id: number; name: string }> = [];

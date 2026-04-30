@@ -5,14 +5,14 @@ import { alerts } from "../services/mocks/demoData";
 
 const getSeverityClasses = (severity: string) => {
   if (severity === "high") {
-    return "bg-red-100 text-red-700";
+    return "border border-rose-400/30 bg-rose-500/10 text-rose-300";
   }
 
   if (severity === "medium") {
-    return "bg-amber-100 text-amber-700";
+    return "border border-amber-400/30 bg-amber-500/10 text-amber-300";
   }
 
-  return "bg-slate-100 text-slate-700";
+  return "border border-cyan-400/30 bg-cyan-500/10 text-cyan-300";
 };
 
 export default function AlertsPage() {
@@ -22,8 +22,8 @@ export default function AlertsPage() {
     <AppShell>
       <div className="space-y-6">
         <section>
-          <h1 className="text-3xl font-bold text-slate-900">Alerts</h1>
-          <p className="mt-2 text-slate-600">
+          <h1 className="text-3xl font-bold text-cyan-100">Alerts</h1>
+          <p className="mt-2 text-slate-400">
             Review dealership and advisor issues that need manager attention.
           </p>
         </section>
@@ -33,14 +33,14 @@ export default function AlertsPage() {
             {alerts.map((alert) => (
               <div
                 key={alert.id}
-                className="rounded-xl border border-slate-200 p-4"
+                className="rounded-xl border border-[#22354d] bg-[#0c192b] p-4"
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-900">
+                    <h2 className="text-lg font-semibold text-slate-100">
                       {alert.title}
                     </h2>
-                    <p className="mt-2 text-sm text-slate-600">{alert.summary}</p>
+                    <p className="mt-2 text-sm text-slate-300">{alert.summary}</p>
                   </div>
 
                   <span
@@ -52,20 +52,20 @@ export default function AlertsPage() {
                   </span>
                 </div>
 
-                <div className="mt-4 grid gap-2 text-sm text-slate-500 md:grid-cols-2">
+                <div className="mt-4 grid gap-2 text-sm text-slate-400 md:grid-cols-2">
                   <p>
-                    <span className="font-medium text-slate-700">Advisor:</span>{" "}
+                    <span className="font-medium text-slate-200">Advisor:</span>{" "}
                     {alert.advisorName}
                   </p>
                   <p>
-                    <span className="font-medium text-slate-700">Dealership:</span>{" "}
+                    <span className="font-medium text-slate-200">Dealership:</span>{" "}
                     {alert.dealership}
                   </p>
                 </div>
 
                 <button
                   onClick={() => navigate(`/advisor/${alert.advisorId}`)}
-                  className="mt-4 text-[clamp(0.9rem,0.9vw,1rem)] font-semibold text-slate-900 transition hover:underline"
+                  className="mt-4 text-[clamp(0.9rem,0.9vw,1rem)] font-semibold text-cyan-300 transition hover:text-cyan-200 hover:underline"
                 >
                   View advisor
                 </button>

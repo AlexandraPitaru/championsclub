@@ -28,10 +28,10 @@ export default function PerformanceTrendChart({
   return (
     <Card className="h-[360px]">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-slate-900">
+        <h3 className="text-lg font-semibold text-cyan-100">
           Team Performance Trend
         </h3>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-400">
           Weekly sales performance compared with target
         </p>
       </div>
@@ -41,27 +41,36 @@ export default function PerformanceTrendChart({
           <AreaChart data={data}>
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#0f172a" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#0f172a" stopOpacity={0.02} />
+                <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.35} />
+                <stop offset="95%" stopColor="#22d3ee" stopOpacity={0.03} />
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="week" />
-            <YAxis />
-            <Tooltip />
+            <CartesianGrid stroke="#23364b" strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="week" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={{ stroke: "#28415f" }} tickLine={{ stroke: "#28415f" }} />
+            <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={{ stroke: "#28415f" }} tickLine={{ stroke: "#28415f" }} />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#0c192b",
+                border: "1px solid #2b445f",
+                borderRadius: "12px",
+                color: "#e2e8f0",
+              }}
+              itemStyle={{ color: "#cbd5e1" }}
+              labelStyle={{ color: "#67e8f9" }}
+            />
 
             <Area
               type="monotone"
               dataKey="sales"
-              stroke="#0f172a"
+              stroke="#22d3ee"
               fill={`url(#${gradientId})`}
               strokeWidth={3}
             />
             <Line
               type="monotone"
               dataKey="target"
-              stroke="#94a3b8"
+              stroke="#f59e0b"
               strokeWidth={2}
               dot={false}
             />
