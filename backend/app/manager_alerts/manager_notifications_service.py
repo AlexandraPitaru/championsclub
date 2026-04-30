@@ -17,6 +17,8 @@ def get_manager_notifications_service(
     current_user,
     priority: Optional[str] = None,
     is_read: Optional[bool] = None,
+    limit: int = 10,
+    offset: int = 0,
 ) -> ManagerNotificationsResponse:
     if current_user is None:
         raise HTTPException(
@@ -30,12 +32,20 @@ def get_manager_notifications_service(
             detail="Only managers can access notifications",
         )
 
-    results = get_manager_notifications_from_db(
+    results, total_alerts, unread_alerts = get_manager_notifications_from_db(
         session=session,
         manager_id=current_user.user_id,
         priority=priority,
         is_read=is_read,
+        limit=limit,
+        offset=offset,
     )
+
+    if offset > 0 and offset >= total_alerts:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Offset {offset} is out of range.",
+        )
 
     notifications = []
 
@@ -58,13 +68,16 @@ def get_manager_notifications_service(
             )
         )
 
-    unread_alerts = sum(
-        1 for notification in notifications if notification.is_read is False
-    )
+    next_offset = offset + len(notifications)
+    has_more = next_offset < total_alerts
 
     return ManagerNotificationsResponse(
         manager_id=current_user.user_id,
-        total_alerts=len(notifications),
+        total_alerts=total_alerts,
         unread_alerts=unread_alerts,
+        limit=limit,
+        offset=offset,
+        has_more=has_more,
+        next_offset=next_offset if has_more else None,
         notifications=notifications,
     )

@@ -23,4 +23,8 @@ class ManagerNotificationsResponse(BaseModel):
     manager_id: int
     total_alerts: int
     unread_alerts: int
+    limit: int
+    offset: int
+    has_more: bool
+    next_offset: Optional[int]
     notifications: List[ManagerNotificationItem]
