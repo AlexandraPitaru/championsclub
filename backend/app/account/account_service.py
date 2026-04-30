@@ -2,7 +2,9 @@ from datetime import datetime, timezone
 
 from fastapi import HTTPException
 from sqlmodel import Session
+from sqlmodel import select
 
+from app.models.app_user import AppUser
 from app.account.account_repository import get_user_by_email, get_current_user_profile_row
 from app.account.account_schemas import (
     UserLoginRequest,
@@ -13,6 +15,7 @@ from app.account.account_schemas import (
     ManagerSummary,
     UserRole,
 )
+
 
 def login_user(session: Session, request: UserLoginRequest) -> UserLoginResponse:
     if not request.email or not request.password:
@@ -41,6 +44,23 @@ def login_user(session: Session, request: UserLoginRequest) -> UserLoginResponse
     )
 
 
+def get_current_user_by_id(
+    session: Session,
+    user_id: int,
+) -> AppUser:
+    user = session.exec(
+        select(AppUser).where(AppUser.user_id == user_id)
+    ).first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid authenticated user"
+        )
+
+    return user
+
+
 def get_current_user_profile(session: Session, current_user_id: int) -> CurrentUserResponse:
     row = get_current_user_profile_row(session, current_user_id)
 
@@ -62,7 +82,6 @@ def get_current_user_profile(session: Session, current_user_id: int) -> CurrentU
         manager_last_name,
         manager_email,
     ) = row
-
 
     manager = None
     if manager_user_id is not None:
@@ -100,4 +119,3 @@ def get_current_user_profile(session: Session, current_user_id: int) -> CurrentU
         ),
         manager=manager,
     )
-
