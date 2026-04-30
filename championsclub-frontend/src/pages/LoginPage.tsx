@@ -57,20 +57,29 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 px-6">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#060b13] px-6">
+      <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle_at_15%_15%,rgba(34,211,238,0.16),transparent_28%),radial-gradient(circle_at_85%_10%,rgba(56,189,248,0.14),transparent_30%),linear-gradient(to_bottom,rgba(6,11,19,0.85),rgba(6,11,19,1))]" />
+
+      <div className="pointer-events-none absolute right-[-120px] top-[-80px] h-[340px] w-[340px] rounded-full border border-cyan-400/20 bg-cyan-400/5 blur-2xl" />
+      <div className="pointer-events-none absolute bottom-[-120px] left-[-100px] h-[300px] w-[300px] rounded-full border border-sky-400/20 bg-sky-400/5 blur-2xl" />
+
       <form
         onSubmit={handleLogin}
-        className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"
+        className="relative z-10 w-full max-w-md rounded-2xl border border-[#24405b] bg-[#0b1524]/90 p-8 shadow-[0_20px_50px_rgba(2,8,20,0.55)] backdrop-blur"
       >
-        <h1 className="text-3xl font-bold text-slate-900">ChampionsClub</h1>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300/80">
+          Secure Access
+        </p>
 
-        <p className="mt-2 text-slate-600">
+        <h1 className="mt-2 text-3xl font-bold text-cyan-100">ChampionsClub</h1>
+
+        <p className="mt-2 text-slate-300">
           Sign in to access your performance dashboard.
         </p>
 
         <div className="mt-8 space-y-5">
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
+            <label className="mb-2 block text-sm font-medium text-slate-200">
               Email
             </label>
 
@@ -79,13 +88,13 @@ export default function LoginPage() {
               value={email}
               disabled={isLoading}
               onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900"
+              className="w-full rounded-xl border border-[#2e4663] bg-[#0f1d31] px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-400/70 focus:ring-2 focus:ring-cyan-400/20"
               placeholder="name@example.com"
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
+            <label className="mb-2 block text-sm font-medium text-slate-200">
               Password
             </label>
 
@@ -94,13 +103,13 @@ export default function LoginPage() {
               value={password}
               disabled={isLoading}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900"
+              className="w-full rounded-xl border border-[#2e4663] bg-[#0f1d31] px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-400/70 focus:ring-2 focus:ring-cyan-400/20"
               placeholder="Enter your password"
             />
           </div>
 
           {errorMessage && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-xl border border-rose-400/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
               {errorMessage}
             </div>
           )}
@@ -108,7 +117,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-xl bg-slate-900 px-4 py-3 font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl border border-cyan-400/40 bg-cyan-500/15 px-4 py-3 font-semibold text-cyan-100 transition hover:bg-cyan-500/25 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoading ? "Signing in..." : "Login"}
           </button>

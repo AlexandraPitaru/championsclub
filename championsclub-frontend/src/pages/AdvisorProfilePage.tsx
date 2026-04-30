@@ -7,8 +7,8 @@ export default function AdvisorProfilePage() {
   return (
     <AppShell>
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold text-slate-900">Advisor Profile</h1>
-        <p className="text-slate-600">Advisor ID: {id}</p>
+        <h1 className="text-3xl font-bold text-cyan-100">Advisor Profile</h1>
+        <p className="text-slate-400">Advisor ID: {id}</p>
       </div>
     </AppShell>
   );
