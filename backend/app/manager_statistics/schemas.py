@@ -50,3 +50,10 @@ class ManagedUserResponse(BaseModel):
     total_points: int
     credit: float
     status: str
+
+## Adding a new schema for getting the data neccesary for our chart in the manager dashboard
+class PerformanceTrendPoint(BaseModel):
+   period: str
+   sales: float
+   points: int
+

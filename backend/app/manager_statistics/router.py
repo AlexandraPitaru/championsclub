@@ -3,8 +3,8 @@ from sqlmodel import Session
 
 from app.database import get_session
 from app.models.app_user import AppUser
-from app.manager_statistics.schemas import UserKpiResponse, TeamKpiResponse, ManagedUserResponse
-from app.manager_statistics.service import get_user_kpis, get_team_kpis, get_managed_users
+from app.manager_statistics.schemas import UserKpiResponse, TeamKpiResponse, ManagedUserResponse, PerformanceTrendPoint
+from app.manager_statistics.service import get_user_kpis, get_team_kpis, get_managed_users, get_team_performance_trend, get_user_performance_trend
 
 router = APIRouter(prefix="/api/manager", tags=["manager-statistics"])
 
@@ -59,3 +59,26 @@ def read_managed_users(
     current_user: AppUser = Depends(get_current_user),
 ):
     return get_managed_users(session, current_user)
+
+@router.get(
+    "/dashboard/team/performance-trend",
+    response_model=list[PerformanceTrendPoint],
+)
+def read_team_performance_trend(
+    interval: str = Query(default="all", pattern="^(day|week|month|all)$"),
+    session: Session = Depends(get_session),
+    current_user: AppUser = Depends(get_current_user),
+):
+    return get_team_performance_trend(session, current_user, interval)
+
+@router.get(
+    "/dashboard/users/{user_id}/performance-trend",
+    response_model=list[PerformanceTrendPoint],
+)
+def read_user_performance_trend(
+    user_id: int,
+    interval: str = Query(default="all", pattern="^(day|week|month|all)$"),
+    session: Session = Depends(get_session),
+    current_user: AppUser = Depends(get_current_user),
+):
+    return get_user_performance_trend(session, current_user, user_id, interval)

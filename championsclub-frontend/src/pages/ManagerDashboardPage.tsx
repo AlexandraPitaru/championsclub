@@ -6,6 +6,8 @@ import KPIStatCard from "../features/dashboard/KPIStatCard";
 import LeaderboardPreview from "../features/dashboard/LeaderboardPreview";
 import ManagerFilterDrawer from "../features/dashboard/ManagerFilterDrawer";
 import PriorityAlertsPanel from "../features/dashboard/PriorityAlertsPanel";
+import { usePerformanceTrendHook } from "../services/hooks/usePerformanceTrendHook";
+
 import {
   mapTeamKpisToCards,
   mapUserKpisToCards,
@@ -22,7 +24,6 @@ import {
 import {
   alerts,
   leaderboard,
-  performanceTrend,
 } from "../services/mocks/demoData";
 
 type StoredUser = {
@@ -58,10 +59,22 @@ export default function ManagerDashboardPage() {
   const [kpiError, setKpiError] = useState("");
 
   const currentUser = useMemo(() => getCurrentUserFromStorage(), []);
+  
   const managerId =
     currentUser?.role?.toLowerCase() === "manager"
       ? Number(currentUser.user_id)
       : null;
+
+  const {
+  data: performanceTrend = [],
+  isLoading: isTrendLoading,
+  isError: isTrendError,
+} = usePerformanceTrendHook(
+  managerId,
+  kpiScope,
+  kpiInterval,
+  selectedUserId
+);
 
   useEffect(() => {
     async function loadManagedUsers() {
@@ -145,15 +158,15 @@ export default function ManagerDashboardPage() {
       <div className="space-y-6">
         <section className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 md:text-3xl">
+            <h1 className="text-2xl font-bold text-cyan-100 md:text-3xl">
               Manager Dashboard
             </h1>
-            <p className="mt-2 text-sm text-slate-600 md:text-base">
+            <p className="mt-2 text-sm text-slate-400 md:text-base">
               Overview of team performance, alerts, and coaching opportunities.
             </p>
 
             {isAdvisorsLoading && (
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-slate-400">
                 Loading managed advisors...
               </p>
             )}
@@ -199,7 +212,19 @@ export default function ManagerDashboardPage() {
         </section>
 
         <section className="grid grid-cols-1 gap-6">
-          <PerformanceTrendChart data={performanceTrend} />
+          {isTrendLoading && (
+  <div className="h-[360px] animate-pulse rounded-2xl border border-[#29405b] bg-[#0d1a2b]" />
+)}
+
+{isTrendError && (
+  <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-5 text-sm text-red-300">
+    Could not load performance trend.
+  </div>
+)}
+
+{!isTrendLoading && !isTrendError && (
+  <PerformanceTrendChart data={performanceTrend} />
+)}
           <PriorityAlertsPanel alerts={alerts} />
         </section>
 
