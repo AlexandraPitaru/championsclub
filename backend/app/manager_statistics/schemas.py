@@ -38,3 +38,15 @@ class TeamKpisData(BaseModel):
 class TeamKpiResponse(BaseModel):
     manager_id: int
     team_kpis: TeamKpisData
+
+#Modifications for Manager filtering users by team that he manages
+class ManagedUserResponse(BaseModel):
+    user_id: int
+    first_name: str
+    last_name: str
+    email: str
+    role: str
+    current_rank: str
+    total_points: int
+    credit: float
+    status: str

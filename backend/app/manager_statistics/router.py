@@ -3,8 +3,8 @@ from sqlmodel import Session
 
 from app.database import get_session
 from app.models.app_user import AppUser
-from app.manager_statistics.schemas import UserKpiResponse, TeamKpiResponse
-from app.manager_statistics.service import get_user_kpis, get_team_kpis
+from app.manager_statistics.schemas import UserKpiResponse, TeamKpiResponse, ManagedUserResponse
+from app.manager_statistics.service import get_user_kpis, get_team_kpis, get_managed_users
 
 router = APIRouter(prefix="/api/manager", tags=["manager-statistics"])
 
@@ -52,3 +52,10 @@ def read_team_kpis(
     current_user: AppUser = Depends(get_current_user),
 ):
     return get_team_kpis(session, current_user, interval)
+
+@router.get("/dashboard/users", response_model=list[ManagedUserResponse])
+def read_managed_users(
+    session: Session = Depends(get_session),
+    current_user: AppUser = Depends(get_current_user),
+):
+    return get_managed_users(session, current_user)
