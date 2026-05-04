@@ -129,7 +129,7 @@ export default function PriorityAlertsPanel({
                 </span>
 
                 <button
-                  onClick={() => navigate(`/advisor/${alert.advisorId}`)}
+                  onClick={() => navigate(`/manager/advisor/${alert.advisorId}`)}
                   className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${getSeverityButtonClasses(
                     alert.severity
                   )}`}

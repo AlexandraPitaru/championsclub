@@ -114,3 +114,24 @@ export async function getUserKpis(
 
   return response.json();
 }
+
+export async function getAdvisorProfileKpis(
+  managerId: number,
+  userId: number,
+  interval: KpiInterval
+): Promise<UserKpiResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/manager/profile/users/${userId}/kpis?interval=${interval}`,
+    {
+      headers: {
+        "x-user-id": String(managerId),
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch advisor profile KPIs");
+  }
+
+  return response.json();
+}
