@@ -133,7 +133,12 @@ export default function ManagerDashboardPage() {
   const dashboardAlerts = useMemo(() => {
     const notifications = notificationsData?.notifications ?? [];
 
-    return [...notifications]
+    const filtered =
+      kpiScope === "user" && selectedUserId !== null
+        ? notifications.filter((n) => n.user_id === selectedUserId)
+        : notifications;
+
+    return [...filtered]
       .sort((a, b) => getPriorityRank(a.priority) - getPriorityRank(b.priority))
       .slice(0, 5)
       .map((alert) => ({
@@ -145,7 +150,7 @@ export default function ManagerDashboardPage() {
         summary: alert.message,
         severity: alert.priority,
       }));
-  }, [notificationsData]);
+  }, [notificationsData, kpiScope, selectedUserId]);
 
   // Save filters to localStorage whenever they change
   useEffect(() => {
