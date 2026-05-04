@@ -6,7 +6,7 @@ from sqlmodel import Session, select, func
 from app.models.app_user import AppUser
 from app.models.sale_transaction import SaleTransaction
 from app.models.sale_transaction_item import SaleTransactionItem
-from app.manager_statistics.schemas import UserKpiResponse, TeamKpiResponse, ManagedUserResponse
+from app.manager_statistics.schemas import UserKpiResponse, TeamKpiResponse, ManagedUserResponse, PerformanceTrendPoint
 
 
 def validate_manager(current_user: AppUser):
@@ -200,3 +200,93 @@ def get_managed_users(
         }
         for user in users
     ]
+
+##Adding a new service function to get the data for the performance trend chart in the manager dashboard
+def build_performance_trend(transactions) -> list[PerformanceTrendPoint]:
+    grouped = {}
+
+    for transaction_date, amount, points_earned in transactions:
+        period = transaction_date.date().isoformat()
+
+        if period not in grouped:
+            grouped[period] = {"sales": 0.0, "points": 0}
+        grouped[period]["sales"] += float(amount or 0)
+        grouped[period]["points"] += int(points_earned or 0)
+
+    return [
+        {
+            "period": period,
+            "sales": data["sales"],
+            "points": data["points"],
+        }
+        for period, data in grouped.items()
+    ]
+
+
+def get_team_performance_trend(
+    session: Session,
+    current_manager: AppUser,
+    interval: str,
+) -> list[PerformanceTrendPoint]:
+    validate_manager(current_manager)
+
+    start_date = get_interval_start_date(interval)
+
+    conditions = [
+        AppUser.manager_user_id == current_manager.user_id
+    ]
+
+    if start_date is not None:
+        conditions.append(SaleTransaction.transaction_date >= start_date)
+
+    transactions = session.exec(
+        select(
+            SaleTransaction.transaction_date,
+            SaleTransaction.amount,
+            SaleTransaction.points_earned,
+        )
+        .join(AppUser, AppUser.user_id == SaleTransaction.user_id)
+        .where(*conditions)
+        .order_by(SaleTransaction.transaction_date)
+    ).all()
+
+    return build_performance_trend(transactions)
+
+
+def get_user_performance_trend(
+    session: Session,
+    current_manager: AppUser,
+    user_id: int,
+    interval: str,
+) -> list[PerformanceTrendPoint]:
+    validate_manager(current_manager)
+
+    target_user = session.get(AppUser, user_id)
+
+    if target_user is None or target_user.manager_user_id != current_manager.user_id:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found or not under your management",
+        )
+
+    start_date = get_interval_start_date(interval)
+
+    conditions = [
+        SaleTransaction.user_id == user_id
+    ]
+
+    if start_date is not None:
+        conditions.append(SaleTransaction.transaction_date >= start_date)
+
+    transactions = session.exec(
+        select(
+            SaleTransaction.transaction_date,
+            SaleTransaction.amount,
+            SaleTransaction.points_earned,
+        )
+        .where(*conditions)
+        .order_by(SaleTransaction.transaction_date)
+    ).all()
+
+    return build_performance_trend(transactions)
+        

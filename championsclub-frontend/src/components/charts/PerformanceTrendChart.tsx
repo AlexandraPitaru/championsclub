@@ -9,13 +9,10 @@ import {
   Line,
 } from "recharts";
 import Card from "../ui/Card";
+import type { PerformanceTrendDataPoint } from "../../services/api/performanceTrendService";
 
 type PerformanceTrendChartProps = {
-  data: {
-    week: string;
-    sales: number;
-    target: number;
-  }[];
+  data: PerformanceTrendDataPoint[];
   chartIdSuffix?: string;
 };
 
@@ -25,18 +22,37 @@ export default function PerformanceTrendChart({
 }: PerformanceTrendChartProps) {
   const gradientId = `salesGradient-${chartIdSuffix}`;
 
+  if (!data.length) {
+    return (
+      <Card className="h-[360px]">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-cyan-100">
+            Performance Trend
+          </h3>
+          <p className="text-sm text-slate-400">
+            Sales and points performance based on selected filters
+          </p>
+        </div>
+
+        <div className="flex h-[260px] items-center justify-center rounded-xl border border-[#29405b] bg-[#0d1a2b] text-sm text-slate-400">
+          No performance data available.
+        </div>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="h-[360px]">
+    <Card className="h-[360px] min-w-0">
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-cyan-100">
-          Team Performance Trend
+          Performance Trend
         </h3>
         <p className="text-sm text-slate-400">
-          Weekly sales performance compared with target
+          Sales and points performance based on selected filters
         </p>
       </div>
 
-      <div className="h-[260px]">
+      <div className="h-[260px] w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
             <defs>
@@ -46,9 +62,25 @@ export default function PerformanceTrendChart({
               </linearGradient>
             </defs>
 
-            <CartesianGrid stroke="#23364b" strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="week" tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={{ stroke: "#28415f" }} tickLine={{ stroke: "#28415f" }} />
-            <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} axisLine={{ stroke: "#28415f" }} tickLine={{ stroke: "#28415f" }} />
+            <CartesianGrid
+              stroke="#23364b"
+              strokeDasharray="3 3"
+              vertical={false}
+            />
+
+            <XAxis
+              dataKey="period"
+              tick={{ fill: "#94a3b8", fontSize: 12 }}
+              axisLine={{ stroke: "#28415f" }}
+              tickLine={{ stroke: "#28415f" }}
+            />
+
+            <YAxis
+              tick={{ fill: "#94a3b8", fontSize: 12 }}
+              axisLine={{ stroke: "#28415f" }}
+              tickLine={{ stroke: "#28415f" }}
+            />
+
             <Tooltip
               contentStyle={{
                 backgroundColor: "#0c192b",
@@ -67,6 +99,16 @@ export default function PerformanceTrendChart({
               fill={`url(#${gradientId})`}
               strokeWidth={3}
             />
+
+            {/*
+            <Line
+              type="monotone"
+              dataKey="points"
+              stroke="#a78bfa"
+              strokeWidth={2}
+            />
+            */}
+            
             <Line
               type="monotone"
               dataKey="target"

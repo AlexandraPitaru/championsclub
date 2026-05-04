@@ -43,6 +43,7 @@ export default function ManagerFilterDrawer({
 
   return (
     <>
+      <style>{`.scrollbar-hidden::-webkit-scrollbar { display: none; }`}</style>
       <button
         type="button"
         onClick={() => setIsOpen(true)}
@@ -126,14 +127,20 @@ export default function ManagerFilterDrawer({
                     No advisors available for this manager.
                   </p>
                 ) : (
-                  <div className="grid grid-cols-1 gap-2">
+                  <div
+                    className="max-h-64 overflow-y-auto space-y-2 scrollbar-hidden"
+                    style={{
+                      scrollbarWidth: "none" as const,
+                      msOverflowStyle: "none" as const,
+                    } as React.CSSProperties & { scrollbarWidth: string; msOverflowStyle: string }}
+                  >
                     {advisors.map((advisor) => (
                       <button
                         key={advisor.id}
                         type="button"
                         aria-pressed={selectedUserId === advisor.id}
                         onClick={() => onUserChange(advisor.id)}
-                        className={`rounded-xl border px-3 py-2 text-left text-sm font-medium transition ${
+                        className={`w-full rounded-xl border px-3 py-2 text-left text-sm font-medium transition ${
                           selectedUserId === advisor.id
                             ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-100"
                             : "border-[#29405b] bg-[#0d1a2b] text-slate-200 hover:bg-[#112238]"
