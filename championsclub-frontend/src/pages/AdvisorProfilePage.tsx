@@ -63,6 +63,24 @@ function toTitleCase(value: string) {
     .join(" ");
 }
 
+function getRankTrophyColor(rank: string) {
+  const normalizedRank = rank.trim().toLowerCase();
+
+  if (normalizedRank === "gold") {
+    return "text-amber-300";
+  }
+
+  if (normalizedRank === "silver") {
+    return "text-slate-300";
+  }
+
+  if (normalizedRank === "bronze") {
+    return "text-orange-400";
+  }
+
+  return "text-cyan-300";
+}
+
 function buildChatGeneratedMessage(advisor: UserKpiResponse, interval: KpiInterval) {
   const intervalLabel = interval === "all" ? "all tracked periods" : `the selected ${interval} interval`;
   const lastTransaction = advisor.last_transaction_date
@@ -248,7 +266,7 @@ export default function AdvisorProfilePage() {
                         Current Rank
                       </p>
                       <p className="mt-2 flex items-center justify-center gap-2 text-sm font-medium text-slate-100">
-                        <Trophy className="h-4 w-4 text-amber-300" />
+                        <Trophy className={`h-4 w-4 ${getRankTrophyColor(advisor.current_rank)}`} />
                         {advisor.current_rank}
                       </p>
                     </div>

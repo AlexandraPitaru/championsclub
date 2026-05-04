@@ -24,6 +24,7 @@ import {
 import {
   getLeaderboard,
 } from "../services/api/dashboardService";
+import { compareManagerNotifications } from "../services/api/managerNotificationService";
 import { useManagerNotifications } from "../services/hooks/useManagerNotifications";
 
 const DASHBOARD_FILTERS_STORAGE_KEY = "manager_dashboard_filters";
@@ -31,13 +32,27 @@ const DASHBOARD_FILTERS_STORAGE_KEY = "manager_dashboard_filters";
 interface DashboardFilters {
   kpiScope: KpiScope;
   kpiInterval: KpiInterval;
+  selectedUserId: number | null;
 }
 
 function loadFiltersFromStorage(): DashboardFilters {
   try {
     const saved = localStorage.getItem(DASHBOARD_FILTERS_STORAGE_KEY);
     if (saved) {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved) as Partial<DashboardFilters>;
+
+      return {
+        kpiScope: parsed.kpiScope === "user" ? "user" : "team",
+        kpiInterval:
+          parsed.kpiInterval === "day" ||
+          parsed.kpiInterval === "week" ||
+          parsed.kpiInterval === "month" ||
+          parsed.kpiInterval === "all"
+            ? parsed.kpiInterval
+            : "week",
+        selectedUserId:
+          typeof parsed.selectedUserId === "number" ? parsed.selectedUserId : null,
+      };
     }
   } catch (error) {
     console.error("Failed to load dashboard filters from storage:", error);
@@ -45,6 +60,7 @@ function loadFiltersFromStorage(): DashboardFilters {
   return {
     kpiScope: "team",
     kpiInterval: "week",
+    selectedUserId: null,
   };
 }
 
@@ -76,19 +92,12 @@ function getCurrentUserFromStorage(): StoredUser | null {
   }
 }
 
-function getPriorityRank(priority: string): number {
-  if (priority === "high") return 0;
-  if (priority === "medium") return 1;
-  if (priority === "low") return 2;
-  return 99;
-}
-
 export default function ManagerDashboardPage() {
   const initialFilters = loadFiltersFromStorage();
 
   const [kpiScope, setKpiScope] = useState<KpiScope>(initialFilters.kpiScope);
   const [kpiInterval, setKpiInterval] = useState<KpiInterval>(initialFilters.kpiInterval);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(initialFilters.selectedUserId);
 
   const [advisorOptions, setAdvisorOptions] = useState<AdvisorOption[]>([]);
   const [isAdvisorsLoading, setIsAdvisorsLoading] = useState(false);
@@ -139,7 +148,7 @@ export default function ManagerDashboardPage() {
         : notifications;
 
     return [...filtered]
-      .sort((a, b) => getPriorityRank(a.priority) - getPriorityRank(b.priority))
+      .sort(compareManagerNotifications)
       .slice(0, 5)
       .map((alert) => ({
         id: String(alert.alert_id),
@@ -157,8 +166,9 @@ export default function ManagerDashboardPage() {
     saveFiltersToStorage({
       kpiScope,
       kpiInterval,
+      selectedUserId,
     });
-  }, [kpiScope, kpiInterval]);
+  }, [kpiScope, kpiInterval, selectedUserId]);
 
   useEffect(() => {
     async function loadManagedUsers() {
@@ -178,7 +188,16 @@ export default function ManagerDashboardPage() {
 
         setAdvisorOptions(options);
 
-        if (!selectedUserId && options.length > 0) {
+        const hasPersistedSelection = options.some(
+          (option) => option.id === selectedUserId
+        );
+
+        if (selectedUserId !== null && !hasPersistedSelection) {
+          setSelectedUserId(options[0]?.id ?? null);
+          return;
+        }
+
+        if (kpiScope === "user" && selectedUserId === null && options.length > 0) {
           setSelectedUserId(options[0].id);
         }
       } catch (error) {
@@ -190,7 +209,7 @@ export default function ManagerDashboardPage() {
     }
 
     loadManagedUsers();
-  }, [managerId]);
+  }, [managerId, kpiScope, selectedUserId]);
 
   useEffect(() => {
     async function loadKpis() {
@@ -273,10 +292,10 @@ export default function ManagerDashboardPage() {
         <section className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-cyan-100 md:text-3xl">
-              Manager Dashboard
+              Manager Dashboard: Where the Wins Get Loud
             </h1>
             <p className="mt-2 text-sm text-slate-400 md:text-base">
-              Overview of team performance, alerts, and coaching opportunities.
+              Track hot streaks, catch red flags before they bite, and spot the next coaching moment before your coffee gets cold.
             </p>
 
             {isAdvisorsLoading && (

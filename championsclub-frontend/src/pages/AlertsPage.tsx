@@ -4,6 +4,7 @@ import { AlertCircle, Info, TrendingDown } from "lucide-react";
 import AppShell from "../app/layouts/AppShell";
 import Card from "../components/ui/Card";
 import { useManagerNotifications } from "../services/hooks/useManagerNotifications";
+import { compareManagerNotifications } from "../services/api/managerNotificationService";
 
 type StoredUser = {
   email: string;
@@ -63,14 +64,6 @@ const getSeverityButtonClasses = (severity: string) => {
   return "border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/10";
 };
 
-const getSeverityRank = (severity: string) => {
-  if (severity === "high") return 0;
-  if (severity === "medium") return 1;
-  if (severity === "low") return 2;
-  return 99;
-};
-
-
 export default function AlertsPage() {
   const navigate = useNavigate();
 
@@ -94,10 +87,7 @@ const alerts = notificationsData?.notifications ?? [];
 const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
 
   const sortedAlerts = useMemo(
-    () =>
-      [...alerts].sort(
-        (a, b) => getSeverityRank(a.priority) - getSeverityRank(b.priority)
-      ),
+    () => [...alerts].sort(compareManagerNotifications),
     [alerts]
   );
 
