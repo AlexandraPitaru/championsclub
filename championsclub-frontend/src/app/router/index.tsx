@@ -1,4 +1,4 @@
-//Definim rutele principale pentru aplicatie, folosind react-router-dom cum ar fi /login, /dashboard, /alerts, /advisor/:id, /leaderboard
+//Definim rutele principale pentru aplicatie, folosind react-router-dom cum ar fi /login, /dashboard, /alerts, /manager/advisor/:id, /leaderboard
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "../../pages/LoginPage";
 import ManagerDashboardPage from "../../pages/ManagerDashboardPage";
@@ -13,6 +13,7 @@ export default function AppRouter() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/dashboard" element={<ManagerDashboardPage />} />
             <Route path="/alerts" element={<AlertsPage />} />
+            <Route path="/manager/advisor/:id" element={<AdvisorProfilePage />} />
             <Route path="/advisor/:id" element={<AdvisorProfilePage />} />
             <Route path="/advisor-dashboard" element={<AdvisorDashboardPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} /> 
