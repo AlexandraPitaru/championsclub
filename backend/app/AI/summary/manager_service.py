@@ -1,7 +1,5 @@
 import json
 
-from openai import OpenAI
-
 from app.AI.summary.manager_schemas import (
     ManagerTeamSummaryRequest,
     ManagerTeamSummaryResponse,
@@ -9,8 +7,6 @@ from app.AI.summary.manager_schemas import (
 
 
 FALLBACK_MESSAGE = "Not enough data to generate a performance summary."
-
-client = OpenAI()
 
 
 def has_enough_manager_team_data(payload: ManagerTeamSummaryRequest) -> bool:
@@ -57,6 +53,10 @@ Team KPI data:
 
 
 def generate_manager_team_ai_summary(payload: ManagerTeamSummaryRequest) -> str:
+    from openai import OpenAI
+
+    client = OpenAI()
+
     response = client.responses.create(
         model="gpt-4.1-mini",
         input=build_manager_team_prompt(payload),
