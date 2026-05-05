@@ -13,7 +13,11 @@ from app.AI.activity_summary.activity_summary_schemas import (
     AdvisorActivitySummaryResponse,
     IntervalType,
 )
-from app.manager_statistics.service import get_interval_start_date, validate_manager
+from app.manager_statistics.service import (
+    get_interval_start_date,
+    get_user_kpis,
+    validate_manager,
+)
 from app.models.app_user import AppUser
 
 
@@ -114,13 +118,40 @@ def generate_advisor_activity_summary(
     validate_manager(current_manager)
 
     interval_start = get_interval_start_date(interval)
-    activity_data = get_advisor_activity_summary_data(
-        session=session,
-        manager_id=current_manager.user_id,
-        advisor_id=advisor_id,
-        interval=interval,
-        interval_start=interval_start,
-    )
+
+    try:
+        activity_data = get_advisor_activity_summary_data(
+            session=session,
+            manager_id=current_manager.user_id,
+            advisor_id=advisor_id,
+            interval=interval,
+            interval_start=interval_start,
+        )
+    except Exception:
+        # Fallback to the proven KPI query path used by the advisor profile endpoint.
+        user_kpis = get_user_kpis(
+            session=session,
+            current_manager=current_manager,
+            user_id=advisor_id,
+            interval=interval,
+        )
+        activity_data = AdvisorActivitySummaryData(
+            advisor_id=user_kpis["user_id"],
+            first_name=user_kpis["first_name"],
+            last_name=user_kpis["last_name"],
+            email=user_kpis["email"],
+            role=user_kpis["role"],
+            current_rank=user_kpis["current_rank"],
+            total_points=int(user_kpis["total_points"]),
+            credit=float(user_kpis["credit"]),
+            status=user_kpis["status"],
+            interval=interval,
+            total_transactions=int(user_kpis["total_transactions"]),
+            total_sales_amount=float(user_kpis["total_sales_amount"]),
+            total_points_earned=int(user_kpis["total_points_earned"]),
+            total_products_sold=int(user_kpis["total_products_sold"]),
+            last_transaction_date=user_kpis["last_transaction_date"],
+        )
 
     if activity_data is None:
         raise HTTPException(

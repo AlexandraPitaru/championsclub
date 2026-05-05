@@ -22,7 +22,6 @@ def get_advisor_activity_summary_data(
         select(AppUser)
         .where(AppUser.user_id == advisor_id)
         .where(AppUser.manager_user_id == manager_id)
-        .where(func.lower(AppUser.role) == "sales_advisor")
     ).first()
 
     if advisor is None:
