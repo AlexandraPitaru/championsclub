@@ -34,6 +34,17 @@ function normalizeName(value: string) {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
     
+function getCurrentUserRole(): string | null {
+  try {
+    const raw = localStorage.getItem("currentUser");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { role?: string };
+    return parsed.role ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Sidebar() {
   const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -42,6 +53,7 @@ export default function Sidebar() {
   const [isSearching, setIsSearching] = useState(false);
 
   const trimmedSearch = useMemo(() => searchInput.trim(), [searchInput]);
+  const userRole = useMemo(() => getCurrentUserRole(), []);
 
   function handleLogout() {
     localStorage.removeItem("currentUser");
@@ -181,8 +193,8 @@ export default function Sidebar() {
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
                   Active Role
                 </p>
-                <p className="mt-2 text-sm font-semibold text-cyan-100">
-                  Manager Demo
+                <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-cyan-100">
+                  {userRole ?? "Unknown"}
                 </p>
                 <p className="mt-1 text-xs text-slate-400">
                   Team oversight enabled

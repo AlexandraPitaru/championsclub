@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import AppShell from "../app/layouts/AppShell";
 import PerformanceTrendChart from "../components/charts/PerformanceTrendChart";
-import AIExecutiveSummary from "../features/dashboard/AIExecutiveSummary";
 import KPIStatCard from "../features/dashboard/KPIStatCard";
 import LeaderboardPreview from "../features/dashboard/LeaderboardPreview";
 import ManagerFilterDrawer from "../features/dashboard/ManagerFilterDrawer";
 import PriorityAlertsPanel from "../features/dashboard/PriorityAlertsPanel";
 import { usePerformanceTrendHook } from "../services/hooks/usePerformanceTrendHook";
 
+import AIExecutiveSummary from "../features/dashboard/AIExecutiveSummary";
 import {
   mapTeamKpisToCards,
   mapUserKpisToCards,
   type DashboardKpiCard,
 } from "../features/dashboard/kpiMapper";
+import type { TeamKpisData } from "../services/api/managerStatisticsService";
 import {
   getManagedUsers,
   getTeamKpis,
@@ -20,7 +21,6 @@ import {
   type AdvisorOption,
   type KpiInterval,
   type KpiScope,
-  type TeamKpisData,
 } from "../services/api/managerStatisticsService";
 import {
   getLeaderboard,
@@ -104,9 +104,10 @@ export default function ManagerDashboardPage() {
   const [isAdvisorsLoading, setIsAdvisorsLoading] = useState(false);
 
   const [kpiCards, setKpiCards] = useState<DashboardKpiCard[]>([]);
-  const [teamKpisData, setTeamKpisData] = useState<TeamKpisData | null>(null);
   const [isKpiLoading, setIsKpiLoading] = useState(false);
   const [kpiError, setKpiError] = useState("");
+
+  const [summaryTeamKpis, setSummaryTeamKpis] = useState<TeamKpisData | null>(null);
 
   const [leaderboardPreview, setLeaderboardPreview] = useState<
     Array<{
@@ -218,7 +219,6 @@ export default function ManagerDashboardPage() {
       if (!managerId) {
         setKpiError("No manager user found. Please login as manager.");
         setKpiCards([]);
-        setTeamKpisData(null);
         return;
       }
 
@@ -228,14 +228,11 @@ export default function ManagerDashboardPage() {
       try {
         if (kpiScope === "team") {
           const response = await getTeamKpis(managerId, kpiInterval);
-          setTeamKpisData(response.team_kpis);
           setKpiCards(mapTeamKpisToCards(response.team_kpis));
           return;
         }
 
         if (kpiScope === "user") {
-          setTeamKpisData(null);
-
           if (!selectedUserId) {
             setKpiCards([]);
             setKpiError("Please select an advisor.");
@@ -254,7 +251,6 @@ export default function ManagerDashboardPage() {
         console.error(error);
         setKpiError("Could not load KPI data.");
         setKpiCards([]);
-        setTeamKpisData(null);
       } finally {
         setIsKpiLoading(false);
       }
@@ -262,6 +258,19 @@ export default function ManagerDashboardPage() {
 
     loadKpis();
   }, [managerId, kpiScope, selectedUserId, kpiInterval]);
+
+  useEffect(() => {
+    async function loadTeamKpisForSummary() {
+      if (!managerId) return;
+      try {
+        const response = await getTeamKpis(managerId, kpiInterval);
+        setSummaryTeamKpis(response.team_kpis);
+      } catch {
+        setSummaryTeamKpis(null);
+      }
+    }
+    loadTeamKpisForSummary();
+  }, [managerId, kpiInterval]);
 
   useEffect(() => {
     async function loadLeaderboardPreview() {
@@ -371,9 +380,9 @@ export default function ManagerDashboardPage() {
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           <LeaderboardPreview items={leaderboardPreview} />
           <AIExecutiveSummary
-            teamKpisData={teamKpisData}
+            teamKpis={summaryTeamKpis}
             interval={kpiInterval}
-            disabled={kpiScope !== "team"}
+            managerId={managerId}
           />
         </section>
       </div>

@@ -411,30 +411,6 @@ export default function AdvisorProfilePage() {
             </section>
 
             <section>
-              <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-cyan-500/30 bg-cyan-500/5 px-5 py-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-cyan-100">
-                    Performance Popup Slot
-                  </p>
-                  <p className="mt-1 text-sm text-slate-400">
-                    Reserved trigger area for the upcoming advisor performance popup.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  disabled
-                  aria-disabled="true"
-                  aria-haspopup="dialog"
-                  data-popup-slot="advisor-performance"
-                  className="rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-100 opacity-70"
-                >
-                  Open performance details
-                </button>
-              </div>
-            </section>
-
-            <section>
               <Card className="border border-[#28415f] bg-[#0d1a2b]">
                 <h2 className="text-lg font-semibold text-cyan-100">
                   Activity Summary

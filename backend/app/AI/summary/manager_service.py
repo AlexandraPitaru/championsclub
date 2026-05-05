@@ -57,14 +57,14 @@ Team KPI data:
 
 
 def generate_manager_team_ai_summary(payload: ManagerTeamSummaryRequest) -> str:
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": build_manager_team_prompt(payload)}],
+    response = client.responses.create(
+        model="gpt-4.1-mini",
+        input=build_manager_team_prompt(payload),
         temperature=0.4,
-        max_tokens=180,
+        max_output_tokens=180,
     )
 
-    return response.choices[0].message.content.strip()
+    return response.output_text.strip()
 
 
 def generate_manager_team_summary(
