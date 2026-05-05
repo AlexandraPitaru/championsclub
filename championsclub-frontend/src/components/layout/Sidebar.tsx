@@ -2,7 +2,14 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { FormEvent } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Bell, LayoutDashboard, Search, Sparkles, Trophy } from "lucide-react";
+import {
+  Bell,
+  LayoutDashboard,
+  LogOut,
+  Search,
+  Sparkles,
+  Trophy,
+} from "lucide-react";
 import { getLeaderboard } from "../../services/api/dashboardService";
 
 const navItems = [
@@ -35,6 +42,11 @@ export default function Sidebar() {
   const [isSearching, setIsSearching] = useState(false);
 
   const trimmedSearch = useMemo(() => searchInput.trim(), [searchInput]);
+
+  function handleLogout() {
+    localStorage.removeItem("currentUser");
+    navigate("/login", { replace: true });
+  }
 
   async function handleAdvisorSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -183,6 +195,15 @@ export default function Sidebar() {
               </span>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-2.5 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Logout</span>
+          </button>
         </div>
       </div>
     </aside>

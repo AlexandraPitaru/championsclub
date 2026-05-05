@@ -20,6 +20,7 @@ import {
   type AdvisorOption,
   type KpiInterval,
   type KpiScope,
+  type TeamKpisData,
 } from "../services/api/managerStatisticsService";
 import {
   getLeaderboard,
@@ -103,6 +104,7 @@ export default function ManagerDashboardPage() {
   const [isAdvisorsLoading, setIsAdvisorsLoading] = useState(false);
 
   const [kpiCards, setKpiCards] = useState<DashboardKpiCard[]>([]);
+  const [teamKpisData, setTeamKpisData] = useState<TeamKpisData | null>(null);
   const [isKpiLoading, setIsKpiLoading] = useState(false);
   const [kpiError, setKpiError] = useState("");
 
@@ -216,6 +218,7 @@ export default function ManagerDashboardPage() {
       if (!managerId) {
         setKpiError("No manager user found. Please login as manager.");
         setKpiCards([]);
+        setTeamKpisData(null);
         return;
       }
 
@@ -225,11 +228,14 @@ export default function ManagerDashboardPage() {
       try {
         if (kpiScope === "team") {
           const response = await getTeamKpis(managerId, kpiInterval);
+          setTeamKpisData(response.team_kpis);
           setKpiCards(mapTeamKpisToCards(response.team_kpis));
           return;
         }
 
         if (kpiScope === "user") {
+          setTeamKpisData(null);
+
           if (!selectedUserId) {
             setKpiCards([]);
             setKpiError("Please select an advisor.");
@@ -248,6 +254,7 @@ export default function ManagerDashboardPage() {
         console.error(error);
         setKpiError("Could not load KPI data.");
         setKpiCards([]);
+        setTeamKpisData(null);
       } finally {
         setIsKpiLoading(false);
       }
@@ -363,7 +370,11 @@ export default function ManagerDashboardPage() {
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           <LeaderboardPreview items={leaderboardPreview} />
-          <AIExecutiveSummary />
+          <AIExecutiveSummary
+            teamKpisData={teamKpisData}
+            interval={kpiInterval}
+            disabled={kpiScope !== "team"}
+          />
         </section>
       </div>
     </AppShell>

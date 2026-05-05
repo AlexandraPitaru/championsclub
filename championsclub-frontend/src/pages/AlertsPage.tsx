@@ -254,7 +254,16 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
                     </span>
 
                     <button
-                      onClick={() => navigate(`/manager/advisor/${alert.user_id}`)}
+                      onClick={() =>
+                        navigate(`/manager/advisor/${alert.user_id}`, {
+                          state: {
+                            fromAlert: true,
+                            alertTitle: alert.title,
+                            alertMessage: alert.message,
+                            alertPriority: alert.priority,
+                          },
+                        })
+                      }
                       className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${getSeverityButtonClasses(
                         alert.priority
                       )}`}

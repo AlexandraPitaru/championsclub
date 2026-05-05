@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@beeq/react": "^1.12.3"
+    "@beeq/react": "^1.12.3",
+    "openai": "^6.36.0"
   }
 }

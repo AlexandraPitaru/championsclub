@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Mail, ShieldCheck, Trophy, UserRound } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { ArrowLeft, Mail, ShieldCheck, Trophy, UserRound, X } from "lucide-react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import AppShell from "../app/layouts/AppShell";
 import Card from "../components/ui/Card";
 import KPIStatCard from "../features/dashboard/KPIStatCard";
@@ -15,6 +15,19 @@ type StoredUser = {
   email: string;
   user_id: number;
   role: string;
+};
+
+type AlertNavigationState = {
+  fromAlert?: boolean;
+  alertTitle?: string;
+  alertMessage?: string;
+  alertPriority?: "high" | "medium" | "low" | string;
+};
+
+type AlertPopupContent = {
+  title: string;
+  message: string;
+  priority: "high" | "medium" | "low";
 };
 
 const intervalOptions: KpiInterval[] = ["all", "day", "week", "month"];
@@ -96,9 +109,59 @@ function buildChatGeneratedMessage(advisor: UserKpiResponse, interval: KpiInterv
   ).toLocaleString()} earned points. ${lastTransaction}`;
 }
 
+function normalizeAlertPriority(priority?: string): "high" | "medium" | "low" {
+  if (priority === "high" || priority === "medium" || priority === "low") {
+    return priority;
+  }
+
+  return "medium";
+}
+
+function buildAlertPopupContent(state: AlertNavigationState | null): AlertPopupContent | null {
+  if (!state?.fromAlert || !state.alertMessage?.trim()) {
+    return null;
+  }
+
+  return {
+    title: state.alertTitle?.trim() || "Alert context",
+    message: state.alertMessage.trim(),
+    priority: normalizeAlertPriority(state.alertPriority),
+  };
+}
+
+function getAlertPopupTone(priority: "high" | "medium" | "low") {
+  if (priority === "high") {
+    return {
+      border: "border-rose-500/45",
+      badge: "border-rose-400/40 bg-rose-500/15 text-rose-200",
+    };
+  }
+
+  if (priority === "low") {
+    return {
+      border: "border-cyan-500/45",
+      badge: "border-cyan-400/40 bg-cyan-500/15 text-cyan-200",
+    };
+  }
+
+  return {
+    border: "border-amber-500/45",
+    badge: "border-amber-400/40 bg-amber-500/15 text-amber-200",
+  };
+}
+
 export default function AdvisorProfilePage() {
   const { id } = useParams();
+  const location = useLocation();
   const [interval, setInterval] = useState<KpiInterval>("all");
+
+  const [alertPopup, setAlertPopup] = useState<AlertPopupContent | null>(() =>
+    buildAlertPopupContent(location.state as AlertNavigationState | null)
+  );
+
+  useEffect(() => {
+    setAlertPopup(buildAlertPopupContent(location.state as AlertNavigationState | null));
+  }, [location.key, location.state]);
 
   const currentUser = useMemo(() => getCurrentUserFromStorage(), []);
   const managerId =
@@ -152,6 +215,7 @@ export default function AdvisorProfilePage() {
   const chatGeneratedMessage = advisor
     ? buildChatGeneratedMessage(advisor, interval)
     : "";
+  const alertPopupTone = alertPopup ? getAlertPopupTone(alertPopup.priority) : null;
 
   return (
     <AppShell>
@@ -174,6 +238,37 @@ export default function AdvisorProfilePage() {
             </p>
           </div>
         </section>
+
+        {alertPopup && alertPopupTone && (
+          <section className="pointer-events-none fixed right-4 top-8 z-30 w-full max-w-md md:right-6 md:top-6">
+            <div
+              role="status"
+              aria-live="polite"
+              className={`pointer-events-auto rounded-2xl border ${alertPopupTone.border} bg-[#0f2239]/65 p-4 shadow-[0_18px_40px_rgba(2,8,23,0.4)] backdrop-blur`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <span
+                    className={`inline-flex items-center rounded-full border px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${alertPopupTone.badge}`}
+                  >
+                    Opened from alert
+                  </span>
+                  <p className="mt-2 text-sm font-semibold text-slate-100">{alertPopup.title}</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-300">{alertPopup.message}</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setAlertPopup(null)}
+                  aria-label="Close alert context"
+                  className="rounded-lg border border-white/15 bg-white/5 p-1.5 text-slate-300 transition hover:bg-white/10 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section>
           <div className="flex flex-wrap items-center gap-2 lg:justify-end">
