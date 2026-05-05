@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import AppShell from "../app/layouts/AppShell";
 import PerformanceTrendChart from "../components/charts/PerformanceTrendChart";
-import AIExecutiveSummary from "../features/dashboard/AIExecutiveSummary";
 import KPIStatCard from "../features/dashboard/KPIStatCard";
 import LeaderboardPreview from "../features/dashboard/LeaderboardPreview";
 import ManagerFilterDrawer from "../features/dashboard/ManagerFilterDrawer";
 import PriorityAlertsPanel from "../features/dashboard/PriorityAlertsPanel";
 import { usePerformanceTrendHook } from "../services/hooks/usePerformanceTrendHook";
 
+import AIExecutiveSummary from "../features/dashboard/AIExecutiveSummary";
 import {
   mapTeamKpisToCards,
   mapUserKpisToCards,
   type DashboardKpiCard,
 } from "../features/dashboard/kpiMapper";
+import type { TeamKpisData } from "../services/api/managerStatisticsService";
 import {
   getManagedUsers,
   getTeamKpis,
@@ -24,6 +25,7 @@ import {
 import {
   getLeaderboard,
 } from "../services/api/dashboardService";
+import { compareManagerNotifications } from "../services/api/managerNotificationService";
 import { useManagerNotifications } from "../services/hooks/useManagerNotifications";
 
 const DASHBOARD_FILTERS_STORAGE_KEY = "manager_dashboard_filters";
@@ -31,13 +33,27 @@ const DASHBOARD_FILTERS_STORAGE_KEY = "manager_dashboard_filters";
 interface DashboardFilters {
   kpiScope: KpiScope;
   kpiInterval: KpiInterval;
+  selectedUserId: number | null;
 }
 
 function loadFiltersFromStorage(): DashboardFilters {
   try {
     const saved = localStorage.getItem(DASHBOARD_FILTERS_STORAGE_KEY);
     if (saved) {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved) as Partial<DashboardFilters>;
+
+      return {
+        kpiScope: parsed.kpiScope === "user" ? "user" : "team",
+        kpiInterval:
+          parsed.kpiInterval === "day" ||
+          parsed.kpiInterval === "week" ||
+          parsed.kpiInterval === "month" ||
+          parsed.kpiInterval === "all"
+            ? parsed.kpiInterval
+            : "week",
+        selectedUserId:
+          typeof parsed.selectedUserId === "number" ? parsed.selectedUserId : null,
+      };
     }
   } catch (error) {
     console.error("Failed to load dashboard filters from storage:", error);
@@ -45,6 +61,7 @@ function loadFiltersFromStorage(): DashboardFilters {
   return {
     kpiScope: "team",
     kpiInterval: "week",
+    selectedUserId: null,
   };
 }
 
@@ -76,19 +93,12 @@ function getCurrentUserFromStorage(): StoredUser | null {
   }
 }
 
-function getPriorityRank(priority: string): number {
-  if (priority === "high") return 0;
-  if (priority === "medium") return 1;
-  if (priority === "low") return 2;
-  return 99;
-}
-
 export default function ManagerDashboardPage() {
   const initialFilters = loadFiltersFromStorage();
 
   const [kpiScope, setKpiScope] = useState<KpiScope>(initialFilters.kpiScope);
   const [kpiInterval, setKpiInterval] = useState<KpiInterval>(initialFilters.kpiInterval);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(initialFilters.selectedUserId);
 
   const [advisorOptions, setAdvisorOptions] = useState<AdvisorOption[]>([]);
   const [isAdvisorsLoading, setIsAdvisorsLoading] = useState(false);
@@ -96,6 +106,8 @@ export default function ManagerDashboardPage() {
   const [kpiCards, setKpiCards] = useState<DashboardKpiCard[]>([]);
   const [isKpiLoading, setIsKpiLoading] = useState(false);
   const [kpiError, setKpiError] = useState("");
+
+  const [summaryTeamKpis, setSummaryTeamKpis] = useState<TeamKpisData | null>(null);
 
   const [leaderboardPreview, setLeaderboardPreview] = useState<
     Array<{
@@ -133,8 +145,13 @@ export default function ManagerDashboardPage() {
   const dashboardAlerts = useMemo(() => {
     const notifications = notificationsData?.notifications ?? [];
 
-    return [...notifications]
-      .sort((a, b) => getPriorityRank(a.priority) - getPriorityRank(b.priority))
+    const filtered =
+      kpiScope === "user" && selectedUserId !== null
+        ? notifications.filter((n) => n.user_id === selectedUserId)
+        : notifications;
+
+    return [...filtered]
+      .sort(compareManagerNotifications)
       .slice(0, 5)
       .map((alert) => ({
         id: String(alert.alert_id),
@@ -145,15 +162,16 @@ export default function ManagerDashboardPage() {
         summary: alert.message,
         severity: alert.priority,
       }));
-  }, [notificationsData]);
+  }, [notificationsData, kpiScope, selectedUserId]);
 
   // Save filters to localStorage whenever they change
   useEffect(() => {
     saveFiltersToStorage({
       kpiScope,
       kpiInterval,
+      selectedUserId,
     });
-  }, [kpiScope, kpiInterval]);
+  }, [kpiScope, kpiInterval, selectedUserId]);
 
   useEffect(() => {
     async function loadManagedUsers() {
@@ -173,7 +191,16 @@ export default function ManagerDashboardPage() {
 
         setAdvisorOptions(options);
 
-        if (!selectedUserId && options.length > 0) {
+        const hasPersistedSelection = options.some(
+          (option) => option.id === selectedUserId
+        );
+
+        if (selectedUserId !== null && !hasPersistedSelection) {
+          setSelectedUserId(options[0]?.id ?? null);
+          return;
+        }
+
+        if (kpiScope === "user" && selectedUserId === null && options.length > 0) {
           setSelectedUserId(options[0].id);
         }
       } catch (error) {
@@ -185,7 +212,7 @@ export default function ManagerDashboardPage() {
     }
 
     loadManagedUsers();
-  }, [managerId]);
+  }, [managerId, kpiScope, selectedUserId]);
 
   useEffect(() => {
     async function loadKpis() {
@@ -233,6 +260,19 @@ export default function ManagerDashboardPage() {
   }, [managerId, kpiScope, selectedUserId, kpiInterval]);
 
   useEffect(() => {
+    async function loadTeamKpisForSummary() {
+      if (!managerId) return;
+      try {
+        const response = await getTeamKpis(managerId, kpiInterval);
+        setSummaryTeamKpis(response.team_kpis);
+      } catch {
+        setSummaryTeamKpis(null);
+      }
+    }
+    loadTeamKpisForSummary();
+  }, [managerId, kpiInterval]);
+
+  useEffect(() => {
     async function loadLeaderboardPreview() {
       try {
         const response = await getLeaderboard({
@@ -268,10 +308,10 @@ export default function ManagerDashboardPage() {
         <section className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-cyan-100 md:text-3xl">
-              Manager Dashboard
+              Manager Dashboard: Where the Wins Get Loud
             </h1>
             <p className="mt-2 text-sm text-slate-400 md:text-base">
-              Overview of team performance, alerts, and coaching opportunities.
+              Track hot streaks, catch red flags before they bite, and spot the next coaching moment before your coffee gets cold.
             </p>
 
             {isAdvisorsLoading && (
@@ -339,7 +379,11 @@ export default function ManagerDashboardPage() {
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           <LeaderboardPreview items={leaderboardPreview} />
-          <AIExecutiveSummary />
+          <AIExecutiveSummary
+            teamKpis={summaryTeamKpis}
+            interval={kpiInterval}
+            managerId={managerId}
+          />
         </section>
       </div>
     </AppShell>

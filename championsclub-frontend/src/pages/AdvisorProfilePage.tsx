@@ -1,20 +1,34 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Mail, ShieldCheck, Trophy, UserRound } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { ArrowLeft, Mail, ShieldCheck, Trophy, UserRound, X } from "lucide-react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import AppShell from "../app/layouts/AppShell";
 import Card from "../components/ui/Card";
+import AdvisorAIActivitySummary from "../features/advisor/AdvisorAIActivitySummary";
 import KPIStatCard from "../features/dashboard/KPIStatCard";
 import {
   getAdvisorProfileKpis,
   type KpiInterval,
-  type UserKpiResponse,
 } from "../services/api/managerStatisticsService";
+import { useAdvisorActivitySummary } from "../services/hooks/useAdvisorActivitySummary";
 
 type StoredUser = {
   email: string;
   user_id: number;
   role: string;
+};
+
+type AlertNavigationState = {
+  fromAlert?: boolean;
+  alertTitle?: string;
+  alertMessage?: string;
+  alertPriority?: "high" | "medium" | "low" | string;
+};
+
+type AlertPopupContent = {
+  title: string;
+  message: string;
+  priority: "high" | "medium" | "low";
 };
 
 const intervalOptions: KpiInterval[] = ["all", "day", "week", "month"];
@@ -63,24 +77,77 @@ function toTitleCase(value: string) {
     .join(" ");
 }
 
-function buildChatGeneratedMessage(advisor: UserKpiResponse, interval: KpiInterval) {
-  const intervalLabel = interval === "all" ? "all tracked periods" : `the selected ${interval} interval`;
-  const lastTransaction = advisor.last_transaction_date
-    ? `The most recent transaction was recorded on ${formatDate(advisor.last_transaction_date)}.`
-    : "There is no recorded transaction yet for this advisor.";
+function getRankTrophyColor(rank: string) {
+  const normalizedRank = rank.trim().toLowerCase();
 
-  return `${advisor.first_name} ${advisor.last_name} is currently ranked ${advisor.current_rank} with ${Number(
-    advisor.total_points
-  ).toLocaleString()} total points and ${Number(advisor.credit).toLocaleString()} credit. Across ${intervalLabel}, the advisor closed ${advisor.total_transactions} transactions, generated ${formatCurrency(
-    advisor.total_sales_amount
-  )} in sales, and sold ${advisor.total_products_sold} products for ${Number(
-    advisor.total_points_earned
-  ).toLocaleString()} earned points. ${lastTransaction}`;
+  if (normalizedRank === "gold") {
+    return "text-amber-300";
+  }
+
+  if (normalizedRank === "silver") {
+    return "text-slate-300";
+  }
+
+  if (normalizedRank === "bronze") {
+    return "text-orange-400";
+  }
+
+  return "text-cyan-300";
+}
+
+function normalizeAlertPriority(priority?: string): "high" | "medium" | "low" {
+  if (priority === "high" || priority === "medium" || priority === "low") {
+    return priority;
+  }
+
+  return "medium";
+}
+
+function buildAlertPopupContent(state: AlertNavigationState | null): AlertPopupContent | null {
+  if (!state?.fromAlert || !state.alertMessage?.trim()) {
+    return null;
+  }
+
+  return {
+    title: state.alertTitle?.trim() || "Alert context",
+    message: state.alertMessage.trim(),
+    priority: normalizeAlertPriority(state.alertPriority),
+  };
+}
+
+function getAlertPopupTone(priority: "high" | "medium" | "low") {
+  if (priority === "high") {
+    return {
+      border: "border-rose-500/45",
+      badge: "border-rose-400/40 bg-rose-500/15 text-rose-200",
+    };
+  }
+
+  if (priority === "low") {
+    return {
+      border: "border-cyan-500/45",
+      badge: "border-cyan-400/40 bg-cyan-500/15 text-cyan-200",
+    };
+  }
+
+  return {
+    border: "border-amber-500/45",
+    badge: "border-amber-400/40 bg-amber-500/15 text-amber-200",
+  };
 }
 
 export default function AdvisorProfilePage() {
   const { id } = useParams();
+  const location = useLocation();
   const [interval, setInterval] = useState<KpiInterval>("all");
+
+  const [alertPopup, setAlertPopup] = useState<AlertPopupContent | null>(() =>
+    buildAlertPopupContent(location.state as AlertNavigationState | null)
+  );
+
+  useEffect(() => {
+    setAlertPopup(buildAlertPopupContent(location.state as AlertNavigationState | null));
+  }, [location.key, location.state]);
 
   const currentUser = useMemo(() => getCurrentUserFromStorage(), []);
   const managerId =
@@ -99,6 +166,17 @@ export default function AdvisorProfilePage() {
     queryFn: () => getAdvisorProfileKpis(managerId as number, advisorId, interval),
     enabled: Boolean(managerId) && hasValidAdvisorId,
     retry: false,
+  });
+
+  const {
+    data: activitySummary,
+    isLoading: isSummaryLoading,
+    isError: isSummaryError,
+  } = useAdvisorActivitySummary({
+    managerId,
+    advisorId,
+    interval,
+    enabled: Boolean(managerId) && hasValidAdvisorId,
   });
 
   const stats = advisor
@@ -131,9 +209,7 @@ export default function AdvisorProfilePage() {
     : [];
 
   const showAccessError = !hasValidAdvisorId || !managerId || isError;
-  const chatGeneratedMessage = advisor
-    ? buildChatGeneratedMessage(advisor, interval)
-    : "";
+  const alertPopupTone = alertPopup ? getAlertPopupTone(alertPopup.priority) : null;
 
   return (
     <AppShell>
@@ -156,6 +232,37 @@ export default function AdvisorProfilePage() {
             </p>
           </div>
         </section>
+
+        {alertPopup && alertPopupTone && (
+          <section className="pointer-events-none fixed right-4 top-8 z-30 w-full max-w-md md:right-6 md:top-6">
+            <div
+              role="status"
+              aria-live="polite"
+              className={`pointer-events-auto rounded-2xl border ${alertPopupTone.border} bg-[#0f2239]/65 p-4 shadow-[0_18px_40px_rgba(2,8,23,0.4)] backdrop-blur`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <span
+                    className={`inline-flex items-center rounded-full border px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${alertPopupTone.badge}`}
+                  >
+                    Opened from alert
+                  </span>
+                  <p className="mt-2 text-sm font-semibold text-slate-100">{alertPopup.title}</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-300">{alertPopup.message}</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setAlertPopup(null)}
+                  aria-label="Close alert context"
+                  className="rounded-lg border border-white/15 bg-white/5 p-1.5 text-slate-300 transition hover:bg-white/10 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section>
           <div className="flex flex-wrap items-center gap-2 lg:justify-end">
@@ -248,7 +355,7 @@ export default function AdvisorProfilePage() {
                         Current Rank
                       </p>
                       <p className="mt-2 flex items-center justify-center gap-2 text-sm font-medium text-slate-100">
-                        <Trophy className="h-4 w-4 text-amber-300" />
+                        <Trophy className={`h-4 w-4 ${getRankTrophyColor(advisor.current_rank)}`} />
                         {advisor.current_rank}
                       </p>
                     </div>
@@ -298,45 +405,12 @@ export default function AdvisorProfilePage() {
             </section>
 
             <section>
-              <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-cyan-500/30 bg-cyan-500/5 px-5 py-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-cyan-100">
-                    Performance Popup Slot
-                  </p>
-                  <p className="mt-1 text-sm text-slate-400">
-                    Reserved trigger area for the upcoming advisor performance popup.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  disabled
-                  aria-disabled="true"
-                  aria-haspopup="dialog"
-                  data-popup-slot="advisor-performance"
-                  className="rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-100 opacity-70"
-                >
-                  Open performance details
-                </button>
-              </div>
-            </section>
-
-            <section>
-              <Card className="border border-[#28415f] bg-[#0d1a2b]">
-                <h2 className="text-lg font-semibold text-cyan-100">
-                  Activity Summary
-                </h2>
-                <div className="mt-4">
-                  <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-4">
-                    <p className="text-sm font-semibold text-cyan-100">
-                      Chat Generated Message
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-200">
-                      {chatGeneratedMessage}
-                    </p>
-                  </div>
-                </div>
-              </Card>
+              <AdvisorAIActivitySummary
+                summary={activitySummary?.summary ?? null}
+                isLoading={isSummaryLoading}
+                isError={isSummaryError}
+                isFallback={Boolean(activitySummary?.fallback)}
+              />
             </section>
           </>
         )}

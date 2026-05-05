@@ -1,60 +1,43 @@
-import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
-import {
-  generateManagerTeamSummary,
-  mapTeamKpisToSummaryPayload,
-} from "../../services/api/managerSummaryService";
-import type { TeamKpisData, KpiInterval } from "../../services/api/managerStatisticsService";
 
-interface Props {
-  teamKpis: TeamKpisData | null;
-  interval: KpiInterval;
-  managerId: number | null;
-}
+type Props = {
+  summary: string | null;
+  isLoading: boolean;
+  isError: boolean;
+  isFallback: boolean;
+};
 
-export default function AIExecutiveSummary({ teamKpis, interval, managerId }: Props) {
-  const [summary, setSummary] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFallback, setIsFallback] = useState(false);
+export default function AdvisorAIActivitySummary({
+  summary,
+  isLoading,
+  isError,
+  isFallback,
+}: Props) {
+  if (isError && !isLoading) {
+    return (
+      <div className="relative overflow-hidden rounded-[26px] border border-[#3d556f] bg-[linear-gradient(145deg,#0b1624_0%,#102033_100%)] p-6 shadow-[0_18px_38px_rgba(2,8,20,0.44)]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_8%,rgba(251,191,36,0.1),transparent_34%)]" />
+        <div className="relative mb-5 flex items-start gap-3">
+          <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-full border border-amber-300/45 bg-amber-300/18 shadow-[0_0_20px_rgba(251,191,36,0.24)]">
+            <Sparkles className="h-5 w-5 text-amber-200" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200">
+              Strategic Snapshot
+            </p>
+            <h3 className="mt-1 text-lg font-semibold text-slate-50">
+              Advisor Performance Narrative
+            </h3>
+          </div>
+        </div>
+        <p className="relative text-sm leading-6 text-amber-100">
+          The advisor activity summary is unavailable right now. Please try again shortly.
+        </p>
+      </div>
+    );
+  }
 
-  const cacheKey = `ai_summary_${managerId ?? "unknown"}_${interval}`;
-
-  useEffect(() => {
-    if (!teamKpis) return;
-
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached) as { summary: string; fallback: boolean };
-        setSummary(parsed.summary);
-        setIsFallback(parsed.fallback);
-        return;
-      } catch {
-        // ignore corrupt cache
-      }
-    }
-
-    setIsLoading(true);
-    setSummary(null);
-
-    const payload = mapTeamKpisToSummaryPayload(teamKpis, interval);
-
-    generateManagerTeamSummary(payload)
-      .then((result) => {
-        setSummary(result.summary);
-        setIsFallback(result.fallback);
-        localStorage.setItem(cacheKey, JSON.stringify({ summary: result.summary, fallback: result.fallback }));
-      })
-      .catch(() => {
-        setSummary("Unable to generate summary at this time.");
-        setIsFallback(true);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [teamKpis, interval, cacheKey]);
-
-  const showSkeleton = isLoading || teamKpis === null;
+  const showSkeleton = isLoading || summary === null;
 
   return (
     <div className="relative overflow-hidden rounded-[26px] border border-[#3d556f] bg-[linear-gradient(145deg,#0b1624_0%,#102033_100%)] p-6 shadow-[0_18px_38px_rgba(2,8,20,0.44)]">
@@ -87,10 +70,10 @@ export default function AIExecutiveSummary({ teamKpis, interval, managerId }: Pr
             Strategic Snapshot
           </p>
           <h3 className="mt-1 text-lg font-semibold text-slate-50">
-            Team Performance Narrative
+            Advisor Performance Narrative
           </h3>
           <p className="mt-1 text-sm text-slate-300">
-            A clear read on momentum, pressure points, and where to coach next.
+            A clear read on advisor momentum, pressure points, and where to coach next.
           </p>
         </div>
       </div>
@@ -106,7 +89,7 @@ export default function AIExecutiveSummary({ teamKpis, interval, managerId }: Pr
           ))}
           <div className="mt-3 flex items-center gap-2 text-sm text-slate-300">
             <Sparkles className="h-3.5 w-3.5 animate-spin text-amber-300/80" />
-            Building your team briefing...
+            Building advisor briefing...
           </div>
         </div>
       ) : (

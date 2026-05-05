@@ -25,6 +25,7 @@ services:
     environment:
       APP_ENV: ${APP_ENV:-development}
       AUTO_SEED: ${AUTO_SEED:-true}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
       DATABASE_URL: postgresql://${POSTGRES_USER:-championsclub}:${POSTGRES_PASSWORD:-championsclub_dev_password}@postgres:5432/${POSTGRES_DB:-championsclub}
     volumes:
       - .:/app

@@ -29,6 +29,37 @@ export type ManagerNotificationsResponse = {
   notifications: ManagerNotificationItem[];
 };
 
+function getNotificationPriorityRank(priority: NotificationPriority): number {
+  if (priority === "high") return 0;
+  if (priority === "medium") return 1;
+  if (priority === "low") return 2;
+  return 99;
+}
+
+function getNotificationTimestamp(value: string | null): number {
+  if (!value) {
+    return 0;
+  }
+
+  const timestamp = new Date(value).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+export function compareManagerNotifications(
+  left: ManagerNotificationItem,
+  right: ManagerNotificationItem
+): number {
+  const priorityDifference =
+    getNotificationPriorityRank(left.priority) -
+    getNotificationPriorityRank(right.priority);
+
+  if (priorityDifference !== 0) {
+    return priorityDifference;
+  }
+
+  return getNotificationTimestamp(right.created_at) - getNotificationTimestamp(left.created_at);
+}
+
 type GetManagerNotificationsParams = {
   managerId: number;
   priority?: NotificationPriority;
