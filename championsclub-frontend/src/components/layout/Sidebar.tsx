@@ -111,10 +111,18 @@ export default function Sidebar() {
         <div className="px-6 py-5">
           <Link
             to="/dashboard"
-            className="flex w-fit flex-col rounded-lg outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-cyan-500/60"
+            className="group flex w-fit items-center gap-3 rounded-xl outline-none transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-cyan-500/60"
+            aria-label="Go to dashboard"
           >
-            <h2 className="w-fit text-xl font-bold text-cyan-100">ChampionsClub</h2>
-            <p className="mt-1 w-fit text-sm text-slate-400">AI Sales Hub</p>
+            <img
+              src="/mascot.png"
+              alt="ChampionsClub mascot"
+              className="h-12 w-12 rounded-lg border border-cyan-500/25 bg-[#081322] object-cover shadow-[0_0_20px_rgba(6,182,212,0.2)] transition group-hover:scale-[1.03]"
+            />
+            <div>
+              <h2 className="w-fit text-xl font-bold text-cyan-100">ChampionsClub</h2>
+              <p className="mt-1 w-fit text-sm text-slate-400">AI Sales Hub</p>
+            </div>
           </Link>
 
           <nav className="mt-8 flex flex-col gap-3">

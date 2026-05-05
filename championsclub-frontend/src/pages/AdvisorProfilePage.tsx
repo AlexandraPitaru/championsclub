@@ -4,12 +4,13 @@ import { ArrowLeft, Mail, ShieldCheck, Trophy, UserRound, X } from "lucide-react
 import { Link, useLocation, useParams } from "react-router-dom";
 import AppShell from "../app/layouts/AppShell";
 import Card from "../components/ui/Card";
+import AdvisorAIActivitySummary from "../features/advisor/AdvisorAIActivitySummary";
 import KPIStatCard from "../features/dashboard/KPIStatCard";
 import {
   getAdvisorProfileKpis,
   type KpiInterval,
-  type UserKpiResponse,
 } from "../services/api/managerStatisticsService";
+import { useAdvisorActivitySummary } from "../services/hooks/useAdvisorActivitySummary";
 
 type StoredUser = {
   email: string;
@@ -94,21 +95,6 @@ function getRankTrophyColor(rank: string) {
   return "text-cyan-300";
 }
 
-function buildChatGeneratedMessage(advisor: UserKpiResponse, interval: KpiInterval) {
-  const intervalLabel = interval === "all" ? "all tracked periods" : `the selected ${interval} interval`;
-  const lastTransaction = advisor.last_transaction_date
-    ? `The most recent transaction was recorded on ${formatDate(advisor.last_transaction_date)}.`
-    : "There is no recorded transaction yet for this advisor.";
-
-  return `${advisor.first_name} ${advisor.last_name} is currently ranked ${advisor.current_rank} with ${Number(
-    advisor.total_points
-  ).toLocaleString()} total points and ${Number(advisor.credit).toLocaleString()} credit. Across ${intervalLabel}, the advisor closed ${advisor.total_transactions} transactions, generated ${formatCurrency(
-    advisor.total_sales_amount
-  )} in sales, and sold ${advisor.total_products_sold} products for ${Number(
-    advisor.total_points_earned
-  ).toLocaleString()} earned points. ${lastTransaction}`;
-}
-
 function normalizeAlertPriority(priority?: string): "high" | "medium" | "low" {
   if (priority === "high" || priority === "medium" || priority === "low") {
     return priority;
@@ -182,6 +168,17 @@ export default function AdvisorProfilePage() {
     retry: false,
   });
 
+  const {
+    data: activitySummary,
+    isLoading: isSummaryLoading,
+    isError: isSummaryError,
+  } = useAdvisorActivitySummary({
+    managerId,
+    advisorId,
+    interval,
+    enabled: Boolean(managerId) && hasValidAdvisorId,
+  });
+
   const stats = advisor
     ? [
         {
@@ -212,9 +209,6 @@ export default function AdvisorProfilePage() {
     : [];
 
   const showAccessError = !hasValidAdvisorId || !managerId || isError;
-  const chatGeneratedMessage = advisor
-    ? buildChatGeneratedMessage(advisor, interval)
-    : "";
   const alertPopupTone = alertPopup ? getAlertPopupTone(alertPopup.priority) : null;
 
   return (
@@ -411,21 +405,12 @@ export default function AdvisorProfilePage() {
             </section>
 
             <section>
-              <Card className="border border-[#28415f] bg-[#0d1a2b]">
-                <h2 className="text-lg font-semibold text-cyan-100">
-                  Activity Summary
-                </h2>
-                <div className="mt-4">
-                  <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-4">
-                    <p className="text-sm font-semibold text-cyan-100">
-                      Chat Generated Message
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-200">
-                      {chatGeneratedMessage}
-                    </p>
-                  </div>
-                </div>
-              </Card>
+              <AdvisorAIActivitySummary
+                summary={activitySummary?.summary ?? null}
+                isLoading={isSummaryLoading}
+                isError={isSummaryError}
+                isFallback={Boolean(activitySummary?.fallback)}
+              />
             </section>
           </>
         )}
