@@ -6,14 +6,17 @@ type LeaderboardItem = {
   dealership: string;
   points: number;
   tier: string;
+  position?: number;
 };
 
 type LeaderboardPreviewProps = {
   items: LeaderboardItem[];
+  subtitle?: string;
 };
 
 export default function LeaderboardPreview({
   items,
+  subtitle = "Top performing advisors",
 }: LeaderboardPreviewProps) {
   return (
     <Card>
@@ -21,7 +24,7 @@ export default function LeaderboardPreview({
         <h3 className="text-lg font-semibold text-cyan-100">
           Leaderboard Preview
         </h3>
-        <p className="text-sm text-slate-400">Top performing advisors</p>
+        <p className="text-sm text-slate-400">{subtitle}</p>
       </div>
 
       <div className="space-y-4">
@@ -32,7 +35,7 @@ export default function LeaderboardPreview({
           >
             <div>
               <p className="font-semibold text-slate-100">
-                #{index + 1} {item.name}
+                #{item.position ?? index + 1} {item.name}
               </p>
               <p className="text-sm text-slate-400">{item.dealership}</p>
             </div>

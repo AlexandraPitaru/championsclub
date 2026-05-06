@@ -1,5 +1,5 @@
 import { ListFilter, X } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type {
   AdvisorOption,
   KpiInterval,
@@ -26,6 +26,7 @@ export default function ManagerFilterDrawer({
   onUserChange,
 }: ManagerFilterDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [advisorSearch, setAdvisorSearch] = useState("");
 
   const scopeOptions: Array<{ value: KpiScope; label: string }> = [
     { value: "team", label: "Team performance" },
@@ -33,6 +34,18 @@ export default function ManagerFilterDrawer({
   ];
 
   const intervalOptions: KpiInterval[] = ["day", "week", "month", "all"];
+
+  const filteredAdvisors = useMemo(() => {
+    const normalizedQuery = advisorSearch.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return advisors;
+    }
+
+    return advisors.filter((advisor) =>
+      advisor.name.toLowerCase().includes(normalizedQuery)
+    );
+  }, [advisorSearch, advisors]);
 
   const optionClass = (active: boolean) =>
     `rounded-xl border px-3 py-2 text-sm font-medium transition ${
@@ -127,29 +140,48 @@ export default function ManagerFilterDrawer({
                     No advisors available for this manager.
                   </p>
                 ) : (
-                  <div
-                    className="max-h-64 overflow-y-auto space-y-2 scrollbar-hidden"
-                    style={{
-                      scrollbarWidth: "none" as const,
-                      msOverflowStyle: "none" as const,
-                    } as React.CSSProperties & { scrollbarWidth: string; msOverflowStyle: string }}
-                  >
-                    {advisors.map((advisor) => (
-                      <button
-                        key={advisor.id}
-                        type="button"
-                        aria-pressed={selectedUserId === advisor.id}
-                        onClick={() => onUserChange(advisor.id)}
-                        className={`w-full rounded-xl border px-3 py-2 text-left text-sm font-medium transition ${
-                          selectedUserId === advisor.id
-                            ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-100"
-                            : "border-[#29405b] bg-[#0d1a2b] text-slate-200 hover:bg-[#112238]"
-                        }`}
+                  <>
+                    <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-slate-400">
+                      Search advisor by name
+                    </label>
+                    <input
+                      type="text"
+                      value={advisorSearch}
+                      onChange={(event) => setAdvisorSearch(event.target.value)}
+                      placeholder="Type an advisor name..."
+                      className="mb-3 w-full rounded-xl border border-[#29405b] bg-[#0d1a2b] px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-500/60"
+                    />
+
+                    {filteredAdvisors.length === 0 ? (
+                      <p className="rounded-xl border border-[#29405b] bg-[#0d1a2b] px-3 py-2 text-sm text-slate-400">
+                        No advisors found for "{advisorSearch.trim()}".
+                      </p>
+                    ) : (
+                      <div
+                        className="max-h-64 overflow-y-auto space-y-2 scrollbar-hidden"
+                        style={{
+                          scrollbarWidth: "none" as const,
+                          msOverflowStyle: "none" as const,
+                        } as React.CSSProperties & { scrollbarWidth: string; msOverflowStyle: string }}
                       >
-                        {advisor.name}
-                      </button>
-                    ))}
-                  </div>
+                        {filteredAdvisors.map((advisor) => (
+                          <button
+                            key={advisor.id}
+                            type="button"
+                            aria-pressed={selectedUserId === advisor.id}
+                            onClick={() => onUserChange(advisor.id)}
+                            className={`w-full rounded-xl border px-3 py-2 text-left text-sm font-medium transition ${
+                              selectedUserId === advisor.id
+                                ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-100"
+                                : "border-[#29405b] bg-[#0d1a2b] text-slate-200 hover:bg-[#112238]"
+                            }`}
+                          >
+                            {advisor.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </section>
             )}
@@ -190,6 +222,7 @@ export default function ManagerFilterDrawer({
                 onScopeChange("team");
                 onIntervalChange("week");
                 onUserChange(null);
+                setAdvisorSearch("");
                 setIsOpen(false);
               }}
               className="rounded-xl border border-[#29405b] bg-[#0d1a2b] px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-[#112238]"

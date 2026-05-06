@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
 import {
   generateManagerTeamSummary,
   mapTeamKpisToSummaryPayload,
 } from "../../services/api/managerSummaryService";
 import type { TeamKpisData, KpiInterval } from "../../services/api/managerStatisticsService";
+
+const TYPING_SPEED_MS = 18;
 
 interface Props {
   teamKpis: TeamKpisData | null;
@@ -16,6 +18,9 @@ export default function AIExecutiveSummary({ teamKpis, interval, managerId }: Pr
   const [summary, setSummary] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isFallback, setIsFallback] = useState(false);
+  const [displayedText, setDisplayedText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const typingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const cacheKey = `ai_summary_${managerId ?? "unknown"}_${interval}`;
 
@@ -53,6 +58,38 @@ export default function AIExecutiveSummary({ teamKpis, interval, managerId }: Pr
         setIsLoading(false);
       });
   }, [teamKpis, interval, cacheKey]);
+
+  // Typewriter effect — runs whenever a new full summary lands (cache or API)
+  useEffect(() => {
+    if (!summary) {
+      setDisplayedText("");
+      return;
+    }
+
+    setDisplayedText("");
+    setIsTyping(true);
+
+    let index = 0;
+
+    function typeNextChar() {
+      index += 1;
+      setDisplayedText(summary!.slice(0, index));
+
+      if (index < summary!.length) {
+        typingRef.current = setTimeout(typeNextChar, TYPING_SPEED_MS);
+      } else {
+        setIsTyping(false);
+      }
+    }
+
+    typingRef.current = setTimeout(typeNextChar, TYPING_SPEED_MS);
+
+    return () => {
+      if (typingRef.current !== null) {
+        clearTimeout(typingRef.current);
+      }
+    };
+  }, [summary]);
 
   const showSkeleton = isLoading || teamKpis === null;
 
@@ -111,7 +148,15 @@ export default function AIExecutiveSummary({ teamKpis, interval, managerId }: Pr
         </div>
       ) : (
         <>
-          <p className="text-[15px] leading-8 text-slate-100">{summary}</p>
+          <p className="text-[15px] leading-8 text-slate-100">
+            {displayedText}
+            {isTyping && (
+              <span className="ml-0.5 inline-block w-[2px] animate-[blink_0.75s_step-end_infinite] rounded-sm bg-amber-300 align-middle"
+                style={{ height: "1.1em" }}
+                aria-hidden="true"
+              />
+            )}
+          </p>
           {isFallback ? (
             <p className="mt-3 text-sm text-slate-300">
               Limited KPI activity detected for this interval, so this summary is concise.

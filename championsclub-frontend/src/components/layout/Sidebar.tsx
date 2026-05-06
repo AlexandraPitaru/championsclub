@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   LogOut,
   Search,
-  Sparkles,
   Trophy,
 } from "lucide-react";
 import { getLeaderboard } from "../../services/api/dashboardService";
@@ -195,24 +194,24 @@ export default function Sidebar() {
         </div>
 
         <div className="border-t border-[#1d2a3a] px-6 py-4">
-          <div className="rounded-xl border border-[#223246] bg-[#0d1624] px-4 py-3 shadow-[0_12px_24px_rgba(2,8,23,0.22)]">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                  Active Role
-                </p>
-                <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-cyan-100">
-                  {userRole ?? "Unknown"}
-                </p>
-                <p className="mt-1 text-xs text-slate-400">
-                  Team oversight enabled
-                </p>
-              </div>
-
-              <span className="inline-flex items-center gap-1 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2.5 py-1 text-[11px] font-medium text-cyan-200">
-                <Sparkles className="h-3.5 w-3.5" />
-                Live
+          <div className="rounded-2xl border border-[#29405b] bg-[linear-gradient(160deg,#0b1624_0%,#0f1e31_100%)] px-4 py-3.5 shadow-[0_12px_28px_rgba(2,8,23,0.28)]">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                Active Role
+              </p>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-cyan-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.7)]" />
+                Session On
               </span>
+            </div>
+
+            <div className="mt-3 rounded-xl border border-cyan-500/20 bg-cyan-500/8 px-3 py-2.5">
+              <p className="text-sm font-semibold uppercase tracking-wide text-cyan-100">
+                {userRole ?? "Unknown"}
+              </p>
+              <p className="mt-1 text-xs text-slate-300">
+                Team oversight enabled
+              </p>
             </div>
           </div>
 

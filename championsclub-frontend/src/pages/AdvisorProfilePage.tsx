@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Mail, ShieldCheck, Trophy, UserRound, X } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
@@ -140,14 +140,67 @@ export default function AdvisorProfilePage() {
   const { id } = useParams();
   const location = useLocation();
   const [interval, setInterval] = useState<KpiInterval>("all");
+  const alertHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const alertRemoveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [alertPopup, setAlertPopup] = useState<AlertPopupContent | null>(() =>
     buildAlertPopupContent(location.state as AlertNavigationState | null)
   );
+  const [isAlertPopupVisible, setIsAlertPopupVisible] = useState(Boolean(alertPopup));
+
+  const dismissAlertPopup = (withFade = true) => {
+    if (alertHideTimeoutRef.current) {
+      clearTimeout(alertHideTimeoutRef.current);
+      alertHideTimeoutRef.current = null;
+    }
+
+    if (alertRemoveTimeoutRef.current) {
+      clearTimeout(alertRemoveTimeoutRef.current);
+      alertRemoveTimeoutRef.current = null;
+    }
+
+    if (!withFade) {
+      setIsAlertPopupVisible(false);
+      setAlertPopup(null);
+      return;
+    }
+
+    setIsAlertPopupVisible(false);
+    alertRemoveTimeoutRef.current = setTimeout(() => {
+      setAlertPopup(null);
+      alertRemoveTimeoutRef.current = null;
+    }, 450);
+  };
 
   useEffect(() => {
-    setAlertPopup(buildAlertPopupContent(location.state as AlertNavigationState | null));
+    const popup = buildAlertPopupContent(location.state as AlertNavigationState | null);
+    setAlertPopup(popup);
+    setIsAlertPopupVisible(Boolean(popup));
   }, [location.key, location.state]);
+
+  useEffect(() => {
+    if (!alertPopup) {
+      return;
+    }
+
+    setIsAlertPopupVisible(true);
+
+    alertHideTimeoutRef.current = setTimeout(() => {
+      dismissAlertPopup(true);
+    }, 7000);
+
+    return () => {
+      if (alertHideTimeoutRef.current) {
+        clearTimeout(alertHideTimeoutRef.current);
+        alertHideTimeoutRef.current = null;
+      }
+
+      if (alertRemoveTimeoutRef.current) {
+        clearTimeout(alertRemoveTimeoutRef.current);
+        alertRemoveTimeoutRef.current = null;
+      }
+    };
+  }, [alertPopup]);
 
   const currentUser = useMemo(() => getCurrentUserFromStorage(), []);
   const managerId =
@@ -238,7 +291,11 @@ export default function AdvisorProfilePage() {
             <div
               role="status"
               aria-live="polite"
-              className={`pointer-events-auto rounded-2xl border ${alertPopupTone.border} bg-[#0f2239]/65 p-4 shadow-[0_18px_40px_rgba(2,8,23,0.4)] backdrop-blur`}
+              className={`pointer-events-auto rounded-2xl border ${alertPopupTone.border} bg-[#0f2239]/65 p-4 shadow-[0_18px_40px_rgba(2,8,23,0.4)] backdrop-blur transition-all duration-[450ms] ${
+                isAlertPopupVisible
+                  ? "translate-y-0 opacity-100"
+                  : "-translate-y-1 opacity-0"
+              }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -253,7 +310,7 @@ export default function AdvisorProfilePage() {
 
                 <button
                   type="button"
-                  onClick={() => setAlertPopup(null)}
+                  onClick={() => dismissAlertPopup(true)}
                   aria-label="Close alert context"
                   className="rounded-lg border border-white/15 bg-white/5 p-1.5 text-slate-300 transition hover:bg-white/10 hover:text-white"
                 >

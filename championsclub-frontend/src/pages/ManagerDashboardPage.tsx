@@ -1,3 +1,4 @@
+import { User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import AppShell from "../app/layouts/AppShell";
 import PerformanceTrendChart from "../components/charts/PerformanceTrendChart";
@@ -116,6 +117,7 @@ export default function ManagerDashboardPage() {
       dealership: string;
       points: number;
       tier: string;
+      position?: number;
     }>
   >([]);
 
@@ -275,24 +277,72 @@ export default function ManagerDashboardPage() {
   useEffect(() => {
     async function loadLeaderboardPreview() {
       try {
-        const response = await getLeaderboard({
+        if (kpiScope === "team" || selectedUserId === null) {
+          const response = await getLeaderboard({
+            interval: kpiInterval,
+            sortBy: "points",
+            sortDir: "desc",
+            page: 1,
+            pageSize: 10,
+          });
+
+          const transformedData = response.items.slice(0, 5).map((item) => ({
+            id: String(item.user_id),
+            name: `${item.first_name} ${item.last_name}`,
+            dealership: "Team",
+            points: item.points,
+            tier: item.tier,
+            position: item.position,
+          }));
+
+          setLeaderboardPreview(transformedData);
+          return;
+        }
+
+        const firstPage = await getLeaderboard({
           interval: kpiInterval,
           sortBy: "points",
           sortDir: "desc",
           page: 1,
-          pageSize: 10,
+          pageSize: 50,
         });
 
-        // Transform API data to LeaderboardPreview format
-        const transformedData = response.items.slice(0, 5).map((item) => ({
-          id: String(item.user_id),
-          name: `${item.first_name} ${item.last_name}`,
-          dealership: "Team", // API doesn't provide dealership, so using default
-          points: item.points,
-          tier: item.tier,
-        }));
+        const allItems = [...firstPage.items];
+        const totalPages = firstPage.pagination.total_pages;
 
-        setLeaderboardPreview(transformedData);
+        for (let page = 2; page <= totalPages; page += 1) {
+          const pageResponse = await getLeaderboard({
+            interval: kpiInterval,
+            sortBy: "points",
+            sortDir: "desc",
+            page,
+            pageSize: 50,
+          });
+
+          allItems.push(...pageResponse.items);
+        }
+
+        const selectedIndex = allItems.findIndex(
+          (item) => item.user_id === selectedUserId
+        );
+
+        if (selectedIndex === -1) {
+          setLeaderboardPreview([]);
+          return;
+        }
+
+        const selectedTopFive = allItems.slice(selectedIndex, selectedIndex + 5);
+
+        setLeaderboardPreview(
+          selectedTopFive.map((item) => ({
+            id: String(item.user_id),
+            name: `${item.first_name} ${item.last_name}`,
+            dealership: "Team",
+            points: item.points,
+            tier: item.tier,
+            position: item.position,
+          }))
+        );
       } catch (error) {
         console.error("Failed to load leaderboard preview:", error);
         setLeaderboardPreview([]);
@@ -300,7 +350,7 @@ export default function ManagerDashboardPage() {
     }
 
     loadLeaderboardPreview();
-  }, [kpiInterval]);
+  }, [kpiInterval, kpiScope, selectedUserId]);
 
   return (
     <AppShell>
@@ -331,6 +381,22 @@ export default function ManagerDashboardPage() {
             onUserChange={setSelectedUserId}
           />
         </section>
+
+        {kpiScope === "user" && selectedUserId !== null && (() => {
+          const selectedAdvisor = advisorOptions.find((a) => a.id === selectedUserId);
+          return selectedAdvisor ? (
+            <div className="flex items-center gap-3 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-cyan-500/40 bg-cyan-500/20 text-cyan-300">
+                <User className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-cyan-400">Viewing advisor data</p>
+                <p className="text-sm font-semibold text-cyan-100">{selectedAdvisor.name}</p>
+              </div>
+              <p className="ml-auto text-xs text-slate-400 hidden sm:block">KPI cards and trend below reflect this advisor only</p>
+            </div>
+          ) : null;
+        })()}
 
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {isKpiLoading &&
@@ -378,7 +444,14 @@ export default function ManagerDashboardPage() {
         </section>
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <LeaderboardPreview items={leaderboardPreview} />
+          <LeaderboardPreview
+            items={leaderboardPreview}
+            subtitle={
+              kpiScope === "user" && selectedUserId !== null
+                ? "Selected advisor and next 4 positions"
+                : "Top performing advisors"
+            }
+          />
           <AIExecutiveSummary
             teamKpis={summaryTeamKpis}
             interval={kpiInterval}
