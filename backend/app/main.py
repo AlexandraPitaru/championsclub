@@ -12,6 +12,7 @@ from app.manager_alerts.manager_notifications_router import router as manager_no
 from app.leaderboard.router import router as leaderboard_router
 from app.AI.summary.manager_router import router as ai_summary_router
 from app.AI.activity_summary.activity_summary_router import router as ai_activity_summary_router
+from app.sales_advisor_dashboard.overview_router import router as sales_advisor_dashboard_router
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,6 +38,7 @@ app.include_router(leaderboard_router)
 app.include_router(account_router)
 app.include_router(ai_summary_router)
 app.include_router(ai_activity_summary_router)
+app.include_router(sales_advisor_dashboard_router)
 
 app.include_router(manager_notifications_router)
 
