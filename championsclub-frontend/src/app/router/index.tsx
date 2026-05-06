@@ -5,6 +5,7 @@ import ManagerDashboardPage from "../../pages/ManagerDashboardPage";
 import AdvisorProfilePage from "../../pages/AdvisorProfilePage";
 import LeaderboardPage from "../../pages/LeaderboardPage";
 import AdvisorDashboardPage from "../../pages/AdvisorDashboardPage";
+import AdvisorAIProfilePage from "../../pages/AdvisorAIProfilePage";
 import AlertsPage from "../../pages/AlertsPage";
 
 export default function AppRouter() {
@@ -16,6 +17,7 @@ export default function AppRouter() {
             <Route path="/manager/advisor/:id" element={<AdvisorProfilePage />} />
             <Route path="/advisor/:id" element={<AdvisorProfilePage />} />
             <Route path="/advisor-dashboard" element={<AdvisorDashboardPage />} />
+            <Route path="/advisor-ai" element={<AdvisorAIProfilePage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} /> 
 
             {/* fallback */}
