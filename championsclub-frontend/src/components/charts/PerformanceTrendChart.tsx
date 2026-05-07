@@ -10,6 +10,7 @@ import {
 } from "recharts";
 import Card from "../ui/Card";
 import type { PerformanceTrendDataPoint } from "../../services/api/performanceTrendService";
+import { useTheme } from "../../app/theme/ThemeProvider";
 
 type PerformanceTrendChartProps = {
   data: PerformanceTrendDataPoint[];
@@ -20,6 +21,7 @@ export default function PerformanceTrendChart({
   data,
   chartIdSuffix = "main",
 }: PerformanceTrendChartProps) {
+  const { isLight } = useTheme();
   const gradientId = `salesGradient-${chartIdSuffix}`;
 
   if (!data.length) {
@@ -34,7 +36,10 @@ export default function PerformanceTrendChart({
           </p>
         </div>
 
-        <div className="flex h-[260px] items-center justify-center rounded-xl border border-[#29405b] bg-[#0d1a2b] text-sm text-slate-400">
+        <div
+          className="flex h-[260px] items-center justify-center rounded-xl border text-sm text-slate-400"
+          style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }}
+        >
           No performance data available.
         </div>
       </Card>
@@ -63,33 +68,33 @@ export default function PerformanceTrendChart({
             </defs>
 
             <CartesianGrid
-              stroke="#23364b"
+              stroke={isLight ? "#c8d8e8" : "#23364b"}
               strokeDasharray="3 3"
               vertical={false}
             />
 
             <XAxis
               dataKey="period"
-              tick={{ fill: "#94a3b8", fontSize: 12 }}
-              axisLine={{ stroke: "#28415f" }}
-              tickLine={{ stroke: "#28415f" }}
+              tick={{ fill: isLight ? "#475569" : "#94a3b8", fontSize: 12 }}
+              axisLine={{ stroke: isLight ? "#b8ccdf" : "#28415f" }}
+              tickLine={{ stroke: isLight ? "#b8ccdf" : "#28415f" }}
             />
 
             <YAxis
-              tick={{ fill: "#94a3b8", fontSize: 12 }}
-              axisLine={{ stroke: "#28415f" }}
-              tickLine={{ stroke: "#28415f" }}
+              tick={{ fill: isLight ? "#475569" : "#94a3b8", fontSize: 12 }}
+              axisLine={{ stroke: isLight ? "#b8ccdf" : "#28415f" }}
+              tickLine={{ stroke: isLight ? "#b8ccdf" : "#28415f" }}
             />
 
             <Tooltip
               contentStyle={{
-                backgroundColor: "#0c192b",
-                border: "1px solid #2b445f",
+                backgroundColor: isLight ? "#ffffff" : "#0c192b",
+                border: `1px solid ${isLight ? "#b8ccdf" : "#2b445f"}`,
                 borderRadius: "12px",
-                color: "#e2e8f0",
+                color: isLight ? "#0f172a" : "#e2e8f0",
               }}
-              itemStyle={{ color: "#cbd5e1" }}
-              labelStyle={{ color: "#67e8f9" }}
+              itemStyle={{ color: isLight ? "#334155" : "#cbd5e1" }}
+              labelStyle={{ color: isLight ? "#0e7490" : "#67e8f9" }}
             />
 
             <Area

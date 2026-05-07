@@ -4,6 +4,36 @@
   --text: #cbd5e1;
   --text-h: #dff7ff;
   --bg: #060b13;
+  --app-shell-gradient: radial-gradient(circle at 20% 0%, rgba(31, 78, 121, 0.18), transparent 35%),
+    radial-gradient(circle at 85% 10%, rgba(18, 131, 177, 0.14), transparent 30%);
+
+  --sidebar-bg: rgba(7, 15, 27, 0.95);
+  --sidebar-border: #1d2a3a;
+  --sidebar-brand-bg: #081322;
+  --sidebar-hover: #0f1a2a;
+  --sidebar-panel-bg: #0d1624;
+  --sidebar-input-bg: #081322;
+  --sidebar-input-border: #29405b;
+  --role-card-border: #29405b;
+  --role-card-grad: linear-gradient(160deg, #0b1624 0%, #0f1e31 100%);
+  --card-border: #1f3045;
+  --card-bg: rgba(11, 21, 36, 0.9);
+  --card-shadow: 0 12px 30px rgba(2, 8, 20, 0.35);
+  --kpi-title: #94a3b8;
+  --kpi-value: #cffafe;
+  --panel-bg: #0d1a2b;
+  --panel-soft-bg: #0c192b;
+  --panel-input-bg: #081322;
+  --panel-subtle-bg: #0a1520;
+  --panel-hover-bg: #0f2139;
+  --panel-hover-soft-bg: #112238;
+  --panel-border: #28415f;
+  --panel-border-strong: #29405b;
+  --summary-border: #3d556f;
+  --summary-bg: linear-gradient(145deg, #0b1624 0%, #102033 100%);
+  --summary-shadow: 0 18px 38px rgba(2, 8, 20, 0.44);
+  --summary-text: #f1f5f9;
+  --summary-muted: #cbd5e1;
   --border: #213147;
   --code-bg: #0d1624;
   --accent: #22d3ee;
@@ -32,6 +62,195 @@
   }
 }
 
+:root[data-theme="light"] {
+  --text: #1f2937;
+  --text-h: #0f172a;
+  --bg: #eef4fb;
+  --app-shell-gradient: radial-gradient(circle at 20% 0%, rgba(58, 96, 140, 0.18), transparent 35%),
+    radial-gradient(circle at 85% 10%, rgba(26, 137, 168, 0.14), transparent 30%);
+
+  --sidebar-bg: rgba(251, 254, 255, 0.95);
+  --sidebar-border: #c5d6e9;
+  --sidebar-brand-bg: #e8f2ff;
+  --sidebar-hover: #e6eff9;
+  --sidebar-panel-bg: #f4f8fc;
+  --sidebar-input-bg: #ffffff;
+  --sidebar-input-border: #afc6de;
+  --role-card-border: #b4cae0;
+  --role-card-grad: linear-gradient(160deg, #ffffff 0%, #eaf2fa 100%);
+  --card-border: #c1d3e4;
+  --card-bg: rgba(255, 255, 255, 0.92);
+  --card-shadow: 0 12px 30px rgba(30, 72, 110, 0.16);
+  --kpi-title: #475569;
+  --kpi-value: #0e7490;
+  --panel-bg: #ffffff;
+  --panel-soft-bg: #f8fbff;
+  --panel-input-bg: #ffffff;
+  --panel-subtle-bg: #f1f6fc;
+  --panel-hover-bg: #eef4fb;
+  --panel-hover-soft-bg: #e6eff9;
+  --panel-border: #c3d4e6;
+  --panel-border-strong: #b6cadf;
+  --summary-border: #b7cade;
+  --summary-bg: linear-gradient(145deg, #ffffff 0%, #ebf3fc 100%);
+  --summary-shadow: 0 16px 34px rgba(29, 71, 109, 0.18);
+  --summary-text: #0f172a;
+  --summary-muted: #334155;
+  --border: #c0d1e4;
+  --code-bg: #dce8f7;
+  --accent-bg: rgba(34, 211, 238, 0.16);
+  --accent-border: rgba(8, 145, 178, 0.35);
+  --social-bg: rgba(222, 235, 247, 0.75);
+  --shadow:
+    rgba(27, 55, 82, 0.18) 0 14px 35px -12px, rgba(27, 55, 82, 0.14) 0 8px 18px -10px;
+
+  color-scheme: light;
+}
+
+:root[data-theme="light"] .text-cyan-100 {
+  color: #0e7490;
+}
+
+:root[data-theme="light"] .text-cyan-200 {
+  color: #0e7490;
+}
+
+:root[data-theme="light"] .text-cyan-300 {
+  color: #0f766e;
+}
+
+:root[data-theme="light"] .text-cyan-400 {
+  color: #0e7490;
+}
+
+:root[data-theme="light"] .text-rose-100 {
+  color: #9f1239;
+}
+
+:root[data-theme="light"] .text-rose-200 {
+  color: #9f1239;
+}
+
+:root[data-theme="light"] .text-rose-300 {
+  color: #9f1239;
+}
+
+:root[data-theme="light"] .text-rose-400 {
+  color: #be123c;
+}
+
+:root[data-theme="light"] .text-amber-200 {
+  color: #92400e;
+}
+
+:root[data-theme="light"] .text-amber-300 {
+  color: #92400e;
+}
+
+:root[data-theme="light"] .text-amber-400 {
+  color: #b45309;
+}
+
+:root[data-theme="light"] .text-emerald-300 {
+  color: #166534;
+}
+
+:root[data-theme="light"] .text-emerald-400 {
+  color: #15803d;
+}
+
+:root[data-theme="light"] .text-orange-300 {
+  color: #9a3412;
+}
+
+:root[data-theme="light"] .text-orange-400 {
+  color: #c2410c;
+}
+
+:root[data-theme="light"] .text-blue-400 {
+  color: #1d4ed8;
+}
+
+:root[data-theme="light"] .text-violet-400 {
+  color: #6d28d9;
+}
+
+:root[data-theme="light"] .text-red-300 {
+  color: #b91c1c;
+}
+
+:root[data-theme="light"] .text-red-400 {
+  color: #b91c1c;
+}
+
+:root[data-theme="light"] .text-slate-100 {
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .text-slate-200 {
+  color: #334155;
+}
+
+:root[data-theme="light"] .text-slate-300 {
+  color: #1f2937;
+}
+
+:root[data-theme="light"] .text-slate-400 {
+  color: #334155;
+}
+
+:root[data-theme="light"] .text-slate-500 {
+  color: #475569;
+}
+
+:root[data-theme="light"] .text-gray-200 {
+  color: #374151;
+}
+
+:root[data-theme="light"] .text-gray-300 {
+  color: #374151;
+}
+
+:root[data-theme="light"] .text-gray-400 {
+  color: #374151;
+}
+
+:root[data-theme="light"] .text-gray-500 {
+  color: #4b5563;
+}
+
+:root[data-theme="light"] .text-zinc-200 {
+  color: #3f3f46;
+}
+
+:root[data-theme="light"] .text-zinc-300 {
+  color: #3f3f46;
+}
+
+:root[data-theme="light"] .text-zinc-400 {
+  color: #3f3f46;
+}
+
+:root[data-theme="light"] .text-zinc-500 {
+  color: #52525b;
+}
+
+:root[data-theme="light"] .placeholder\:text-slate-500::placeholder {
+  color: #64748b;
+}
+
+:root[data-theme="light"] .placeholder\:text-slate-400::placeholder {
+  color: #64748b;
+}
+
+:root[data-theme="light"] .text-cyan-300\/80 {
+  color: #0f766e;
+}
+
+:root[data-theme="light"] .text-rose-100\/90 {
+  color: #9f1239;
+}
+
 @import "tailwindcss";
 
 #root {
@@ -43,6 +262,33 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
+}
+
+:root.theme-transitioning,
+:root.theme-transitioning body {
+  transition: background-color 180ms ease-out, color 180ms ease-out, background-image 180ms ease-out;
+}
+
+:root.theme-transitioning *,
+:root.theme-transitioning *::before,
+:root.theme-transitioning *::after {
+  transition:
+    color 140ms ease-out,
+    background-color 140ms ease-out,
+    border-color 140ms ease-out,
+    box-shadow 180ms ease-out,
+    fill 140ms ease-out,
+    stroke 140ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root.theme-transitioning,
+  :root.theme-transitioning body,
+  :root.theme-transitioning *,
+  :root.theme-transitioning *::before,
+  :root.theme-transitioning *::after {
+    transition: none !important;
+  }
 }
 
 @keyframes blink {

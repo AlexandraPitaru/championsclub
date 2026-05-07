@@ -428,7 +428,10 @@ export default function ManagerDashboardPage() {
 
         <section className="grid grid-cols-1 gap-6">
           {isTrendLoading && (
-  <div className="h-[360px] animate-pulse rounded-2xl border border-[#29405b] bg-[#0d1a2b]" />
+            <div
+              className="h-[360px] animate-pulse rounded-2xl border"
+              style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }}
+            />
 )}
 
 {isTrendError && (
@@ -440,7 +443,9 @@ export default function ManagerDashboardPage() {
 {!isTrendLoading && !isTrendError && (
   <PerformanceTrendChart data={performanceTrend} />
 )}
-          <PriorityAlertsPanel alerts={dashboardAlerts} />
+          {dashboardAlerts.length > 0 ? (
+            <PriorityAlertsPanel alerts={dashboardAlerts} />
+          ) : null}
         </section>
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">

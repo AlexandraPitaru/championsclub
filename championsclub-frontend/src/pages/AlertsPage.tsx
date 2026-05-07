@@ -136,15 +136,19 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
           <button
             type="button"
             onClick={() => setPriorityFilter(priorityFilter === "high" ? null : "high")}
-            className={`w-full text-left rounded-2xl border-l-4 border-l-rose-500 bg-[#0c192b] p-4 transition-all duration-150 hover:bg-[#0f2139] focus:outline-none ${
+            className={`w-full text-left rounded-2xl border-l-4 border-l-rose-500 p-4 transition-all duration-150 focus:outline-none ${
               priorityFilter === "high"
                 ? "ring-2 ring-rose-500/60 shadow-[0_0_16px_rgba(244,63,94,0.25)]"
-                : "ring-1 ring-[#28415f]"
+                : "ring-1"
             }`}
+            style={{
+              background: "var(--panel-soft-bg)",
+              borderColor: priorityFilter === "high" ? undefined : "var(--panel-border)",
+            }}
           >
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-3xl font-bold text-slate-100">{highPriorityCount}</p>
+                <p className="text-3xl font-bold" style={{ color: "var(--summary-text)" }}>{highPriorityCount}</p>
                 <p className="text-sm text-slate-400">High Priority</p>
                 {priorityFilter === "high" && (
                   <p className="mt-1 text-xs font-medium text-rose-400">Filtering active — click to clear</p>
@@ -159,15 +163,19 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
           <button
             type="button"
             onClick={() => setPriorityFilter(priorityFilter === "medium" ? null : "medium")}
-            className={`w-full text-left rounded-2xl border-l-4 border-l-amber-500 bg-[#0c192b] p-4 transition-all duration-150 hover:bg-[#0f2139] focus:outline-none ${
+            className={`w-full text-left rounded-2xl border-l-4 border-l-amber-500 p-4 transition-all duration-150 focus:outline-none ${
               priorityFilter === "medium"
                 ? "ring-2 ring-amber-500/60 shadow-[0_0_16px_rgba(245,158,11,0.25)]"
-                : "ring-1 ring-[#28415f]"
+                : "ring-1"
             }`}
+            style={{
+              background: "var(--panel-soft-bg)",
+              borderColor: priorityFilter === "medium" ? undefined : "var(--panel-border)",
+            }}
           >
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-3xl font-bold text-slate-100">{mediumPriorityCount}</p>
+                <p className="text-3xl font-bold" style={{ color: "var(--summary-text)" }}>{mediumPriorityCount}</p>
                 <p className="text-sm text-slate-400">Medium Priority</p>
                 {priorityFilter === "medium" && (
                   <p className="mt-1 text-xs font-medium text-amber-400">Filtering active — click to clear</p>
@@ -182,15 +190,19 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
           <button
             type="button"
             onClick={() => setPriorityFilter(priorityFilter === "low" ? null : "low")}
-            className={`w-full text-left rounded-2xl border-l-4 border-l-cyan-500 bg-[#0c192b] p-4 transition-all duration-150 hover:bg-[#0f2139] focus:outline-none ${
+            className={`w-full text-left rounded-2xl border-l-4 border-l-cyan-500 p-4 transition-all duration-150 focus:outline-none ${
               priorityFilter === "low"
                 ? "ring-2 ring-cyan-500/60 shadow-[0_0_16px_rgba(6,182,212,0.25)]"
-                : "ring-1 ring-[#28415f]"
+                : "ring-1"
             }`}
+            style={{
+              background: "var(--panel-soft-bg)",
+              borderColor: priorityFilter === "low" ? undefined : "var(--panel-border)",
+            }}
           >
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-3xl font-bold text-slate-100">{lowPriorityCount}</p>
+                <p className="text-3xl font-bold" style={{ color: "var(--summary-text)" }}>{lowPriorityCount}</p>
                 <p className="text-sm text-slate-400">Low Priority</p>
                 {priorityFilter === "low" && (
                   <p className="mt-1 text-xs font-medium text-cyan-400">Filtering active — click to clear</p>
@@ -204,7 +216,7 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
         </section>
 
          {isLoading && (
-          <Card className="bg-[#0c192b]">
+          <Card style={{ background: "var(--panel-soft-bg)", borderColor: "var(--panel-border)" }}>
             <p className="text-sm text-slate-400">
               Loading notifications...
             </p>
@@ -221,7 +233,7 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
         )}
 
         {!isLoading && !isError && alerts.length === 0 && (
-          <Card className="bg-[#0c192b]">
+          <Card style={{ background: "var(--panel-soft-bg)", borderColor: "var(--panel-border)" }}>
             <p className="text-sm text-slate-400">
               No notifications available.
             </p>
@@ -229,7 +241,7 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
         )}
 
         {!isLoading && !isError && alerts.length > 0 && filteredAlerts.length === 0 && (
-          <Card className="bg-[#0c192b]">
+          <Card style={{ background: "var(--panel-soft-bg)", borderColor: "var(--panel-border)" }}>
             <p className="text-sm text-slate-400">
               No {priorityFilter} priority alerts found.
             </p>
@@ -242,9 +254,15 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
             filteredAlerts.map((alert) => (
               <div
                 key={alert.alert_id}
-                className={`rounded-xl border border-[#28415f] ${getSeverityBorder(
+                className={`rounded-xl border ${getSeverityBorder(
                   alert.priority
-                )} bg-[#0c192b] p-6 transition hover:bg-[#0f2139]`}
+                )} p-6 transition`}
+                style={{
+                  borderTopColor: "var(--panel-border)",
+                  borderRightColor: "var(--panel-border)",
+                  borderBottomColor: "var(--panel-border)",
+                  background: "var(--panel-soft-bg)",
+                }}
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div className="flex-1">

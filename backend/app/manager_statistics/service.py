@@ -88,7 +88,7 @@ def get_user_kpis(
         "email": target_user.email,
         "role": target_user.role,
         "current_rank": target_user.rank,
-        "total_points": target_user.points,
+        "total_points": total_points_earned,
         "credit": target_user.credit,
         "status": target_user.status,
         "interval": interval,
@@ -115,17 +115,11 @@ def get_team_kpis(
 
     total_employees = len(team_employees)
 
-    user_kpis = session.exec(
-        select(
-            func.coalesce(func.sum(AppUser.points), 0),
-            func.coalesce(func.avg(AppUser.points), 0),
-            func.coalesce(func.sum(AppUser.credit), 0),
-        ).where(AppUser.manager_user_id == current_manager.user_id)
-    ).one()
-
-    total_points = user_kpis[0] or 0
-    average_points = user_kpis[1] or 0.0
-    total_credit = user_kpis[2] or 0.0
+    total_credit = session.exec(
+        select(func.coalesce(func.sum(AppUser.credit), 0)).where(
+            AppUser.manager_user_id == current_manager.user_id
+        )
+    ).one() or 0.0
 
     team_sales_conditions = [AppUser.manager_user_id == current_manager.user_id]
 
@@ -147,6 +141,9 @@ def get_team_kpis(
     total_sales_amount = sales_result[1]
     total_points_earned = sales_result[2]
     last_transaction_date = sales_result[3]
+
+    total_points = int(total_points_earned or 0)
+    average_points = (float(total_points) / total_employees) if total_employees > 0 else 0.0
 
     total_products_sold = session.exec(
         select(func.coalesce(func.sum(SaleTransactionItem.quantity), 0))

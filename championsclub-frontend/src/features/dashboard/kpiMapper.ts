@@ -23,9 +23,9 @@ export function mapTeamKpisToCards(kpis: TeamKpisData): DashboardKpiCard[] {
       status: "neutral",
     },
     {
-      title: "Total Points",
+      title: "Points Earned",
       value: Number(kpis.total_points).toLocaleString(),
-      delta: "Current team points",
+      delta: `${kpis.interval} interval`,
       status: "positive",
     },
     {
@@ -46,7 +46,7 @@ export function mapTeamKpisToCards(kpis: TeamKpisData): DashboardKpiCard[] {
 export function mapUserKpisToCards(kpis: UserKpiResponse): DashboardKpiCard[] {
   return [
     {
-      title: "Advisor Points",
+      title: "Points Earned",
       value: Number(kpis.total_points).toLocaleString(),
       delta: kpis.current_rank,
       status: "positive",

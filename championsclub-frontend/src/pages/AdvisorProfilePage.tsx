@@ -235,7 +235,7 @@ export default function AdvisorProfilePage() {
   const stats = advisor
     ? [
         {
-          title: "Total Points",
+          title: "Points Earned",
           value: Number(advisor.total_points).toLocaleString(),
           delta: advisor.current_rank,
           status: "positive" as const,
@@ -291,11 +291,15 @@ export default function AdvisorProfilePage() {
             <div
               role="status"
               aria-live="polite"
-              className={`pointer-events-auto rounded-2xl border ${alertPopupTone.border} bg-[#0f2239]/65 p-4 shadow-[0_18px_40px_rgba(2,8,23,0.4)] backdrop-blur transition-all duration-[450ms] ${
+              className={`pointer-events-auto rounded-2xl border ${alertPopupTone.border} p-4 backdrop-blur transition-all duration-[450ms] ${
                 isAlertPopupVisible
                   ? "translate-y-0 opacity-100"
                   : "-translate-y-1 opacity-0"
               }`}
+              style={{
+                background: "color-mix(in srgb, var(--panel-bg) 75%, transparent)",
+                boxShadow: "0 18px 40px rgba(2,8,23,0.4)",
+              }}
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -332,8 +336,9 @@ export default function AdvisorProfilePage() {
                 className={`min-w-[58px] rounded-full border px-4 py-2 text-sm font-semibold capitalize leading-none transition ${
                   interval === option
                     ? "border-cyan-500/60 bg-cyan-500/18 text-cyan-100 shadow-[0_0_18px_rgba(6,182,212,0.18)]"
-                    : "border-[#29405b] bg-[#081322] text-slate-300 hover:border-cyan-500/30 hover:bg-[#112238] hover:text-cyan-100"
+                    : "text-slate-300 hover:border-cyan-500/30 hover:text-cyan-100"
                 }`}
+                style={interval === option ? undefined : { borderColor: "var(--panel-border-strong)", background: "var(--panel-input-bg)" }}
               >
                 {option}
               </button>
@@ -344,14 +349,15 @@ export default function AdvisorProfilePage() {
         {isLoading && (
           <>
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-              <div className="h-56 animate-pulse rounded-2xl border border-[#29405b] bg-[#0d1a2b]" />
-              <div className="h-56 animate-pulse rounded-2xl border border-[#29405b] bg-[#0d1a2b]" />
+              <div className="h-56 animate-pulse rounded-2xl border" style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }} />
+              <div className="h-56 animate-pulse rounded-2xl border" style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }} />
             </div>
             <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {[1, 2, 3, 4].map((item) => (
                 <div
                   key={item}
-                  className="h-32 animate-pulse rounded-2xl border border-[#29405b] bg-[#0d1a2b]"
+                  className="h-32 animate-pulse rounded-2xl border"
+                  style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }}
                 />
               ))}
             </section>
@@ -372,7 +378,7 @@ export default function AdvisorProfilePage() {
         {advisor && !isLoading && !showAccessError && (
           <>
             <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-              <Card className="border border-[#28415f] bg-[#0d1a2b]">
+              <Card style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
                 <div className="flex flex-col items-center gap-6 text-center">
                   <div className="flex flex-col items-center">
                     <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-200">
@@ -388,7 +394,7 @@ export default function AdvisorProfilePage() {
                   </div>
 
                   <div className="grid w-full max-w-2xl gap-3 sm:grid-cols-2">
-                    <div className="rounded-xl border border-[#29405b] bg-[#081322] p-4">
+                    <div className="rounded-xl border p-4" style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-input-bg)" }}>
                       <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                         Role
                       </p>
@@ -398,7 +404,7 @@ export default function AdvisorProfilePage() {
                       </p>
                     </div>
 
-                    <div className="rounded-xl border border-[#29405b] bg-[#081322] p-4">
+                    <div className="rounded-xl border p-4" style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-input-bg)" }}>
                       <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                         Status
                       </p>
@@ -407,7 +413,7 @@ export default function AdvisorProfilePage() {
                       </p>
                     </div>
 
-                    <div className="rounded-xl border border-[#29405b] bg-[#081322] p-4 sm:col-span-2">
+                    <div className="rounded-xl border p-4 sm:col-span-2" style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-input-bg)" }}>
                       <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                         Current Rank
                       </p>
@@ -420,26 +426,26 @@ export default function AdvisorProfilePage() {
                 </div>
               </Card>
 
-              <Card className="border border-[#28415f] bg-[#0d1a2b]">
+              <Card style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
                 <h2 className="text-lg font-semibold text-cyan-100">
                   Profile Snapshot
                 </h2>
                 <div className="mt-4 space-y-4">
-                  <div className="rounded-xl border border-[#29405b] bg-[#081322] p-4">
+                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-input-bg)" }}>
                     <p className="text-sm text-slate-400">Advisor ID</p>
                     <p className="mt-2 text-2xl font-bold text-slate-100">
                       {advisor.user_id}
                     </p>
                   </div>
 
-                  <div className="rounded-xl border border-[#29405b] bg-[#081322] p-4">
+                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-input-bg)" }}>
                     <p className="text-sm text-slate-400">Last Transaction Date</p>
                     <p className="mt-2 text-lg font-semibold text-slate-100">
                       {formatDate(advisor.last_transaction_date)}
                     </p>
                   </div>
 
-                  <div className="rounded-xl border border-[#29405b] bg-[#081322] p-4">
+                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-input-bg)" }}>
                     <p className="text-sm text-slate-400">Selected Interval</p>
                     <p className="mt-2 text-lg font-semibold capitalize text-cyan-100">
                       {interval}

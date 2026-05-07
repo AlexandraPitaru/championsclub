@@ -62,7 +62,7 @@ export default function PriorityAlertsPanel({
   };
 
   return (
-    <Card className="h-full border border-[#28415f] bg-[#0d1a2b]">
+    <Card className="h-full" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-cyan-100">Priority Alerts</h3>
         <p className="text-sm text-slate-400">
@@ -72,7 +72,10 @@ export default function PriorityAlertsPanel({
 
       <div className="space-y-4">
         {alerts.length === 0 ? (
-          <div className="rounded-xl border border-[#28415f] bg-[#0c192b] p-4 text-sm text-slate-400">
+          <div
+            className="rounded-xl border p-4 text-sm text-slate-400"
+            style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}
+          >
             No alerts available.
           </div>
         ) : null}
@@ -80,9 +83,15 @@ export default function PriorityAlertsPanel({
         {alerts.map((alert) => (
           <div
             key={alert.id}
-            className={`rounded-xl border border-[#28415f] ${getSeverityBorder(
+            className={`rounded-xl border ${getSeverityBorder(
               alert.severity
-            )} bg-[#0c192b] p-6 transition hover:bg-[#0f2139]`}
+            )} p-6 transition`}
+            style={{
+              borderTopColor: "var(--panel-border)",
+              borderRightColor: "var(--panel-border)",
+              borderBottomColor: "var(--panel-border)",
+              background: "var(--panel-soft-bg)",
+            }}
           >
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex-1">

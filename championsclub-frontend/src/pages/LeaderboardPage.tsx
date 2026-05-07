@@ -243,7 +243,7 @@ export default function LeaderboardPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Card className="flex items-center gap-4 bg-[#0d1a2b] border border-[#28415f]">
+          <Card className="flex items-center gap-4" style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
             <div className="rounded-full bg-amber-500/20 p-3 text-amber-400">
               <Crown className="h-5 w-5" />
             </div>
@@ -256,7 +256,7 @@ export default function LeaderboardPage() {
             </div>
           </Card>
 
-          <Card className="flex items-center gap-4 bg-[#0d1a2b] border border-[#28415f]">
+          <Card className="flex items-center gap-4" style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
             <div className="rounded-full bg-blue-500/20 p-3 text-blue-400">
               <Users className="h-5 w-5" />
             </div>
@@ -267,7 +267,7 @@ export default function LeaderboardPage() {
             </div>
           </Card>
 
-          <Card className="flex items-center gap-4 bg-[#0d1a2b] border border-[#28415f]">
+          <Card className="flex items-center gap-4" style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
             <div className="rounded-full bg-emerald-500/20 p-3 text-emerald-400">
               <TrendingUp className="h-5 w-5" />
             </div>
@@ -282,7 +282,7 @@ export default function LeaderboardPage() {
             </div>
           </Card>
 
-          <Card className="flex items-center gap-4 bg-[#0d1a2b] border border-[#28415f]">
+          <Card className="flex items-center gap-4" style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
             <div className="rounded-full bg-violet-500/20 p-3 text-violet-400">
               <Star className="h-5 w-5" />
             </div>
@@ -300,9 +300,15 @@ export default function LeaderboardPage() {
           </Card>
         </section>
 
-        <Card className="overflow-hidden p-0 bg-[#0d1a2b] border border-[#28415f]">
-          <div className="flex flex-col gap-3 border-b border-[#28415f] p-4 md:flex-row md:items-center md:justify-between">
-            <label className="flex w-full max-w-md items-center gap-2 rounded-lg border border-[#28415f] bg-[#0a1520] px-3 py-2 text-slate-400">
+        <Card className="overflow-hidden p-0" style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
+          <div
+            className="flex flex-col gap-3 border-b p-4 md:flex-row md:items-center md:justify-between"
+            style={{ borderColor: "var(--panel-border)" }}
+          >
+            <label
+              className="flex w-full max-w-md items-center gap-2 rounded-lg border px-3 py-2 text-slate-400"
+              style={{ borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)" }}
+            >
               <Search className="h-4 w-4" />
               <input
                 type="text"
@@ -320,7 +326,8 @@ export default function LeaderboardPage() {
                   setPage(1);
                   setInterval(e.target.value as LeaderboardInterval);
                 }}
-                className="rounded-lg border border-[#28415f] bg-[#0a1520] px-3 py-2 text-sm text-slate-200"
+                className="rounded-lg border px-3 py-2 text-sm text-slate-200"
+                style={{ borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)" }}
               >
                 <option value="day">Day</option>
                 <option value="week">Week</option>
@@ -330,7 +337,8 @@ export default function LeaderboardPage() {
 
               <button
                 onClick={togglePointSort}
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#28415f] bg-[#0a1520] px-3 py-2 text-sm text-slate-200 hover:bg-[#0f1f2e]"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm text-slate-200"
+                style={{ borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)" }}
               >
                 Sort by: {sortLabel}
                 <ChevronDown className="h-4 w-4" />
@@ -344,7 +352,7 @@ export default function LeaderboardPage() {
 
           <div className="overflow-x-auto">
             <table className="min-w-[820px] w-full text-left text-sm">
-              <thead className="bg-[#0a1520] text-slate-300 border-b border-[#28415f]">
+              <thead className="text-slate-300 border-b" style={{ background: "var(--panel-subtle-bg)", borderColor: "var(--panel-border)" }}>
                 <tr>
                   <th className="px-6 py-3 font-semibold">#</th>
                   <th className="px-6 py-3 font-semibold">Advisor</th>
@@ -355,7 +363,7 @@ export default function LeaderboardPage() {
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-[#28415f]">
+              <tbody className="divide-y" style={{ borderColor: "var(--panel-border)" }}>
                 {!isLoading && items.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-8 text-center text-slate-400">
@@ -367,7 +375,8 @@ export default function LeaderboardPage() {
                 {items.map((row) => (
                   <tr
                     key={row.user_id}
-                    className={row.position === 1 ? "bg-amber-500/10" : "bg-[#0d1a2b]"}
+                    className={row.position === 1 ? "bg-amber-500/10" : ""}
+                    style={row.position === 1 ? undefined : { background: "var(--panel-bg)" }}
                   >
                     <td className="px-6 py-4 font-semibold text-slate-300">
                       <div className="flex items-center gap-2">
@@ -385,7 +394,7 @@ export default function LeaderboardPage() {
 
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-700 text-xs font-bold text-slate-200">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-700 text-xs font-bold text-white">
                           {row.avatar_initials}
                         </div>
                         <div>
@@ -408,7 +417,7 @@ export default function LeaderboardPage() {
                       </span>
                     </td>
 
-                    <td className="px-6 py-4 font-semibold text-cyan-100">
+                    <td className="px-6 py-4 font-semibold" style={{ color: "var(--kpi-value)" }}>
                       {row.points} pts
                     </td>
 
@@ -417,7 +426,7 @@ export default function LeaderboardPage() {
                         <span className="w-10 font-medium text-slate-300">
                           {row.performance_pct}%
                         </span>
-                        <div className="h-2 w-40 rounded-full bg-[#0a1520]">
+                        <div className="h-2 w-40 rounded-full" style={{ background: "var(--panel-subtle-bg)" }}>
                           <div
                             className={"h-2 rounded-full " + progressColor(row.position)}
                             style={{ width: row.performance_pct + "%" }}
@@ -438,11 +447,12 @@ export default function LeaderboardPage() {
             </table>
           </div>
 
-          <div className="flex items-center justify-center gap-2 border-t border-[#28415f] p-4">
+          <div className="flex items-center justify-center gap-2 border-t p-4" style={{ borderColor: "var(--panel-border)" }}>
             <button
               disabled={!canPrev || isLoading}
               onClick={() => canPrev && setPage((prev) => prev - 1)}
-              className="rounded-md border border-[#28415f] p-2 text-slate-400 hover:bg-[#0a1520] disabled:opacity-40"
+              className="rounded-md border p-2 text-slate-400 disabled:opacity-40"
+              style={{ borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)" }}
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -456,7 +466,8 @@ export default function LeaderboardPage() {
             <button
               disabled={!canNext || isLoading}
               onClick={() => canNext && setPage((prev) => prev + 1)}
-              className="rounded-md border border-[#28415f] p-2 text-slate-400 hover:bg-[#0a1520] disabled:opacity-40"
+              className="rounded-md border p-2 text-slate-400 disabled:opacity-40"
+              style={{ borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)" }}
             >
               <ChevronRight className="h-4 w-4" />
             </button>

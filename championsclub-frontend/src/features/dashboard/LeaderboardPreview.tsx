@@ -31,7 +31,8 @@ export default function LeaderboardPreview({
         {items.map((item, index) => (
           <div
             key={item.id}
-            className="flex items-center justify-between rounded-xl border border-[#22354d] bg-[#0c192b] p-4"
+            className="flex items-center justify-between rounded-xl border p-4"
+            style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}
           >
             <div>
               <p className="font-semibold text-slate-100">

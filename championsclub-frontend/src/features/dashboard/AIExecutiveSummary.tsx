@@ -94,7 +94,14 @@ export default function AIExecutiveSummary({ teamKpis, interval, managerId }: Pr
   const showSkeleton = isLoading || teamKpis === null;
 
   return (
-    <div className="relative overflow-hidden rounded-[26px] border border-[#3d556f] bg-[linear-gradient(145deg,#0b1624_0%,#102033_100%)] p-6 shadow-[0_18px_38px_rgba(2,8,20,0.44)]">
+    <div
+      className="relative overflow-hidden rounded-[26px] border p-6"
+      style={{
+        borderColor: "var(--summary-border)",
+        background: "var(--summary-bg)",
+        boxShadow: "var(--summary-shadow)",
+      }}
+    >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_8%,rgba(251,191,36,0.1),transparent_34%)]" />
 
       <div className="relative mb-5 flex items-start gap-3">
@@ -123,10 +130,10 @@ export default function AIExecutiveSummary({ teamKpis, interval, managerId }: Pr
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200">
             Strategic Snapshot
           </p>
-          <h3 className="mt-1 text-lg font-semibold text-slate-50">
+          <h3 className="mt-1 text-lg font-semibold" style={{ color: "var(--summary-text)" }}>
             Team Performance Narrative
           </h3>
-          <p className="mt-1 text-sm text-slate-300">
+          <p className="mt-1 text-sm" style={{ color: "var(--summary-muted)" }}>
             A clear read on momentum, pressure points, and where to coach next.
           </p>
         </div>
@@ -141,14 +148,14 @@ export default function AIExecutiveSummary({ teamKpis, interval, managerId }: Pr
               style={{ width: `${w}%` }}
             />
           ))}
-          <div className="mt-3 flex items-center gap-2 text-sm text-slate-300">
+          <div className="mt-3 flex items-center gap-2 text-sm" style={{ color: "var(--summary-muted)" }}>
             <Sparkles className="h-3.5 w-3.5 animate-spin text-amber-300/80" />
             Building your team briefing...
           </div>
         </div>
       ) : (
         <>
-          <p className="text-[15px] leading-8 text-slate-100">
+          <p className="text-[15px] leading-8" style={{ color: "var(--summary-text)" }}>
             {displayedText}
             {isTyping && (
               <span className="ml-0.5 inline-block w-[2px] animate-[blink_0.75s_step-end_infinite] rounded-sm bg-amber-300 align-middle"
@@ -158,7 +165,7 @@ export default function AIExecutiveSummary({ teamKpis, interval, managerId }: Pr
             )}
           </p>
           {isFallback ? (
-            <p className="mt-3 text-sm text-slate-300">
+            <p className="mt-3 text-sm" style={{ color: "var(--summary-muted)" }}>
               Limited KPI activity detected for this interval, so this summary is concise.
             </p>
           ) : null}

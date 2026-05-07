@@ -51,7 +51,7 @@ export default function ManagerFilterDrawer({
     `rounded-xl border px-3 py-2 text-sm font-medium transition ${
       active
         ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-100"
-        : "border-[#29405b] bg-[#0d1a2b] text-slate-200 hover:bg-[#112238]"
+        : "text-slate-200"
     }`;
 
   return (
@@ -75,15 +75,20 @@ export default function ManagerFilterDrawer({
           type="button"
           aria-label="Close filters overlay"
           onClick={() => setIsOpen(false)}
-          className={`absolute inset-0 bg-[#02060d]/70 transition-opacity duration-300 ${
+          className={`absolute inset-0 transition-opacity duration-300 ${
             isOpen ? "opacity-100" : "opacity-0"
           }`}
+          style={{ background: "color-mix(in srgb, var(--bg) 8%, transparent)" }}
         />
 
         <aside
-          className={`absolute right-0 top-0 h-full w-full max-w-sm overflow-y-auto border-l border-[#29405b] bg-[#081322] p-6 shadow-2xl transition-transform duration-300 ease-out ${
+          className={`absolute right-0 top-0 h-full w-full max-w-sm overflow-y-auto border-l p-6 shadow-2xl backdrop-blur-md transition-transform duration-300 ease-out ${
             isOpen ? "translate-x-0" : "translate-x-full"
           }`}
+          style={{
+            borderColor: "var(--panel-border-strong)",
+            background: "color-mix(in srgb, var(--panel-input-bg) 18%, transparent)",
+          }}
         >
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>
@@ -96,7 +101,8 @@ export default function ManagerFilterDrawer({
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="rounded-lg p-2 text-slate-400 transition hover:bg-[#112238] hover:text-cyan-100"
+              className="rounded-lg p-2 text-slate-400 transition hover:text-cyan-100"
+              style={{ background: "transparent" }}
             >
               <X className="h-5 w-5" />
             </button>
@@ -122,6 +128,11 @@ export default function ManagerFilterDrawer({
                       }
                     }}
                     className={optionClass(scope === option.value)}
+                    style={
+                      scope === option.value
+                        ? undefined
+                        : { borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }
+                    }
                   >
                     {option.label}
                   </button>
@@ -136,7 +147,10 @@ export default function ManagerFilterDrawer({
                 </p>
 
                 {advisors.length === 0 ? (
-                  <p className="rounded-xl border border-[#29405b] bg-[#0d1a2b] px-3 py-2 text-sm text-slate-400">
+                  <p
+                    className="rounded-xl border px-3 py-2 text-sm text-slate-400"
+                    style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }}
+                  >
                     No advisors available for this manager.
                   </p>
                 ) : (
@@ -149,11 +163,15 @@ export default function ManagerFilterDrawer({
                       value={advisorSearch}
                       onChange={(event) => setAdvisorSearch(event.target.value)}
                       placeholder="Type an advisor name..."
-                      className="mb-3 w-full rounded-xl border border-[#29405b] bg-[#0d1a2b] px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-500/60"
+                      className="mb-3 w-full rounded-xl border px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-cyan-500/60"
+                      style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }}
                     />
 
                     {filteredAdvisors.length === 0 ? (
-                      <p className="rounded-xl border border-[#29405b] bg-[#0d1a2b] px-3 py-2 text-sm text-slate-400">
+                      <p
+                        className="rounded-xl border px-3 py-2 text-sm text-slate-400"
+                        style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }}
+                      >
                         No advisors found for "{advisorSearch.trim()}".
                       </p>
                     ) : (
@@ -173,8 +191,13 @@ export default function ManagerFilterDrawer({
                             className={`w-full rounded-xl border px-3 py-2 text-left text-sm font-medium transition ${
                               selectedUserId === advisor.id
                                 ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-100"
-                                : "border-[#29405b] bg-[#0d1a2b] text-slate-200 hover:bg-[#112238]"
+                                : "text-slate-200"
                             }`}
+                            style={
+                              selectedUserId === advisor.id
+                                ? undefined
+                                : { borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }
+                            }
                           >
                             {advisor.name}
                           </button>
@@ -199,6 +222,11 @@ export default function ManagerFilterDrawer({
                     aria-pressed={interval === value}
                     onClick={() => onIntervalChange(value)}
                     className={`${optionClass(interval === value)} capitalize`}
+                    style={
+                      interval === value
+                        ? undefined
+                        : { borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }
+                    }
                   >
                     {value}
                   </button>
@@ -225,7 +253,8 @@ export default function ManagerFilterDrawer({
                 setAdvisorSearch("");
                 setIsOpen(false);
               }}
-              className="rounded-xl border border-[#29405b] bg-[#0d1a2b] px-4 py-3 text-sm font-semibold text-slate-200 transition hover:bg-[#112238]"
+              className="rounded-xl border px-4 py-3 text-sm font-semibold text-slate-200 transition"
+              style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }}
             >
               Reset
             </button>
