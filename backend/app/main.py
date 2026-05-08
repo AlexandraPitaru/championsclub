@@ -35,6 +35,10 @@ from app.sales_advisor_shop.history.history_router import (
     router as sales_advisor_history_router,
 )
 
+from app.sales_advisor_profile.ai_analysis_router import (
+    router as sales_advisor_profile_ai_router,
+)
+
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -78,6 +82,7 @@ app.include_router(sales_advisor_shop_overview_router)
 app.include_router(sales_advisor_cart_router)
 app.include_router(sales_advisor_checkout_router)
 app.include_router(sales_advisor_history_router)
+app.include_router(sales_advisor_profile_ai_router)
 
 app.include_router(manager_notifications_router)
 
