@@ -15,11 +15,13 @@ import { useTheme } from "../../app/theme/ThemeProvider";
 type PerformanceTrendChartProps = {
   data: PerformanceTrendDataPoint[];
   chartIdSuffix?: string;
+  filterLabel?: string;
 };
 
 export default function PerformanceTrendChart({
   data,
   chartIdSuffix = "main",
+  filterLabel,
 }: PerformanceTrendChartProps) {
   const { isLight } = useTheme();
   const gradientId = `salesGradient-${chartIdSuffix}`;
@@ -33,6 +35,7 @@ export default function PerformanceTrendChart({
           </h3>
           <p className="text-sm text-slate-400">
             Sales and points performance based on selected filters
+            {filterLabel ? ` (${filterLabel})` : ""}
           </p>
         </div>
 
@@ -54,6 +57,7 @@ export default function PerformanceTrendChart({
         </h3>
         <p className="text-sm text-slate-400">
           Sales and points performance based on selected filters
+          {filterLabel ? ` (${filterLabel})` : ""}
         </p>
       </div>
 

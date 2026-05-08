@@ -34,6 +34,8 @@ const DASHBOARD_FILTERS_STORAGE_KEY = "manager_dashboard_filters";
 interface DashboardFilters {
   kpiScope: KpiScope;
   kpiInterval: KpiInterval;
+  startDate?: string;
+  endDate?: string;
   selectedUserId: number | null;
 }
 
@@ -49,11 +51,14 @@ function loadFiltersFromStorage(): DashboardFilters {
           parsed.kpiInterval === "day" ||
           parsed.kpiInterval === "week" ||
           parsed.kpiInterval === "month" ||
-          parsed.kpiInterval === "all"
+          parsed.kpiInterval === "all" ||
+          parsed.kpiInterval === "custom"
             ? parsed.kpiInterval
             : "week",
         selectedUserId:
           typeof parsed.selectedUserId === "number" ? parsed.selectedUserId : null,
+        startDate: typeof parsed.startDate === "string" ? parsed.startDate : "",
+        endDate: typeof parsed.endDate === "string" ? parsed.endDate : "",
       };
     }
   } catch (error) {
@@ -62,6 +67,8 @@ function loadFiltersFromStorage(): DashboardFilters {
   return {
     kpiScope: "team",
     kpiInterval: "week",
+    startDate: "",
+    endDate: "",
     selectedUserId: null,
   };
 }
@@ -99,7 +106,10 @@ export default function ManagerDashboardPage() {
 
   const [kpiScope, setKpiScope] = useState<KpiScope>(initialFilters.kpiScope);
   const [kpiInterval, setKpiInterval] = useState<KpiInterval>(initialFilters.kpiInterval);
+  const [startDate, setStartDate] = useState(initialFilters.startDate ?? "");
+  const [endDate, setEndDate] = useState(initialFilters.endDate ?? "");
   const [selectedUserId, setSelectedUserId] = useState<number | null>(initialFilters.selectedUserId);
+  const isCustomDateInterval = kpiInterval === "custom";
 
   const [advisorOptions, setAdvisorOptions] = useState<AdvisorOption[]>([]);
   const [isAdvisorsLoading, setIsAdvisorsLoading] = useState(false);
@@ -122,6 +132,22 @@ export default function ManagerDashboardPage() {
   >([]);
 
   const currentUser = useMemo(() => getCurrentUserFromStorage(), []);
+  const chartFilterLabel = useMemo(() => {
+    if (kpiInterval === "custom") {
+      if (startDate && endDate) {
+        return `Custom ${startDate} to ${endDate}`;
+      }
+      if (startDate) {
+        return `Custom from ${startDate}`;
+      }
+      if (endDate) {
+        return `Custom until ${endDate}`;
+      }
+      return "Custom date";
+    }
+
+    return kpiInterval.charAt(0).toUpperCase() + kpiInterval.slice(1);
+  }, [kpiInterval, startDate, endDate]);
   
   const managerId =
     currentUser?.role?.toLowerCase() === "manager"
@@ -136,8 +162,24 @@ export default function ManagerDashboardPage() {
   managerId,
   kpiScope,
   kpiInterval,
-  selectedUserId
+  selectedUserId,
+  isCustomDateInterval ? startDate || undefined : undefined,
+  isCustomDateInterval ? endDate || undefined : undefined
 );
+
+  const chartData = useMemo(() => {
+    if (!isCustomDateInterval) {
+      return performanceTrend;
+    }
+
+    const startTs = startDate ? Date.parse(`${startDate}T00:00:00`) : Number.NEGATIVE_INFINITY;
+    const endTs = endDate ? Date.parse(`${endDate}T23:59:59`) : Number.POSITIVE_INFINITY;
+
+    return performanceTrend.filter((point) => {
+      const pointTs = Date.parse(`${point.period}T12:00:00`);
+      return pointTs >= startTs && pointTs <= endTs;
+    });
+  }, [isCustomDateInterval, performanceTrend, startDate, endDate]);
 
   const { data: notificationsData } = useManagerNotifications({
     managerId,
@@ -171,9 +213,11 @@ export default function ManagerDashboardPage() {
     saveFiltersToStorage({
       kpiScope,
       kpiInterval,
+      startDate,
+      endDate,
       selectedUserId,
     });
-  }, [kpiScope, kpiInterval, selectedUserId]);
+  }, [kpiScope, kpiInterval, startDate, endDate, selectedUserId]);
 
   useEffect(() => {
     async function loadManagedUsers() {
@@ -229,7 +273,10 @@ export default function ManagerDashboardPage() {
 
       try {
         if (kpiScope === "team") {
-          const response = await getTeamKpis(managerId, kpiInterval);
+          const response = await getTeamKpis(managerId, kpiInterval, {
+            startDate: isCustomDateInterval ? startDate || undefined : undefined,
+            endDate: isCustomDateInterval ? endDate || undefined : undefined,
+          });
           setKpiCards(mapTeamKpisToCards(response.team_kpis));
           return;
         }
@@ -244,7 +291,11 @@ export default function ManagerDashboardPage() {
           const response = await getUserKpis(
             managerId,
             selectedUserId,
-            kpiInterval
+            kpiInterval,
+            {
+              startDate: isCustomDateInterval ? startDate || undefined : undefined,
+              endDate: isCustomDateInterval ? endDate || undefined : undefined,
+            }
           );
 
           setKpiCards(mapUserKpisToCards(response));
@@ -259,27 +310,32 @@ export default function ManagerDashboardPage() {
     }
 
     loadKpis();
-  }, [managerId, kpiScope, selectedUserId, kpiInterval]);
+  }, [managerId, kpiScope, selectedUserId, kpiInterval, startDate, endDate]);
 
   useEffect(() => {
     async function loadTeamKpisForSummary() {
       if (!managerId) return;
       try {
-        const response = await getTeamKpis(managerId, kpiInterval);
+        const response = await getTeamKpis(managerId, kpiInterval, {
+          startDate: isCustomDateInterval ? startDate || undefined : undefined,
+          endDate: isCustomDateInterval ? endDate || undefined : undefined,
+        });
         setSummaryTeamKpis(response.team_kpis);
       } catch {
         setSummaryTeamKpis(null);
       }
     }
     loadTeamKpisForSummary();
-  }, [managerId, kpiInterval]);
+  }, [managerId, kpiInterval, startDate, endDate]);
 
   useEffect(() => {
     async function loadLeaderboardPreview() {
       try {
+        const leaderboardInterval = kpiInterval === "custom" ? "all" : kpiInterval;
+
         if (kpiScope === "team" || selectedUserId === null) {
           const response = await getLeaderboard({
-            interval: kpiInterval,
+            interval: leaderboardInterval,
             sortBy: "points",
             sortDir: "desc",
             page: 1,
@@ -300,7 +356,7 @@ export default function ManagerDashboardPage() {
         }
 
         const firstPage = await getLeaderboard({
-          interval: kpiInterval,
+          interval: leaderboardInterval,
           sortBy: "points",
           sortDir: "desc",
           page: 1,
@@ -312,7 +368,7 @@ export default function ManagerDashboardPage() {
 
         for (let page = 2; page <= totalPages; page += 1) {
           const pageResponse = await getLeaderboard({
-            interval: kpiInterval,
+            interval: leaderboardInterval,
             sortBy: "points",
             sortDir: "desc",
             page,
@@ -374,10 +430,20 @@ export default function ManagerDashboardPage() {
           <ManagerFilterDrawer
             scope={kpiScope}
             interval={kpiInterval}
+            startDate={startDate}
+            endDate={endDate}
             selectedUserId={selectedUserId}
             advisors={advisorOptions}
             onScopeChange={setKpiScope}
-            onIntervalChange={setKpiInterval}
+            onIntervalChange={(nextInterval) => {
+              setKpiInterval(nextInterval);
+              if (nextInterval !== "custom") {
+                setStartDate("");
+                setEndDate("");
+              }
+            }}
+            onStartDateChange={setStartDate}
+            onEndDateChange={setEndDate}
             onUserChange={setSelectedUserId}
           />
         </section>
@@ -441,7 +507,7 @@ export default function ManagerDashboardPage() {
 )}
 
 {!isTrendLoading && !isTrendError && (
-  <PerformanceTrendChart data={performanceTrend} />
+  <PerformanceTrendChart data={chartData} filterLabel={chartFilterLabel} />
 )}
           {dashboardAlerts.length > 0 ? (
             <PriorityAlertsPanel alerts={dashboardAlerts} />
@@ -459,7 +525,7 @@ export default function ManagerDashboardPage() {
           />
           <AIExecutiveSummary
             teamKpis={summaryTeamKpis}
-            interval={kpiInterval}
+            interval={kpiInterval === "custom" ? "all" : kpiInterval}
             managerId={managerId}
           />
         </section>

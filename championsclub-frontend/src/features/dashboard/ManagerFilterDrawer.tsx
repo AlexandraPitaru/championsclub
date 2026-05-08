@@ -1,4 +1,4 @@
-import { ListFilter, X } from "lucide-react";
+import { CalendarDays, ChevronDown, ListFilter, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import type {
   AdvisorOption,
@@ -9,31 +9,40 @@ import type {
 type ManagerFilterDrawerProps = {
   scope: KpiScope;
   interval: KpiInterval;
+  startDate?: string;
+  endDate?: string;
   selectedUserId: number | null;
   advisors: AdvisorOption[];
   onScopeChange: (scope: KpiScope) => void;
   onIntervalChange: (interval: KpiInterval) => void;
+  onStartDateChange: (value: string) => void;
+  onEndDateChange: (value: string) => void;
   onUserChange: (userId: number | null) => void;
 };
 
 export default function ManagerFilterDrawer({
   scope,
   interval,
+  startDate,
+  endDate,
   selectedUserId,
   advisors,
   onScopeChange,
   onIntervalChange,
+  onStartDateChange,
+  onEndDateChange,
   onUserChange,
 }: ManagerFilterDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [advisorSearch, setAdvisorSearch] = useState("");
+  const [isDateMenuOpen, setIsDateMenuOpen] = useState(false);
 
   const scopeOptions: Array<{ value: KpiScope; label: string }> = [
     { value: "team", label: "Team performance" },
     { value: "user", label: "Advisor performance" },
   ];
 
-  const intervalOptions: KpiInterval[] = ["day", "week", "month", "all"];
+  const intervalOptions: KpiInterval[] = ["day", "week", "month", "all", "custom"];
 
   const filteredAdvisors = useMemo(() => {
     const normalizedQuery = advisorSearch.trim().toLowerCase();
@@ -176,7 +185,7 @@ export default function ManagerFilterDrawer({
                       </p>
                     ) : (
                       <div
-                        className="max-h-64 overflow-y-auto space-y-2 scrollbar-hidden"
+                        className="max-h-36 overflow-y-auto space-y-2 scrollbar-hidden"
                         style={{
                           scrollbarWidth: "none" as const,
                           msOverflowStyle: "none" as const,
@@ -220,19 +229,88 @@ export default function ManagerFilterDrawer({
                     key={value}
                     type="button"
                     aria-pressed={interval === value}
-                    onClick={() => onIntervalChange(value)}
-                    className={`${optionClass(interval === value)} capitalize`}
+                    onClick={() => {
+                      onIntervalChange(value);
+                      if (value === "custom") {
+                        setIsDateMenuOpen(true);
+                        return;
+                      }
+                      setIsDateMenuOpen(false);
+                      onStartDateChange("");
+                      onEndDateChange("");
+                    }}
+                    className={`${optionClass(interval === value)} ${
+                      value === "custom" ? "col-span-2" : ""
+                    } capitalize`}
                     style={
                       interval === value
                         ? undefined
                         : { borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }
                     }
                   >
-                    {value}
+                    {value === "custom" ? "Custom date" : value}
                   </button>
                 ))}
               </div>
             </section>
+
+            {interval === "custom" ? (
+            <section>
+              <button
+                type="button"
+                onClick={() => setIsDateMenuOpen((current) => !current)}
+                className="flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-sm font-semibold text-slate-100 transition hover:border-cyan-500/40"
+                style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4 text-cyan-300" />
+                  Custom Date Range
+                </span>
+                <ChevronDown
+                  className={[
+                    "h-4 w-4 text-cyan-300 transition-transform",
+                    isDateMenuOpen ? "rotate-180" : "rotate-0",
+                  ].join(" ")}
+                />
+              </button>
+
+              {isDateMenuOpen ? (
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400">
+                      From
+                    </label>
+                    <input
+                      type="date"
+                      value={startDate ?? ""}
+                      max={endDate || undefined}
+                      onChange={(event) => onStartDateChange(event.target.value)}
+                      className="w-full rounded-xl border px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-500/60"
+                      style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400">
+                      To
+                    </label>
+                    <input
+                      type="date"
+                      value={endDate ?? ""}
+                      min={startDate || undefined}
+                      onChange={(event) => onEndDateChange(event.target.value)}
+                      className="w-full rounded-xl border px-3 py-2 text-sm text-slate-100 outline-none focus:border-cyan-500/60"
+                      style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }}
+                    />
+                  </div>
+
+                  <p className="sm:col-span-2 text-xs text-slate-400">
+                    Pick the exact date window for the custom interval.
+                  </p>
+                </div>
+              ) : null}
+            </section>
+            ) : null}
           </div>
 
           <div className="mt-8 flex gap-3">
@@ -249,6 +327,8 @@ export default function ManagerFilterDrawer({
               onClick={() => {
                 onScopeChange("team");
                 onIntervalChange("week");
+                onStartDateChange("");
+                onEndDateChange("");
                 onUserChange(null);
                 setAdvisorSearch("");
                 setIsOpen(false);

@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlmodel import Session
 
@@ -29,29 +31,35 @@ def get_current_user(
 def read_dashboard_user_kpis(
     user_id: int,
     interval: str = Query(default="all", pattern="^(day|week|month|all)$"),
+    start_date: date | None = Query(default=None),
+    end_date: date | None = Query(default=None),
     session: Session = Depends(get_session),
     current_user: AppUser = Depends(get_current_user),
 ):
-    return get_user_kpis(session, current_user, user_id, interval)
+    return get_user_kpis(session, current_user, user_id, interval, start_date, end_date)
 
 
 @router.get("/profile/users/{user_id}/kpis", response_model=UserKpiResponse)
 def read_profile_user_kpis(
     user_id: int,
     interval: str = Query(default="all", pattern="^(day|week|month|all)$"),
+    start_date: date | None = Query(default=None),
+    end_date: date | None = Query(default=None),
     session: Session = Depends(get_session),
     current_user: AppUser = Depends(get_current_user),
 ):
-    return get_user_kpis(session, current_user, user_id, interval)
+    return get_user_kpis(session, current_user, user_id, interval, start_date, end_date)
 
 
 @router.get("/dashboard/team/kpis", response_model=TeamKpiResponse)
 def read_team_kpis(
     interval: str = Query(default="all", pattern="^(day|week|month|all)$"),
+    start_date: date | None = Query(default=None),
+    end_date: date | None = Query(default=None),
     session: Session = Depends(get_session),
     current_user: AppUser = Depends(get_current_user),
 ):
-    return get_team_kpis(session, current_user, interval)
+    return get_team_kpis(session, current_user, interval, start_date, end_date)
 
 @router.get("/dashboard/users", response_model=list[ManagedUserResponse])
 def read_managed_users(
@@ -66,10 +74,12 @@ def read_managed_users(
 )
 def read_team_performance_trend(
     interval: str = Query(default="all", pattern="^(day|week|month|all)$"),
+    start_date: date | None = Query(default=None),
+    end_date: date | None = Query(default=None),
     session: Session = Depends(get_session),
     current_user: AppUser = Depends(get_current_user),
 ):
-    return get_team_performance_trend(session, current_user, interval)
+    return get_team_performance_trend(session, current_user, interval, start_date, end_date)
 
 @router.get(
     "/dashboard/users/{user_id}/performance-trend",
@@ -78,7 +88,9 @@ def read_team_performance_trend(
 def read_user_performance_trend(
     user_id: int,
     interval: str = Query(default="all", pattern="^(day|week|month|all)$"),
+    start_date: date | None = Query(default=None),
+    end_date: date | None = Query(default=None),
     session: Session = Depends(get_session),
     current_user: AppUser = Depends(get_current_user),
 ):
-    return get_user_performance_trend(session, current_user, user_id, interval)
+    return get_user_performance_trend(session, current_user, user_id, interval, start_date, end_date)
