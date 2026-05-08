@@ -22,6 +22,9 @@ from app.sales_advisor_leaderboard_my_position.my_position_router import (
 from app.sales_advisor_performance_charts.performance_charts_router import (
     router as sales_advisor_performance_charts_router,
 )
+from app.sales_advisor_profile.ai_analysis_router import (
+    router as sales_advisor_profile_ai_router,
+)
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -62,6 +65,7 @@ app.include_router(sales_advisor_dashboard_router)
 app.include_router(sales_advisor_leaderboard_router)
 app.include_router(sales_advisor_leaderboard_my_position_router)
 app.include_router(sales_advisor_performance_charts_router)
+app.include_router(sales_advisor_profile_ai_router)
 
 app.include_router(manager_notifications_router)
 
