@@ -235,28 +235,28 @@ export default function AdvisorProfilePage() {
   const stats = advisor
     ? [
         {
-          title: "Points Earned",
+          title: "Sales Amount",
+          value: formatCurrency(advisor.total_sales_amount),
+          delta: `Sales generated ${toTitleCase(interval).toLowerCase()}`,
+          status: advisor.total_sales_amount > 0 ? ("positive" as const) : ("negative" as const),
+        },
+        {
+          title: "Products Sold",
+          value: String(advisor.total_products_sold),
+          delta: `${advisor.total_transactions} transactions`,
+          status: advisor.total_products_sold > 0 ? ("positive" as const) : ("negative" as const),
+        },
+        {
+          title: "Reward Points",
           value: Number(advisor.total_points).toLocaleString(),
-          delta: advisor.current_rank,
-          status: "positive" as const,
+          delta: `Reward points earned ${toTitleCase(interval).toLowerCase()}`,
+          status: advisor.total_points > 0 ? ("positive" as const) : ("negative" as const),
         },
         {
           title: "Credit",
           value: Number(advisor.credit).toLocaleString(),
           delta: "Redeemable balance",
           status: "neutral" as const,
-        },
-        {
-          title: "Total Transactions",
-          value: String(advisor.total_transactions),
-          delta: `${toTitleCase(interval)} interval`,
-          status: "neutral" as const,
-        },
-        {
-          title: "Sales Amount",
-          value: formatCurrency(advisor.total_sales_amount),
-          delta: `${advisor.total_products_sold} products sold`,
-          status: "positive" as const,
         },
       ]
     : [];

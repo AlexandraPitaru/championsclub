@@ -264,6 +264,19 @@ body {
   color: var(--text);
 }
 
+html,
+body,
+#root {
+  font-family: var(--sans);
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
 :root.theme-transitioning,
 :root.theme-transitioning body {
   transition: background-color 180ms ease-out, color 180ms ease-out, background-image 180ms ease-out;

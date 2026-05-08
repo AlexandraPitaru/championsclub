@@ -1,10 +1,11 @@
-import { CalendarDays, ChevronDown, ListFilter, X } from "lucide-react";
+import { ListFilter, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import type {
   AdvisorOption,
   KpiInterval,
   KpiScope,
 } from "../../services/api/managerStatisticsService";
+import { formatFriendlyCustomRangeLabel } from "../../utils/dateFormatting";
 
 type ManagerFilterDrawerProps = {
   scope: KpiScope;
@@ -35,7 +36,6 @@ export default function ManagerFilterDrawer({
 }: ManagerFilterDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [advisorSearch, setAdvisorSearch] = useState("");
-  const [isDateMenuOpen, setIsDateMenuOpen] = useState(false);
 
   const scopeOptions: Array<{ value: KpiScope; label: string }> = [
     { value: "team", label: "Team performance" },
@@ -55,6 +55,11 @@ export default function ManagerFilterDrawer({
       advisor.name.toLowerCase().includes(normalizedQuery)
     );
   }, [advisorSearch, advisors]);
+
+  const customRangeLabel = useMemo(
+    () => formatFriendlyCustomRangeLabel(startDate, endDate),
+    [startDate, endDate]
+  );
 
   const optionClass = (active: boolean) =>
     `rounded-xl border px-3 py-2 text-sm font-medium transition ${
@@ -231,24 +236,25 @@ export default function ManagerFilterDrawer({
                     aria-pressed={interval === value}
                     onClick={() => {
                       onIntervalChange(value);
-                      if (value === "custom") {
-                        setIsDateMenuOpen(true);
-                        return;
+                      if (value !== "custom") {
+                        onStartDateChange("");
+                        onEndDateChange("");
                       }
-                      setIsDateMenuOpen(false);
-                      onStartDateChange("");
-                      onEndDateChange("");
                     }}
-                    className={`${optionClass(interval === value)} ${
+                    className={`${optionClass(interval === value)} min-h-10 ${
                       value === "custom" ? "col-span-2" : ""
-                    } capitalize`}
+                    } ${value === "custom" && interval === "custom" ? "normal-case" : "capitalize"}`}
                     style={
                       interval === value
                         ? undefined
                         : { borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }
                     }
                   >
-                    {value === "custom" ? "Custom date" : value}
+                    {value === "custom"
+                      ? interval === "custom"
+                        ? customRangeLabel
+                        : "Custom Date"
+                      : value}
                   </button>
                 ))}
               </div>
@@ -256,25 +262,6 @@ export default function ManagerFilterDrawer({
 
             {interval === "custom" ? (
             <section>
-              <button
-                type="button"
-                onClick={() => setIsDateMenuOpen((current) => !current)}
-                className="flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-sm font-semibold text-slate-100 transition hover:border-cyan-500/40"
-                style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }}
-              >
-                <span className="inline-flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4 text-cyan-300" />
-                  Custom Date Range
-                </span>
-                <ChevronDown
-                  className={[
-                    "h-4 w-4 text-cyan-300 transition-transform",
-                    isDateMenuOpen ? "rotate-180" : "rotate-0",
-                  ].join(" ")}
-                />
-              </button>
-
-              {isDateMenuOpen ? (
                 <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400">
@@ -308,7 +295,6 @@ export default function ManagerFilterDrawer({
                     Pick the exact date window for the custom interval.
                   </p>
                 </div>
-              ) : null}
             </section>
             ) : null}
           </div>

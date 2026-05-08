@@ -14,6 +14,7 @@ import {
   mapUserKpisToCards,
   type DashboardKpiCard,
 } from "../features/dashboard/kpiMapper";
+import { formatFriendlyCustomRangeLabel } from "../utils/dateFormatting";
 import type { TeamKpisData } from "../services/api/managerStatisticsService";
 import {
   getManagedUsers,
@@ -134,16 +135,7 @@ export default function ManagerDashboardPage() {
   const currentUser = useMemo(() => getCurrentUserFromStorage(), []);
   const chartFilterLabel = useMemo(() => {
     if (kpiInterval === "custom") {
-      if (startDate && endDate) {
-        return `Custom ${startDate} to ${endDate}`;
-      }
-      if (startDate) {
-        return `Custom from ${startDate}`;
-      }
-      if (endDate) {
-        return `Custom until ${endDate}`;
-      }
-      return "Custom date";
+      return formatFriendlyCustomRangeLabel(startDate, endDate);
     }
 
     return kpiInterval.charAt(0).toUpperCase() + kpiInterval.slice(1);

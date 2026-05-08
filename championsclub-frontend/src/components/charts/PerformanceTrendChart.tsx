@@ -11,12 +11,62 @@ import {
 import Card from "../ui/Card";
 import type { PerformanceTrendDataPoint } from "../../services/api/performanceTrendService";
 import { useTheme } from "../../app/theme/ThemeProvider";
+import { formatFriendlyDate, formatFriendlyDateShort } from "../../utils/dateFormatting";
 
 type PerformanceTrendChartProps = {
   data: PerformanceTrendDataPoint[];
   chartIdSuffix?: string;
   filterLabel?: string;
 };
+
+const compactCurrencyFormatter = new Intl.NumberFormat("en-IE", {
+  style: "currency",
+  currency: "EUR",
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
+const fullCurrencyFormatter = new Intl.NumberFormat("en-IE", {
+  style: "currency",
+  currency: "EUR",
+  maximumFractionDigits: 0,
+});
+
+function formatChartCurrency(value: number | string): string {
+  const numericValue = typeof value === "number" ? value : Number(value);
+
+  if (Number.isNaN(numericValue)) {
+    return String(value);
+  }
+
+  return compactCurrencyFormatter.format(numericValue);
+}
+
+function formatTooltipCurrency(value: number | string): string {
+  const numericValue = typeof value === "number" ? value : Number(value);
+
+  if (Number.isNaN(numericValue)) {
+    return String(value);
+  }
+
+  return fullCurrencyFormatter.format(numericValue);
+}
+
+function formatSeriesName(seriesKey: string): string {
+  if (seriesKey === "sales") {
+    return "Sales";
+  }
+
+  if (seriesKey === "points") {
+    return "Points";
+  }
+
+  if (seriesKey === "target") {
+    return "Target";
+  }
+
+  return seriesKey;
+}
 
 export default function PerformanceTrendChart({
   data,
@@ -79,18 +129,45 @@ export default function PerformanceTrendChart({
 
             <XAxis
               dataKey="period"
+              tickFormatter={(value) => formatFriendlyDateShort(String(value))}
               tick={{ fill: isLight ? "#475569" : "#94a3b8", fontSize: 12 }}
               axisLine={{ stroke: isLight ? "#b8ccdf" : "#28415f" }}
               tickLine={{ stroke: isLight ? "#b8ccdf" : "#28415f" }}
             />
 
             <YAxis
+              yAxisId="currency"
+              tickFormatter={(value) => formatChartCurrency(value)}
+              tick={{ fill: isLight ? "#475569" : "#94a3b8", fontSize: 12 }}
+              axisLine={{ stroke: isLight ? "#b8ccdf" : "#28415f" }}
+              tickLine={{ stroke: isLight ? "#b8ccdf" : "#28415f" }}
+            />
+
+            <YAxis
+              yAxisId="points"
+              orientation="right"
               tick={{ fill: isLight ? "#475569" : "#94a3b8", fontSize: 12 }}
               axisLine={{ stroke: isLight ? "#b8ccdf" : "#28415f" }}
               tickLine={{ stroke: isLight ? "#b8ccdf" : "#28415f" }}
             />
 
             <Tooltip
+              labelFormatter={(value) => formatFriendlyDate(String(value))}
+              formatter={(value, name) => {
+                const seriesName = String(name);
+                if (seriesName === "points") {
+                  const numericValue = typeof value === "number" ? value : Number(value);
+                  const formattedPoints = Number.isNaN(numericValue)
+                    ? String(value)
+                    : numericValue.toLocaleString();
+                  return [formattedPoints, formatSeriesName(seriesName)];
+                }
+
+                return [
+                  formatTooltipCurrency(value as number | string),
+                  formatSeriesName(seriesName),
+                ];
+              }}
               contentStyle={{
                 backgroundColor: isLight ? "#ffffff" : "#0c192b",
                 border: `1px solid ${isLight ? "#b8ccdf" : "#2b445f"}`,
@@ -104,23 +181,25 @@ export default function PerformanceTrendChart({
             <Area
               type="monotone"
               dataKey="sales"
+              yAxisId="currency"
               stroke="#22d3ee"
               fill={`url(#${gradientId})`}
               strokeWidth={3}
             />
 
-            {/*
             <Line
               type="monotone"
               dataKey="points"
-              stroke="#a78bfa"
+              yAxisId="points"
+              stroke="#f97316"
               strokeWidth={2}
+              dot={false}
             />
-            */}
             
             <Line
               type="monotone"
               dataKey="target"
+              yAxisId="currency"
               stroke="#f59e0b"
               strokeWidth={2}
               dot={false}

@@ -119,33 +119,23 @@ export default function Sidebar() {
         <Link
           to="/dashboard"
           onClick={closeMobileMenu}
-          className="group flex w-fit items-center gap-3 rounded-xl outline-none transition hover:opacity-95 focus-visible:ring-2 focus-visible:ring-cyan-500/60"
+          className="group mx-auto flex w-full max-w-[260px] flex-col items-center gap-0.5 outline-none transition-opacity hover:opacity-95 focus-visible:ring-2 focus-visible:ring-cyan-500/60"
           aria-label="Go to dashboard"
         >
           <img
-            src="/mascot.png"
-            alt="ChampionsClub mascot"
-            className="h-12 w-12 rounded-lg border border-cyan-500/25 object-cover shadow-[0_0_20px_rgba(6,182,212,0.2)] transition group-hover:scale-[1.03]"
-            style={{ background: "var(--sidebar-brand-bg)" }}
+            src="/Logo2.png"
+            alt="ChampionsClub logo"
+            className="h-auto w-full object-contain transition group-hover:scale-[1.02]"
           />
-          <div>
-            <h2
-              className={[
-                "w-fit text-xl font-bold",
-                isLight ? "text-cyan-800" : "text-cyan-100",
-              ].join(" ")}
-            >
-              ChampionsClub
-            </h2>
-            <p
-              className={[
-                "mt-1 w-fit text-sm",
-                isLight ? "text-slate-600" : "text-slate-400",
-              ].join(" ")}
-            >
-              AI Sales Hub
-            </p>
-          </div>
+          <p
+            className={[
+              "text-center text-sm leading-tight",
+              isLight ? "text-slate-600" : "text-slate-400",
+            ].join(" ")}
+          >
+            <span className="block">Driven by passion.</span>
+            <span className="block">Fueled by you.</span>
+          </p>
         </Link>
 
         <nav className="mt-8 flex flex-col gap-3">
