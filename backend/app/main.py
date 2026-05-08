@@ -19,6 +19,15 @@ from app.sales_advisor_leaderboard.leaderboard_router import (
 from app.sales_advisor_performance_charts.performance_charts_router import (
     router as sales_advisor_performance_charts_router,
 )
+from app.sales_advisor_shop.overview.overview_router import (
+    router as sales_advisor_shop_overview_router,
+)
+from app.sales_advisor_shop.cart_management.cart_router import (
+    router as sales_advisor_cart_router,
+)
+from app.sales_advisor_shop.checkout.checkout_router import (
+    router as sales_advisor_checkout_router,
+)
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -47,6 +56,9 @@ app.include_router(ai_activity_summary_router)
 app.include_router(sales_advisor_dashboard_router)
 app.include_router(sales_advisor_leaderboard_router)
 app.include_router(sales_advisor_performance_charts_router)
+app.include_router(sales_advisor_shop_overview_router)
+app.include_router(sales_advisor_cart_router)
+app.include_router(sales_advisor_checkout_router)
 
 app.include_router(manager_notifications_router)
 

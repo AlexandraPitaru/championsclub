@@ -459,6 +459,7 @@ def create_rewards(session: Session):
             description=description,
             credit_cost=float(cost),
             is_active=True,
+            stock_quantity=int((len(rewards) + 1) * 7 % 20),
         )
         session.add(reward)
         rewards.append(reward)
