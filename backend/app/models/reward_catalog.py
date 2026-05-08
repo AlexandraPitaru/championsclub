@@ -9,3 +9,4 @@ class RewardCatalog(SQLModel, table=True):
     description: str | None = None
     credit_cost: float
     is_active: bool = True
+    stock_quantity: int = 100
