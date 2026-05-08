@@ -13,6 +13,15 @@ from app.leaderboard.router import router as leaderboard_router
 from app.AI.summary.manager_router import router as ai_summary_router
 from app.AI.activity_summary.activity_summary_router import router as ai_activity_summary_router
 from app.sales_advisor_dashboard.overview_router import router as sales_advisor_dashboard_router
+from app.sales_advisor_leaderboard.leaderboard_router import (
+    router as sales_advisor_leaderboard_router,
+)
+from app.sales_advisor_leaderboard_my_position.my_position_router import (
+    router as sales_advisor_leaderboard_my_position_router,
+)
+from app.sales_advisor_performance_charts.performance_charts_router import (
+    router as sales_advisor_performance_charts_router,
+)
 from app.sales_advisor_profile.ai_analysis_router import (
     router as sales_advisor_profile_ai_router,
 )
@@ -22,19 +31,30 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="ChampionsClub API")
     
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-    ],
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?$",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+import os
+# CORS flexibil: orice origine în development (pentru Docker), doar localhost în producție sau local
+if os.environ.get("APP_ENV", "development") == "development":
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://127.0.0.1:5173",
+            "http://127.0.0.1:5174",
+        ],
+        allow_origin_regex=r"https?://(localhost|127\\.0\\.0\\.1)(:\\d+)?$",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 app.include_router(manager_statistics_router)
 app.include_router(leaderboard_router)
@@ -42,6 +62,9 @@ app.include_router(account_router)
 app.include_router(ai_summary_router)
 app.include_router(ai_activity_summary_router)
 app.include_router(sales_advisor_dashboard_router)
+app.include_router(sales_advisor_leaderboard_router)
+app.include_router(sales_advisor_leaderboard_my_position_router)
+app.include_router(sales_advisor_performance_charts_router)
 app.include_router(sales_advisor_profile_ai_router)
 
 app.include_router(manager_notifications_router)
