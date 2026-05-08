@@ -17,6 +17,8 @@ import AIStepNavigation from "../features/advisor/ai/AIStepNavigation";
 import AIStrengthsList from "../features/advisor/ai/AIStrengthsList";
 import AIWelcomeHero from "../features/advisor/ai/AIWelcomeHero";
 import { mockAnalysis, mockForecast } from "../features/advisor/ai/mockData";
+import { useAdvisorAIAnalysis } from "../features/advisor/ai/useAdvisorAIAnalysis";
+import { useAdvisorAIForecast } from "../features/advisor/ai/useAdvisorAIForecast";
 import type { AIInterval } from "../features/advisor/ai/types";
 import { useAIRefresh } from "../features/advisor/ai/useAIRefresh";
 
@@ -104,13 +106,16 @@ const journey: JourneyEntry[] = [
   },
 ];
 
-export default function AdvisorAIProfilePage() {
+
   const [interval, setInterval] = useState<AIInterval>("month");
   const [currentStepId, setCurrentStepId] = useState<StepId>("welcome");
   const [completed, setCompleted] = useState<StepId[]>([]);
 
-  const analysis = mockAnalysis;
-  const forecast = mockForecast;
+  const { data: analysisData, isLoading: isLoadingAnalysis, isError: isErrorAnalysis } = useAdvisorAIAnalysis();
+  const { data: forecastData, isLoading: isLoadingForecast, isError: isErrorForecast } = useAdvisorAIForecast();
+
+  const analysis = !isLoadingAnalysis && !isErrorAnalysis && analysisData ? analysisData : mockAnalysis;
+  const forecast = !isLoadingForecast && !isErrorForecast && forecastData ? forecastData : mockForecast;
 
   const { refreshing, cooldown, refresh } = useAIRefresh(async () => {
     // TODO: call POST /api/sales-advisor/profile/ai-insights/refresh
