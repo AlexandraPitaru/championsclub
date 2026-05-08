@@ -219,6 +219,7 @@ def get_sales_advisor_dashboard_overview(
             next_rank=rank_progress.next_rank,
             points_to_next_rank=rank_progress.points_to_next_rank,
             is_highest_rank=rank_progress.is_highest_rank,
+            advisor_name=f"{current_user.first_name} {current_user.last_name}",
         ),
         rank_progress=rank_progress,
         team_comparison=team_comparison,
