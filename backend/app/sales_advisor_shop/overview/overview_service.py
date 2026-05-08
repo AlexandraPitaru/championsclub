@@ -22,7 +22,6 @@ def build_reward_image_url(reward: RewardCatalog) -> str:
 
 
 def compute_stock_quantity(reward_id: int) -> int:
-    # Deprecated in favor of inventory-backed stock. Kept for compatibility.
     base = (reward_id * 31) % 20
     return int(base)
 
