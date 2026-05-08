@@ -73,3 +73,33 @@ def get_sales_advisor_skills(
         )
         for skill in skills
     ]
+
+
+def get_sales_advisor_performance_history(
+    session: Session,
+    user_id: int,
+    interval_start: datetime | None,
+) -> list[tuple[datetime, float, int]]:
+    conditions = [SaleTransaction.user_id == user_id]
+
+    if interval_start is not None:
+        conditions.append(SaleTransaction.transaction_date >= interval_start)
+
+    statement = (
+        select(
+            SaleTransaction.transaction_date,
+            SaleTransaction.amount,
+            SaleTransaction.points_earned,
+        )
+        .where(*conditions)
+        .order_by(SaleTransaction.transaction_date)
+    )
+
+    return [
+        (
+            transaction_date,
+            float(amount or 0),
+            int(points_earned or 0),
+        )
+        for transaction_date, amount, points_earned in session.exec(statement).all()
+    ]
