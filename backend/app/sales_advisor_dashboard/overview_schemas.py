@@ -13,6 +13,7 @@ class DashboardSummaryResponse(BaseModel):
     next_rank: str | None
     points_to_next_rank: int | None
     is_highest_rank: bool
+    advisor_name: str
 
 
 class RankProgressResponse(BaseModel):
