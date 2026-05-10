@@ -85,6 +85,8 @@ app.include_router(sales_advisor_history_router)
 app.include_router(sales_advisor_profile_ai_router)
 
 app.include_router(manager_notifications_router)
+from app.sales_advisor_alerts.router import router as sales_advisor_alerts_router
+app.include_router(sales_advisor_alerts_router)
 
 def seed_database_if_empty() -> None:
     if not settings.auto_seed:

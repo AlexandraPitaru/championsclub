@@ -1,4 +1,6 @@
 import random
+from datetime import datetime
+from typing import List, Dict, Tuple, Optional
 from faker import Faker
 from sqlmodel import Session, delete
 
@@ -60,18 +62,15 @@ SKILLS = [
 
 SKILL_LEVELS = ["beginner", "intermediate", "advanced"]
 
-ALERT_TYPES = ["performance", "reward", "system", "sales"]
+# Alert taxonomy tuned to app domains
+# - sales_milestone: sales/points milestones and wins
+# - lead: customer follow‑ups or new opportunities
+# - reward: catalog unlocks and redemptions
+# - performance: rank/KPI nudges and coaching tips
+# - leaderboard: position changes within dealership
+# - system: neutral system/app notices
+ALERT_TYPES = ["sales_milestone", "lead", "reward", "performance", "leaderboard", "system"]
 ALERT_PRIORITIES = ["low", "medium", "high"]
-
-ALERT_TITLES = [
-    "New reward available",
-    "Monthly target reached",
-    "New sales opportunity",
-    "Performance update",
-    "Customer follow-up reminder",
-    "New service package available",
-    "Reward redemption update",
-]
 
 REWARDS = [
     ("Amazon Gift Card", "Gift card for online shopping", 100),
@@ -432,16 +431,201 @@ def create_user_skills(session: Session, users):
     session.commit()
 
 
-def create_alerts(session: Session, users):
+def _next_rank_threshold(points: int) -> Tuple[str, int]:
+    thresholds = [("Default", 0), ("Bronze", 500), ("Silver", 1000), ("Gold", 2000)]
+    for name, th in thresholds:
+        if points < th:
+            return (name, th)
+    return ("Gold", 2000)
+
+
+def _dealership_leaderboard(users: List[AppUser]) -> Dict[int, List[AppUser]]:
+    by_dealer: Dict[int, List[AppUser]] = {}
+    for u in users:
+        by_dealer.setdefault(u.dealership_id, []).append(u)
+    for dealer_id, lst in by_dealer.items():
+        by_dealer[dealer_id] = sorted(lst, key=lambda x: x.points, reverse=True)
+    return by_dealer
+
+
+def _choose_vehicle_product(products: List[Product]) -> Product | None:
+    vehicles = [p for p in products if getattr(p, "item_type", None) == "vehicle"]
+    return random.choice(vehicles) if vehicles else None
+
+
+def _affordable_rewards(user: AppUser, rewards: List[RewardCatalog]) -> List[RewardCatalog]:
+    return [r for r in rewards if r.credit_cost <= user.credit]
+
+
+def _gen_alert_for_user(
+    user: AppUser,
+    products: List[Product],
+    rewards: List[RewardCatalog],
+    dealer_boards: Dict[int, List[AppUser]],
+    last_completed_tx_at: Optional[datetime] = None,
+) -> Tuple[str, str, str]:
+    """Return (alert_type, title, message) for a contextual alert."""
+    # Role-aware weighting: managers receive fewer personal alerts; feed is built from team
+    base_weights = [25, 18, 18, 18, 16, 5]  # sales_milestone, lead, reward, performance, leaderboard, system
+    if user.role == "manager":
+        base_weights = [5, 5, 5, 10, 5, 70]  # mostly neutral/system if manager has alerts
+
+    alert_type = random.choices(
+        ALERT_TYPES,
+        weights=base_weights,  # bias based on role
+        k=1,
+    )[0]
+
+    # Defaults
+    title = "Notification"
+    message = fake.sentence(nb_words=12)
+
+    # Manager-relevant conditions for sales advisors
+    if user.role != "manager":
+        now_time = datetime.utcnow()
+        # Stale login
+        if user.last_login_at and (now_time - user.last_login_at).days >= 14:
+            alert_type = "performance"
+            title = "Low activity notice"
+            message = (
+                f"You haven't logged in since {user.last_login_at.strftime('%b %d')}. "
+                f"Review your leads and update pipeline."
+            )
+            return alert_type, title, message
+
+        # Stale pipeline (no completed transactions recently)
+        if last_completed_tx_at is None or (now_time - last_completed_tx_at).days >= 30:
+            if random.random() < 0.4:  # not for everyone, some randomness
+                alert_type = "performance"
+                title = "Pipeline at risk"
+                when = last_completed_tx_at.strftime('%b %d') if last_completed_tx_at else "over a month"
+                message = (
+                    f"No completed transactions in the last 30d (last: {when}). "
+                    f"Schedule follow-ups and book demos."
+                )
+                return alert_type, title, message
+
+    if alert_type == "sales_milestone":
+        next_rank, th = _next_rank_threshold(user.points)
+        gap = max(0, th - user.points)
+        if gap == 0 and user.rank in ("Bronze", "Silver", "Gold"):
+            title = "Monthly target reached"
+            message = (
+                f"Great job, {user.first_name}! You reached the {user.rank} tier with "
+                f"{user.points} pts. Keep the momentum!"
+            )
+        else:
+            title = "Milestone in sight"
+            message = (
+                f"Only {gap} pts to hit {next_rank}. A couple of {random.choice(['test drives','upsells','service packages'])} "
+                f"could get you there. Current: {user.points} pts."
+            )
+
+    elif alert_type == "lead":
+        customer = f"{fake.first_name()} {fake.last_name()}"
+        when = fake.date_time_between(start_date="-5d", end_date="+3d").strftime("%b %d, %H:%M")
+        vehicle = _choose_vehicle_product(products)
+        vehicle_name = vehicle.name if vehicle else random.choice(["Golf Life", "Tiguan Elegance", "ID.4 Pro"])
+        title = random.choice(["Customer follow-up reminder", "New lead assigned", "Test drive follow-up"])
+        message = (
+            f"Follow up with {customer} about the {vehicle_name}. Suggested time: {when}. "
+            f"Tip: mention financing options and trade‑in."
+        )
+
+    elif alert_type == "reward":
+        affordable = _affordable_rewards(user, rewards)
+        if affordable:
+            reward = random.choice(affordable)
+            title = random.choice(["Reward unlocked", "New reward available"]) 
+            message = (
+                f"You can redeem '{reward.name}' for {int(reward.credit_cost)} credits. "
+                f"Balance: {int(user.credit)}."
+            )
+        else:
+            new_reward = random.choice(rewards) if rewards else None
+            title = "Reward redemption update" if random.random() < 0.5 else "New catalog item"
+            if new_reward:
+                message = (
+                    f"'{new_reward.name}' added to the catalog. Earn {int(new_reward.credit_cost)} credits to redeem."
+                )
+            else:
+                message = "New rewards available soon. Keep earning points!"
+
+    elif alert_type == "performance":
+        skill = random.choice(SKILLS)
+        delta = random.choice(["up", "down"]) 
+        pct = random.choice([3, 4, 5, 6, 7])
+        title = "Performance update"
+        message = (
+            f"Your {skill.lower()} trend is {delta} {pct}%. Current rank: {user.rank}. "
+            f"Focus on {random.choice(['closing techniques','qualification','demo flow','objection handling'])}."
+        )
+
+    elif alert_type == "leaderboard":
+        board = dealer_boards.get(user.dealership_id, [])
+        pos = board.index(user) + 1 if user in board else random.randint(1, max(1, len(board)))
+        percentile = int((pos / max(1, len(board))) * 100)
+        moved = random.choice(["up", "down"]) if pos > 1 else "up"
+        title = "Leaderboard position changed"
+        message = (
+            f"You're now #{pos} in your dealership (top {percentile}%). "
+            f"Position moved {moved}. Points: {user.points}."
+        )
+
+    elif alert_type == "system":
+        title = random.choice(["System maintenance", "Profile updated", "New app version"])
+        message = random.choice([
+            "Scheduled maintenance tonight 23:00–23:30. No action required.",
+            "Your profile was updated successfully.",
+            "A new version of Champions Club is available.",
+        ])
+
+    return alert_type, title, message
+
+
+def create_alerts(
+    session: Session,
+    users: List[AppUser],
+    products: List[Product],
+    rewards: List[RewardCatalog],
+    transactions: List[SaleTransaction],
+):
+    dealer_boards = _dealership_leaderboard(users)
+
+    # Latest completed transaction per user
+    last_tx_by_user: Dict[int, Optional[datetime]] = {}
+    for tx in transactions:
+        if getattr(tx, "status", None) == "completed":
+            cur = last_tx_by_user.get(tx.user_id)
+            if cur is None or tx.transaction_date > cur:
+                last_tx_by_user[tx.user_id] = tx.transaction_date
+
     for _ in range(TARGET_ALERTS):
         user = random.choice(users)
+        alert_type, title, message = _gen_alert_for_user(
+            user,
+            products,
+            rewards,
+            dealer_boards,
+            last_completed_tx_at=last_tx_by_user.get(user.user_id),
+        )
+
+        # Priority heuristics per type/content
+        if alert_type in ("sales_milestone", "leaderboard") and ("reached" in title or "#1" in message):
+            priority = "high"
+        elif alert_type in ("lead", "reward"):
+            priority = random.choice(["medium", "high"]) if alert_type == "lead" else random.choice(["low", "medium"]) 
+        elif alert_type == "system":
+            priority = "low"
+        else:
+            priority = random.choice(ALERT_PRIORITIES)
 
         alert = UserAlert(
             user_id=user.user_id,
-            alert_type=random.choice(ALERT_TYPES),
-            title=random.choice(ALERT_TITLES),
-            message=fake.sentence(nb_words=12),
-            priority=random.choice(ALERT_PRIORITIES),
+            alert_type=alert_type,
+            title=title,
+            message=message,
+            priority=priority,
             is_read=random.choice([True, False]),
             created_at=fake.date_time_between(start_date="-90d", end_date="now"),
         )
@@ -620,9 +804,6 @@ def main():
         print("Creating user skills...")
         create_user_skills(session, users)
 
-        print("Creating alerts...")
-        create_alerts(session, users)
-
         print("Creating rewards...")
         rewards = create_rewards(session)
 
@@ -634,6 +815,10 @@ def main():
 
         print("Creating reward redemptions...")
         create_reward_redemptions(session, users, rewards)
+
+        # Create alerts last, so messages can reference up-to-date points/credit
+        print("Creating alerts...")
+        create_alerts(session, users, products, rewards, transactions)
 
         print("Seed completed successfully.")
 
