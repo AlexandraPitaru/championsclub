@@ -7,6 +7,10 @@ import LeaderboardPage from "../../pages/LeaderboardPage";
 import AdvisorDashboardPage from "../../pages/AdvisorDashboardPage";
 import AdvisorAIProfilePage from "../../pages/AdvisorAIProfilePage";
 import AlertsPage from "../../pages/AlertsPage";
+import ShopPage from "../../pages/ShopPage";
+import CartPage from "../../pages/CartPage";
+import ProfilePage from "../../pages/ProfilePage";
+import RedemptionHistoryPage from "../../pages/RedemptionHistoryPage";
 
 export default function AppRouter() {
     return (
@@ -17,7 +21,14 @@ export default function AppRouter() {
             <Route path="/manager/advisor/:id" element={<AdvisorProfilePage />} />
             <Route path="/advisor/:id" element={<AdvisorProfilePage />} />
             <Route path="/advisor-dashboard" element={<AdvisorDashboardPage />} />
+<<<<<<< HEAD
             <Route path="/advisor-ai" element={<AdvisorAIProfilePage />} />
+=======
+            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/redemption-history" element={<RedemptionHistoryPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+>>>>>>> 04b4a7f837d48afe202e0d851ff00935cacfaf53
             <Route path="/leaderboard" element={<LeaderboardPage />} /> 
 
             {/* fallback */}

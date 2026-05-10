@@ -28,8 +28,9 @@ export function mapTeamKpisToSummaryPayload(
   teamKpis: TeamKpisData,
   interval: KpiInterval
 ): ManagerTeamSummaryRequest {
+  const apiInterval = interval === "custom" ? "all" : interval;
   return {
-    interval,
+    interval: apiInterval,
     total_employees: teamKpis.total_employees,
     total_points: teamKpis.total_points,
     average_points: teamKpis.average_points,

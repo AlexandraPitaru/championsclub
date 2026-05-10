@@ -1,3 +1,4 @@
+import { User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import AppShell from "../app/layouts/AppShell";
 import PerformanceTrendChart from "../components/charts/PerformanceTrendChart";
@@ -13,6 +14,7 @@ import {
   mapUserKpisToCards,
   type DashboardKpiCard,
 } from "../features/dashboard/kpiMapper";
+import { formatFriendlyCustomRangeLabel } from "../utils/dateFormatting";
 import type { TeamKpisData } from "../services/api/managerStatisticsService";
 import {
   getManagedUsers,
@@ -33,6 +35,8 @@ const DASHBOARD_FILTERS_STORAGE_KEY = "manager_dashboard_filters";
 interface DashboardFilters {
   kpiScope: KpiScope;
   kpiInterval: KpiInterval;
+  startDate?: string;
+  endDate?: string;
   selectedUserId: number | null;
 }
 
@@ -48,11 +52,14 @@ function loadFiltersFromStorage(): DashboardFilters {
           parsed.kpiInterval === "day" ||
           parsed.kpiInterval === "week" ||
           parsed.kpiInterval === "month" ||
-          parsed.kpiInterval === "all"
+          parsed.kpiInterval === "all" ||
+          parsed.kpiInterval === "custom"
             ? parsed.kpiInterval
             : "week",
         selectedUserId:
           typeof parsed.selectedUserId === "number" ? parsed.selectedUserId : null,
+        startDate: typeof parsed.startDate === "string" ? parsed.startDate : "",
+        endDate: typeof parsed.endDate === "string" ? parsed.endDate : "",
       };
     }
   } catch (error) {
@@ -61,6 +68,8 @@ function loadFiltersFromStorage(): DashboardFilters {
   return {
     kpiScope: "team",
     kpiInterval: "week",
+    startDate: "",
+    endDate: "",
     selectedUserId: null,
   };
 }
@@ -98,7 +107,10 @@ export default function ManagerDashboardPage() {
 
   const [kpiScope, setKpiScope] = useState<KpiScope>(initialFilters.kpiScope);
   const [kpiInterval, setKpiInterval] = useState<KpiInterval>(initialFilters.kpiInterval);
+  const [startDate, setStartDate] = useState(initialFilters.startDate ?? "");
+  const [endDate, setEndDate] = useState(initialFilters.endDate ?? "");
   const [selectedUserId, setSelectedUserId] = useState<number | null>(initialFilters.selectedUserId);
+  const isCustomDateInterval = kpiInterval === "custom";
 
   const [advisorOptions, setAdvisorOptions] = useState<AdvisorOption[]>([]);
   const [isAdvisorsLoading, setIsAdvisorsLoading] = useState(false);
@@ -116,10 +128,18 @@ export default function ManagerDashboardPage() {
       dealership: string;
       points: number;
       tier: string;
+      position?: number;
     }>
   >([]);
 
   const currentUser = useMemo(() => getCurrentUserFromStorage(), []);
+  const chartFilterLabel = useMemo(() => {
+    if (kpiInterval === "custom") {
+      return formatFriendlyCustomRangeLabel(startDate, endDate);
+    }
+
+    return kpiInterval.charAt(0).toUpperCase() + kpiInterval.slice(1);
+  }, [kpiInterval, startDate, endDate]);
   
   const managerId =
     currentUser?.role?.toLowerCase() === "manager"
@@ -134,8 +154,24 @@ export default function ManagerDashboardPage() {
   managerId,
   kpiScope,
   kpiInterval,
-  selectedUserId
+  selectedUserId,
+  isCustomDateInterval ? startDate || undefined : undefined,
+  isCustomDateInterval ? endDate || undefined : undefined
 );
+
+  const chartData = useMemo(() => {
+    if (!isCustomDateInterval) {
+      return performanceTrend;
+    }
+
+    const startTs = startDate ? Date.parse(`${startDate}T00:00:00`) : Number.NEGATIVE_INFINITY;
+    const endTs = endDate ? Date.parse(`${endDate}T23:59:59`) : Number.POSITIVE_INFINITY;
+
+    return performanceTrend.filter((point) => {
+      const pointTs = Date.parse(`${point.period}T12:00:00`);
+      return pointTs >= startTs && pointTs <= endTs;
+    });
+  }, [isCustomDateInterval, performanceTrend, startDate, endDate]);
 
   const { data: notificationsData } = useManagerNotifications({
     managerId,
@@ -169,9 +205,11 @@ export default function ManagerDashboardPage() {
     saveFiltersToStorage({
       kpiScope,
       kpiInterval,
+      startDate,
+      endDate,
       selectedUserId,
     });
-  }, [kpiScope, kpiInterval, selectedUserId]);
+  }, [kpiScope, kpiInterval, startDate, endDate, selectedUserId]);
 
   useEffect(() => {
     async function loadManagedUsers() {
@@ -227,7 +265,10 @@ export default function ManagerDashboardPage() {
 
       try {
         if (kpiScope === "team") {
-          const response = await getTeamKpis(managerId, kpiInterval);
+          const response = await getTeamKpis(managerId, kpiInterval, {
+            startDate: isCustomDateInterval ? startDate || undefined : undefined,
+            endDate: isCustomDateInterval ? endDate || undefined : undefined,
+          });
           setKpiCards(mapTeamKpisToCards(response.team_kpis));
           return;
         }
@@ -242,7 +283,11 @@ export default function ManagerDashboardPage() {
           const response = await getUserKpis(
             managerId,
             selectedUserId,
-            kpiInterval
+            kpiInterval,
+            {
+              startDate: isCustomDateInterval ? startDate || undefined : undefined,
+              endDate: isCustomDateInterval ? endDate || undefined : undefined,
+            }
           );
 
           setKpiCards(mapUserKpisToCards(response));
@@ -257,42 +302,95 @@ export default function ManagerDashboardPage() {
     }
 
     loadKpis();
-  }, [managerId, kpiScope, selectedUserId, kpiInterval]);
+  }, [managerId, kpiScope, selectedUserId, kpiInterval, startDate, endDate]);
 
   useEffect(() => {
     async function loadTeamKpisForSummary() {
       if (!managerId) return;
       try {
-        const response = await getTeamKpis(managerId, kpiInterval);
+        const response = await getTeamKpis(managerId, kpiInterval, {
+          startDate: isCustomDateInterval ? startDate || undefined : undefined,
+          endDate: isCustomDateInterval ? endDate || undefined : undefined,
+        });
         setSummaryTeamKpis(response.team_kpis);
       } catch {
         setSummaryTeamKpis(null);
       }
     }
     loadTeamKpisForSummary();
-  }, [managerId, kpiInterval]);
+  }, [managerId, kpiInterval, startDate, endDate]);
 
   useEffect(() => {
     async function loadLeaderboardPreview() {
       try {
-        const response = await getLeaderboard({
-          interval: kpiInterval,
+        const leaderboardInterval = kpiInterval === "custom" ? "all" : kpiInterval;
+
+        if (kpiScope === "team" || selectedUserId === null) {
+          const response = await getLeaderboard({
+            interval: leaderboardInterval,
+            sortBy: "points",
+            sortDir: "desc",
+            page: 1,
+            pageSize: 10,
+          });
+
+          const transformedData = response.items.slice(0, 5).map((item) => ({
+            id: String(item.user_id),
+            name: `${item.first_name} ${item.last_name}`,
+            dealership: "Team",
+            points: item.points,
+            tier: item.tier,
+            position: item.position,
+          }));
+
+          setLeaderboardPreview(transformedData);
+          return;
+        }
+
+        const firstPage = await getLeaderboard({
+          interval: leaderboardInterval,
           sortBy: "points",
           sortDir: "desc",
           page: 1,
-          pageSize: 10,
+          pageSize: 50,
         });
 
-        // Transform API data to LeaderboardPreview format
-        const transformedData = response.items.slice(0, 5).map((item) => ({
-          id: String(item.user_id),
-          name: `${item.first_name} ${item.last_name}`,
-          dealership: "Team", // API doesn't provide dealership, so using default
-          points: item.points,
-          tier: item.tier,
-        }));
+        const allItems = [...firstPage.items];
+        const totalPages = firstPage.pagination.total_pages;
 
-        setLeaderboardPreview(transformedData);
+        for (let page = 2; page <= totalPages; page += 1) {
+          const pageResponse = await getLeaderboard({
+            interval: leaderboardInterval,
+            sortBy: "points",
+            sortDir: "desc",
+            page,
+            pageSize: 50,
+          });
+
+          allItems.push(...pageResponse.items);
+        }
+
+        const selectedIndex = allItems.findIndex(
+          (item) => item.user_id === selectedUserId
+        );
+
+        if (selectedIndex === -1) {
+          setLeaderboardPreview([]);
+          return;
+        }
+
+        const selectedTopFive = allItems.slice(selectedIndex, selectedIndex + 5);
+
+        setLeaderboardPreview(
+          selectedTopFive.map((item) => ({
+            id: String(item.user_id),
+            name: `${item.first_name} ${item.last_name}`,
+            dealership: "Team",
+            points: item.points,
+            tier: item.tier,
+            position: item.position,
+          }))
+        );
       } catch (error) {
         console.error("Failed to load leaderboard preview:", error);
         setLeaderboardPreview([]);
@@ -300,7 +398,7 @@ export default function ManagerDashboardPage() {
     }
 
     loadLeaderboardPreview();
-  }, [kpiInterval]);
+  }, [kpiInterval, kpiScope, selectedUserId]);
 
   return (
     <AppShell>
@@ -324,13 +422,39 @@ export default function ManagerDashboardPage() {
           <ManagerFilterDrawer
             scope={kpiScope}
             interval={kpiInterval}
+            startDate={startDate}
+            endDate={endDate}
             selectedUserId={selectedUserId}
             advisors={advisorOptions}
             onScopeChange={setKpiScope}
-            onIntervalChange={setKpiInterval}
+            onIntervalChange={(nextInterval) => {
+              setKpiInterval(nextInterval);
+              if (nextInterval !== "custom") {
+                setStartDate("");
+                setEndDate("");
+              }
+            }}
+            onStartDateChange={setStartDate}
+            onEndDateChange={setEndDate}
             onUserChange={setSelectedUserId}
           />
         </section>
+
+        {kpiScope === "user" && selectedUserId !== null && (() => {
+          const selectedAdvisor = advisorOptions.find((a) => a.id === selectedUserId);
+          return selectedAdvisor ? (
+            <div className="flex items-center gap-3 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-cyan-500/40 bg-cyan-500/20 text-cyan-300">
+                <User className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-cyan-400">Viewing advisor data</p>
+                <p className="text-sm font-semibold text-cyan-100">{selectedAdvisor.name}</p>
+              </div>
+              <p className="ml-auto text-xs text-slate-400 hidden sm:block">KPI cards and trend below reflect this advisor only</p>
+            </div>
+          ) : null;
+        })()}
 
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {isKpiLoading &&
@@ -362,7 +486,10 @@ export default function ManagerDashboardPage() {
 
         <section className="grid grid-cols-1 gap-6">
           {isTrendLoading && (
-  <div className="h-[360px] animate-pulse rounded-2xl border border-[#29405b] bg-[#0d1a2b]" />
+            <div
+              className="h-[360px] animate-pulse rounded-2xl border"
+              style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-bg)" }}
+            />
 )}
 
 {isTrendError && (
@@ -372,16 +499,25 @@ export default function ManagerDashboardPage() {
 )}
 
 {!isTrendLoading && !isTrendError && (
-  <PerformanceTrendChart data={performanceTrend} />
+  <PerformanceTrendChart data={chartData} filterLabel={chartFilterLabel} />
 )}
-          <PriorityAlertsPanel alerts={dashboardAlerts} />
+          {dashboardAlerts.length > 0 ? (
+            <PriorityAlertsPanel alerts={dashboardAlerts} />
+          ) : null}
         </section>
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <LeaderboardPreview items={leaderboardPreview} />
+          <LeaderboardPreview
+            items={leaderboardPreview}
+            subtitle={
+              kpiScope === "user" && selectedUserId !== null
+                ? "Selected advisor and next 4 positions"
+                : "Top performing advisors"
+            }
+          />
           <AIExecutiveSummary
             teamKpis={summaryTeamKpis}
-            interval={kpiInterval}
+            interval={kpiInterval === "custom" ? "all" : kpiInterval}
             managerId={managerId}
           />
         </section>
