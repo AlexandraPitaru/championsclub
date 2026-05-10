@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Bell,
   LayoutDashboard,
@@ -16,7 +16,7 @@ import { getLeaderboard } from "../../services/api/dashboardService";
 import { useTheme } from "../../app/theme/ThemeProvider";
 
 const navItems = [
-  { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
+  { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard, isDynamic: true },
   { label: "Leaderboard", to: "/leaderboard", icon: Trophy },
   { label: "Alerts", to: "/alerts", icon: Bell },
 ];
@@ -38,6 +38,7 @@ function getCurrentUserRole(): string | null {
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isLight, theme, toggleTheme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -217,6 +218,49 @@ export default function Sidebar() {
 
           {navItems.map((item) => {
             const Icon = item.icon;
+            
+            // Handle dynamic routing for Dashboard
+            if (item.isDynamic) {
+              const handleDashboardClick = () => {
+                const dashboardRoute = userRole?.toLowerCase() === "sales_advisor" 
+                  ? "/advisor-dashboard" 
+                  : "/dashboard";
+                navigate(dashboardRoute);
+                closeMobileMenu();
+              };
+
+              return (
+                <button
+                  key={item.label}
+                  onClick={handleDashboardClick}
+                  className={[
+                    "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
+                    location.pathname === "/advisor-dashboard" || location.pathname === "/dashboard"
+                      ? [
+                          "border border-cyan-500/40 bg-cyan-500/15 shadow-[0_0_22px_rgba(6,182,212,0.18)]",
+                          isLight ? "text-cyan-800" : "text-cyan-100",
+                        ].join(" ")
+                      : [
+                          isLight
+                            ? "text-slate-700 hover:text-cyan-800"
+                            : "text-slate-300 hover:text-cyan-100",
+                        ].join(" "),
+                  ].join(" ")}
+                  onMouseEnter={(event) => {
+                    const isActive = location.pathname === "/advisor-dashboard" || location.pathname === "/dashboard";
+                    if (!isActive) event.currentTarget.style.background = "var(--sidebar-hover)";
+                  }}
+                  onMouseLeave={(event) => {
+                    const isActive = location.pathname === "/advisor-dashboard" || location.pathname === "/dashboard";
+                    if (!isActive) event.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            }
+
             return (
               <NavLink
                 key={item.to}

@@ -11,3 +11,7 @@ from app.models.reward_catalog import RewardCatalog
 from app.models.reward_redemption import RewardRedemption
 from app.models.sale_transaction import SaleTransaction
 from app.models.sale_transaction_item import SaleTransactionItem
+from app.models.cart import Cart
+from app.models.cart_item import CartItem
+from app.models.redemption_order import RedemptionOrder
+from app.models.redemption_order_item import RedemptionOrderItem
