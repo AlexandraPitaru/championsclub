@@ -3,13 +3,17 @@ import type { FormEvent } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Bell,
+  History,
   LayoutDashboard,
   LogOut,
   Moon,
   PanelLeftOpen,
   Search,
+  ShoppingBag,
+  ShoppingCart,
   Sun,
   Trophy,
+  User,
   X,
 } from "lucide-react";
 import { getLeaderboard } from "../../services/api/dashboardService";
@@ -17,8 +21,12 @@ import { useTheme } from "../../app/theme/ThemeProvider";
 
 const navItems = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard, isDynamic: true },
+  { label: "Shop", to: "/shop", icon: ShoppingBag },
+  { label: "Cart", to: "/cart", icon: ShoppingCart },
+  { label: "Redemption History", to: "/redemption-history", icon: History },
   { label: "Leaderboard", to: "/leaderboard", icon: Trophy },
   { label: "Alerts", to: "/alerts", icon: Bell },
+  { label: "Profile", to: "/profile", icon: User },
 ];
 
 function normalizeName(value: string) {
@@ -48,6 +56,19 @@ export default function Sidebar() {
 
   const trimmedSearch = useMemo(() => searchInput.trim(), [searchInput]);
   const userRole = useMemo(() => getCurrentUserRole(), []);
+  const dashboardRoute = userRole?.toLowerCase() === "sales_advisor" ? "/advisor-dashboard" : "/dashboard";
+  const canSearchAdvisor = userRole?.toLowerCase() !== "sales_advisor";
+  const visibleNavItems = useMemo(() => {
+    if (userRole?.toLowerCase() !== "manager") return navItems;
+
+    return navItems.filter(
+      (item) =>
+        item.to !== "/shop" &&
+        item.to !== "/cart" &&
+        item.to !== "/redemption-history" &&
+        item.to !== "/profile"
+    );
+  }, [userRole]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return;
@@ -118,7 +139,7 @@ export default function Sidebar() {
     <div className="flex h-full flex-col justify-between">
       <div className="px-6 py-5">
         <Link
-          to="/dashboard"
+          to={dashboardRoute}
           onClick={closeMobileMenu}
           className="group mx-auto flex w-full max-w-[260px] flex-col items-center gap-0.5 outline-none transition-opacity hover:opacity-95 focus-visible:ring-2 focus-visible:ring-cyan-500/60"
           aria-label="Go to dashboard"
@@ -140,38 +161,40 @@ export default function Sidebar() {
         </Link>
 
         <nav className="mt-8 flex flex-col gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              setIsSearchOpen((current) => !current);
-              setSearchError("");
-            }}
-            className={[
-              "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
-              isSearchOpen
-                ? [
-                    "border border-cyan-500/40 bg-cyan-500/15 shadow-[0_0_22px_rgba(6,182,212,0.18)]",
-                    isLight ? "text-cyan-800" : "text-cyan-100",
-                  ].join(" ")
-                : [
-                    isLight
-                      ? "text-slate-700 hover:text-cyan-800"
-                      : "text-slate-300 hover:text-cyan-100",
-                  ].join(" "),
-            ].join(" ")}
-            style={{ background: isSearchOpen ? undefined : "transparent" }}
-            onMouseEnter={(event) => {
-              if (!isSearchOpen) event.currentTarget.style.background = "var(--sidebar-hover)";
-            }}
-            onMouseLeave={(event) => {
-              if (!isSearchOpen) event.currentTarget.style.background = "transparent";
-            }}
-          >
-            <Search className="h-5 w-5" />
-            <span>Search Advisor</span>
-          </button>
+          {canSearchAdvisor ? (
+            <button
+              type="button"
+              onClick={() => {
+                setIsSearchOpen((current) => !current);
+                setSearchError("");
+              }}
+              className={[
+                "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
+                isSearchOpen
+                  ? [
+                      "border border-cyan-500/40 bg-cyan-500/15 shadow-[0_0_22px_rgba(6,182,212,0.18)]",
+                      isLight ? "text-cyan-800" : "text-cyan-100",
+                    ].join(" ")
+                  : [
+                      isLight
+                        ? "text-slate-700 hover:text-cyan-800"
+                        : "text-slate-300 hover:text-cyan-100",
+                    ].join(" "),
+              ].join(" ")}
+              style={{ background: isSearchOpen ? undefined : "transparent" }}
+              onMouseEnter={(event) => {
+                if (!isSearchOpen) event.currentTarget.style.background = "var(--sidebar-hover)";
+              }}
+              onMouseLeave={(event) => {
+                if (!isSearchOpen) event.currentTarget.style.background = "transparent";
+              }}
+            >
+              <Search className="h-5 w-5" />
+              <span>Search Advisor</span>
+            </button>
+          ) : null}
 
-          {isSearchOpen ? (
+          {canSearchAdvisor && isSearchOpen ? (
             <form
               onSubmit={handleAdvisorSearch}
               className="rounded-xl border p-3"
@@ -216,7 +239,7 @@ export default function Sidebar() {
             </form>
           ) : null}
 
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             
             // Handle dynamic routing for Dashboard
@@ -339,10 +362,10 @@ export default function Sidebar() {
             background: "var(--role-card-grad)",
           }}
         >
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-3">
             <p
               className={[
-                "text-[11px] font-bold uppercase tracking-[0.2em]",
+                "text-[11px] font-bold uppercase tracking-[0.2em] leading-tight",
                 isLight ? "text-cyan-800" : "text-cyan-300",
               ].join(" ")}
             >
@@ -351,13 +374,13 @@ export default function Sidebar() {
 
             <span
               className={[
-                "inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em] shadow-[0_0_16px_rgba(6,182,212,0.22)]",
+                "inline-flex items-center justify-center rounded-lg border px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] shadow-[0_0_16px_rgba(6,182,212,0.22)] whitespace-nowrap",
                 isLight
                   ? "border-cyan-600/35 bg-cyan-500/20 text-cyan-950"
                   : "border-cyan-400/35 bg-cyan-500/18 text-cyan-50",
               ].join(" ")}
             >
-              {userRole ? userRole.toUpperCase() : "UNKNOWN"}
+              {userRole ? userRole.replace(/_/g, " ").toUpperCase() : "UNKNOWN"}
             </span>
           </div>
         </div>
@@ -380,12 +403,12 @@ export default function Sidebar() {
         type="button"
         aria-label="Open navigation menu"
         onClick={() => setIsMobileMenuOpen(true)}
-        className={[
-          "fixed left-3 top-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-lg border shadow-[0_0_18px_rgba(6,182,212,0.22)] backdrop-blur lg:hidden",
-          isLight
-            ? "border-cyan-600/30 bg-white/90 text-cyan-800"
-            : "border-cyan-500/40 bg-[#081322]/85 text-cyan-100",
-        ].join(" ")}
+        className="fixed left-3 top-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-lg border shadow-[0_0_18px_rgba(6,182,212,0.22)] backdrop-blur lg:hidden"
+        style={{
+          borderColor: "var(--card-border)",
+          background: "color-mix(in srgb, var(--sidebar-bg) 90%, transparent)",
+          color: isLight ? "#0e7490" : "#06b6d4"
+        }}
       >
         <PanelLeftOpen className="h-5 w-5" />
       </button>

@@ -81,18 +81,18 @@ function getRankTrophyColor(rank: string) {
   const normalizedRank = rank.trim().toLowerCase();
 
   if (normalizedRank === "gold") {
-    return "text-amber-300";
+    return "#facc15";
   }
 
   if (normalizedRank === "silver") {
-    return "text-slate-300";
+    return "#c0c0c0";
   }
 
   if (normalizedRank === "bronze") {
-    return "text-orange-400";
+    return "#cd7f32";
   }
 
-  return "text-cyan-300";
+  return "#67e8f9";
 }
 
 function normalizeAlertPriority(priority?: string): "high" | "medium" | "low" {
@@ -417,8 +417,8 @@ export default function AdvisorProfilePage() {
                       <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                         Current Rank
                       </p>
-                      <p className="mt-2 flex items-center justify-center gap-2 text-sm font-medium text-slate-100">
-                        <Trophy className={`h-4 w-4 ${getRankTrophyColor(advisor.current_rank)}`} />
+                      <p className="mt-2 flex items-center justify-center gap-2 text-sm font-medium" style={{ color: getRankTrophyColor(advisor.current_rank) }}>
+                        <Trophy className="h-4 w-4" />
                         {advisor.current_rank}
                       </p>
                     </div>
