@@ -21,14 +21,11 @@ export default function AppRouter() {
             <Route path="/manager/advisor/:id" element={<AdvisorProfilePage />} />
             <Route path="/advisor/:id" element={<AdvisorProfilePage />} />
             <Route path="/advisor-dashboard" element={<AdvisorDashboardPage />} />
-<<<<<<< HEAD
-            <Route path="/advisor-ai" element={<AdvisorAIProfilePage />} />
-=======
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/redemption-history" element={<RedemptionHistoryPage />} />
             <Route path="/profile" element={<ProfilePage />} />
->>>>>>> 04b4a7f837d48afe202e0d851ff00935cacfaf53
+            <Route path="/advisor-ai" element={<AdvisorAIProfilePage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} /> 
 
             {/* fallback */}
