@@ -6,6 +6,10 @@ import AdvisorProfilePage from "../../pages/AdvisorProfilePage";
 import LeaderboardPage from "../../pages/LeaderboardPage";
 import AdvisorDashboardPage from "../../pages/AdvisorDashboardPage";
 import AlertsPage from "../../pages/AlertsPage";
+import ShopPage from "../../pages/ShopPage";
+import CartPage from "../../pages/CartPage";
+import ProfilePage from "../../pages/ProfilePage";
+import RedemptionHistoryPage from "../../pages/RedemptionHistoryPage";
 
 export default function AppRouter() {
     return (
@@ -16,6 +20,10 @@ export default function AppRouter() {
             <Route path="/manager/advisor/:id" element={<AdvisorProfilePage />} />
             <Route path="/advisor/:id" element={<AdvisorProfilePage />} />
             <Route path="/advisor-dashboard" element={<AdvisorDashboardPage />} />
+            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/redemption-history" element={<RedemptionHistoryPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} /> 
 
             {/* fallback */}

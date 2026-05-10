@@ -1,13 +1,22 @@
-import type { ReactNode } from "react";
+import type { ReactNode, HTMLAttributes } from "react";
 
-type CardProps = {
+type CardProps = HTMLAttributes<HTMLDivElement> & {
     children: ReactNode;
     className?: string;
 };
 
-export default function Card({ children, className = "" }: CardProps) {
+export default function Card({ children, className = "", style, ...rest }: CardProps) {
     return (
-        <div className={`rounded-2xl border border-[#1f3045] bg-[#0b1524]/90 p-5 shadow-[0_12px_30px_rgba(2,8,20,0.35)] backdrop-blur ${className}`}>
+        <div
+            className={`rounded-2xl border p-5 backdrop-blur ${className}`}
+            style={{
+                borderColor: "var(--card-border)",
+                background: "var(--card-bg)",
+                boxShadow: "var(--card-shadow)",
+                ...style,
+            }}
+            {...rest}
+        >
             {children}
         </div>
     );

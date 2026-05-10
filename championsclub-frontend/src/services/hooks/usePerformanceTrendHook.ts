@@ -2,7 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import type {KpiInterval,KpiScope,} from "../api/managerStatisticsService";
 import { getPerformanceTrend, getUserPerformanceTrend } from "../api/performanceTrendService";
 
-export function usePerformanceTrendHook(managerId: number | null, kpiScope: KpiScope, interval: KpiInterval, selectedUserId: number | null) 
+export function usePerformanceTrendHook(
+  managerId: number | null,
+  kpiScope: KpiScope,
+  interval: KpiInterval,
+  selectedUserId: number | null,
+  startDate?: string,
+  endDate?: string
+) 
 
     {
   return useQuery({
@@ -12,6 +19,8 @@ export function usePerformanceTrendHook(managerId: number | null, kpiScope: KpiS
       kpiScope,
       selectedUserId,
       interval,
+      startDate,
+      endDate,
     ],
     queryFn: () => {
       if (!managerId) {
@@ -19,14 +28,14 @@ export function usePerformanceTrendHook(managerId: number | null, kpiScope: KpiS
       }
 
       if (kpiScope === "team") {
-        return getPerformanceTrend(managerId, interval);
+        return getPerformanceTrend(managerId, interval, { startDate, endDate });
       }
 
       if (!selectedUserId) {
         throw new Error("Missing selected advisor");
       }
 
-      return getUserPerformanceTrend(managerId, selectedUserId, interval);
+      return getUserPerformanceTrend(managerId, selectedUserId, interval, { startDate, endDate });
     },
     enabled:
       Boolean(managerId) &&

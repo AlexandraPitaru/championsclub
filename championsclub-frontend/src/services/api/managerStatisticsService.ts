@@ -1,6 +1,6 @@
 //Creating the api service that lets me conect and fetch the data for the manager dashboard, this will be used in the managerDashboardServicece.ts file, and will have functions like getManagerDashboardData, getManagerAlerts, getManagerKpis, etc. For now we will just create the functions and return mock data, but in the future we will connect it to the backend api.
 
-export type KpiInterval = "day" | "week" | "month" | "all";
+export type KpiInterval = "day" | "week" | "month" | "all" | "custom";
 export type KpiScope = "team" | "user";
 
 export type TeamKpisData ={
@@ -56,7 +56,16 @@ export type AdvisorOption ={
   name: string;
 }
 
+export type DateRangeFilter = {
+  startDate?: string;
+  endDate?: string;
+};
+
 const API_BASE_URL = "http://localhost:8000";
+
+function toApiInterval(interval: KpiInterval): Exclude<KpiInterval, "custom"> {
+  return interval === "custom" ? "all" : interval;
+}
 
 export async function getManagedUsers(
   managerId: number
@@ -76,10 +85,17 @@ export async function getManagedUsers(
 
 
 
-export async function getTeamKpis(managerId: number, interval: KpiInterval): Promise<TeamKpisResponse>
- {
+export async function getTeamKpis(
+  managerId: number,
+  interval: KpiInterval,
+  dateRange?: DateRangeFilter
+): Promise<TeamKpisResponse> {
+  const params = new URLSearchParams({ interval: toApiInterval(interval) });
+    if (dateRange?.startDate) params.set("start_date", dateRange.startDate);
+    if (dateRange?.endDate) params.set("end_date", dateRange.endDate);
+
     const response = await fetch(
-    `${API_BASE_URL}/api/manager/dashboard/team/kpis?interval=${interval}`,
+    `${API_BASE_URL}/api/manager/dashboard/team/kpis?${params.toString()}`,
     {
       headers: {
         "x-user-id": String(managerId),
@@ -97,10 +113,15 @@ export async function getTeamKpis(managerId: number, interval: KpiInterval): Pro
 export async function getUserKpis(
   managerId: number,
   userId: number,
-  interval: KpiInterval
+  interval: KpiInterval,
+  dateRange?: DateRangeFilter
 ): Promise<UserKpiResponse> {
+  const params = new URLSearchParams({ interval: toApiInterval(interval) });
+  if (dateRange?.startDate) params.set("start_date", dateRange.startDate);
+  if (dateRange?.endDate) params.set("end_date", dateRange.endDate);
+
   const response = await fetch(
-    `${API_BASE_URL}/api/manager/dashboard/users/${userId}/kpis?interval=${interval}`,
+    `${API_BASE_URL}/api/manager/dashboard/users/${userId}/kpis?${params.toString()}`,
     {
       headers: {
         "x-user-id": String(managerId),
@@ -118,10 +139,15 @@ export async function getUserKpis(
 export async function getAdvisorProfileKpis(
   managerId: number,
   userId: number,
-  interval: KpiInterval
+  interval: KpiInterval,
+  dateRange?: DateRangeFilter
 ): Promise<UserKpiResponse> {
+  const params = new URLSearchParams({ interval: toApiInterval(interval) });
+  if (dateRange?.startDate) params.set("start_date", dateRange.startDate);
+  if (dateRange?.endDate) params.set("end_date", dateRange.endDate);
+
   const response = await fetch(
-    `${API_BASE_URL}/api/manager/profile/users/${userId}/kpis?interval=${interval}`,
+    `${API_BASE_URL}/api/manager/profile/users/${userId}/kpis?${params.toString()}`,
     {
       headers: {
         "x-user-id": String(managerId),
