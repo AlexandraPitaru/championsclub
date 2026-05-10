@@ -106,7 +106,7 @@ const journey: JourneyEntry[] = [
   },
 ];
 
-
+const AdvisorAIProfilePage = () => {
   const [interval, setInterval] = useState<AIInterval>("month");
   const [currentStepId, setCurrentStepId] = useState<StepId>("welcome");
   const [completed, setCompleted] = useState<StepId[]>([]);
@@ -291,4 +291,6 @@ const journey: JourneyEntry[] = [
       </div>
     </AppShell>
   );
-}
+};
+
+export default AdvisorAIProfilePage;
