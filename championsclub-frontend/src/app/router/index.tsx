@@ -4,12 +4,13 @@ import LoginPage from "../../pages/LoginPage";
 import ManagerDashboardPage from "../../pages/ManagerDashboardPage";
 import AdvisorProfilePage from "../../pages/AdvisorProfilePage";
 import LeaderboardPage from "../../pages/LeaderboardPage";
+import AdvisorLeaderboardPage from "../../pages/AdvisorLeaderboardPage";
 import AdvisorDashboardPage from "../../pages/AdvisorDashboardPage";
 import AdvisorAIProfilePage from "../../pages/AdvisorAIProfilePage";
 import AlertsPage from "../../pages/AlertsPage";
+import SalesAdvisorAlertsPage from "../../pages/SalesAdvisorAlertsPage";
 import ShopPage from "../../pages/ShopPage";
 import CartPage from "../../pages/CartPage";
-import ProfilePage from "../../pages/ProfilePage";
 import RedemptionHistoryPage from "../../pages/RedemptionHistoryPage";
 
 export default function AppRouter() {
@@ -21,12 +22,17 @@ export default function AppRouter() {
             <Route path="/manager/advisor/:id" element={<AdvisorProfilePage />} />
             <Route path="/advisor/:id" element={<AdvisorProfilePage />} />
             <Route path="/advisor-dashboard" element={<AdvisorDashboardPage />} />
+            <Route path="/advisor-alerts" element={<SalesAdvisorAlertsPage />} />
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/redemption-history" element={<RedemptionHistoryPage />} />
+<<<<<<< HEAD
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/advisor-ai" element={<AdvisorAIProfilePage />} />
+=======
+>>>>>>> fe688cb3c78623276dfc3472f26d7b4ebe210ffd
             <Route path="/leaderboard" element={<LeaderboardPage />} /> 
+            <Route path="/advisor-leaderboard" element={<AdvisorLeaderboardPage />} />
 
             {/* fallback */}
       <Route path="*" element={<Navigate to="/login" />} />

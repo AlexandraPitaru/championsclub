@@ -24,6 +24,12 @@ import {
 } from "../services/hooks/useShopCart";
 import type { AvailabilityStatus, ShopCartItem, ShopReward } from "../services/api/shopService";
 
+const CREDIT_EPSILON = 1e-6;
+
+function normalizeRemainingCredits(value: number): number {
+  return Math.abs(value) <= CREDIT_EPSILON ? 0 : value;
+}
+
 function formatCredits(value: number): string {
   const rounded = Math.round(value);
   // Handle negative zero
@@ -104,7 +110,10 @@ export default function CartPage() {
   const totalCreditCost = cartQuery.data?.total_credit_cost ?? 0;
   const availableCredits = cartQuery.data?.available_credit ?? 0;
   const remainingCredits = cartQuery.data?.remaining_credit_after_checkout ?? availableCredits;
-  const canCheckout = cartQuery.data?.checkout_eligible ?? false;
+  const normalizedRemainingCredits = normalizeRemainingCredits(remainingCredits);
+  const canCheckout =
+    (cartQuery.data?.checkout_eligible ?? false) ||
+    (items.length > 0 && normalizedRemainingCredits >= -CREDIT_EPSILON);
 
   const actionError =
     getErrorMessage(updateCartItemMutation.error) ||
@@ -353,8 +362,8 @@ export default function CartPage() {
 
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-sm text-slate-400">Remaining After Checkout</span>
-                <span className={`text-2xl font-bold ${remainingCredits >= 0 ? "text-cyan-300" : "text-rose-300"}`}>
-                  {formatCredits(remainingCredits)}
+                <span className={`text-2xl font-bold ${normalizedRemainingCredits >= 0 ? "text-cyan-300" : "text-rose-300"}`}>
+                  {formatCredits(normalizedRemainingCredits)}
                 </span>
               </div>
 
