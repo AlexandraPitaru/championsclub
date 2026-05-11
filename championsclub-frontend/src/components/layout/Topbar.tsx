@@ -2,7 +2,7 @@ import { Bell } from "lucide-react";
 
 export default function Topbar() {
   return (
-    <header className="border-b border-[#1d2a3a] bg-[#081120]/85 backdrop-blur">
+    <header className="border-b backdrop-blur" style={{ borderColor: "var(--sidebar-border)", background: "color-mix(in srgb, var(--sidebar-bg) 85%, transparent)" }}>
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <div>
           <p className="text-sm text-slate-400">ChampionsClub Platform</p>
@@ -13,7 +13,7 @@ export default function Topbar() {
 
         <div className="flex items-center gap-4">
 
-          <button className="relative rounded-full border border-[#28415f] bg-[#0d1c30] p-[clamp(0.5rem,0.7vw,0.8rem)] text-cyan-100 transition hover:bg-[#122845]">
+          <button className="relative rounded-full border p-[clamp(0.5rem,0.7vw,0.8rem)] text-cyan-100 transition" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
             <Bell className="h-[clamp(1rem,1.2vw,1.35rem)] w-[clamp(1rem,1.2vw,1.35rem)]" />
             <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-[#031018]">
               3

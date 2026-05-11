@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 
 from fastapi import HTTPException
 from sqlmodel import Session, select, func
@@ -15,7 +15,8 @@ def validate_manager(current_user: AppUser):
 
 
 def get_interval_start_date(interval: str):
-    now = datetime.now(timezone.utc)
+    # transaction_date is stored as naive datetime, so use naive bounds
+    now = datetime.utcnow()
 
     if interval == "all":
         return None
@@ -35,11 +36,33 @@ def get_interval_start_date(interval: str):
     )
 
 
+def get_custom_date_bounds(
+    start_date: date | None,
+    end_date: date | None,
+) -> tuple[datetime | None, datetime | None]:
+    if start_date is not None and end_date is not None and start_date > end_date:
+        raise HTTPException(status_code=400, detail="start_date must be before or equal to end_date")
+
+    start_dt = (
+        datetime(start_date.year, start_date.month, start_date.day)
+        if start_date is not None
+        else None
+    )
+    end_dt = (
+        datetime(end_date.year, end_date.month, end_date.day) + timedelta(days=1)
+        if end_date is not None
+        else None
+    )
+    return start_dt, end_dt
+
+
 def get_user_kpis(
     session: Session,
     current_manager: AppUser,
     user_id: int,
     interval: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
 ) -> UserKpiResponse:
     validate_manager(current_manager)
 
@@ -51,12 +74,15 @@ def get_user_kpis(
             detail="User not found or not under your management",
         )
 
-    start_date = get_interval_start_date(interval)
+    custom_start, custom_end = get_custom_date_bounds(start_date, end_date)
+    interval_start = custom_start if (custom_start is not None or custom_end is not None) else get_interval_start_date(interval)
 
     sales_conditions = [SaleTransaction.user_id == user_id]
 
-    if start_date is not None:
-        sales_conditions.append(SaleTransaction.transaction_date >= start_date)
+    if interval_start is not None:
+        sales_conditions.append(SaleTransaction.transaction_date >= interval_start)
+    if custom_end is not None:
+        sales_conditions.append(SaleTransaction.transaction_date < custom_end)
 
     sales_result = session.exec(
         select(
@@ -88,7 +114,7 @@ def get_user_kpis(
         "email": target_user.email,
         "role": target_user.role,
         "current_rank": target_user.rank,
-        "total_points": target_user.points,
+        "total_points": total_points_earned,
         "credit": target_user.credit,
         "status": target_user.status,
         "interval": interval,
@@ -104,10 +130,13 @@ def get_team_kpis(
     session: Session,
     current_manager: AppUser,
     interval: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
 ) -> TeamKpiResponse:
     validate_manager(current_manager)
 
-    start_date = get_interval_start_date(interval)
+    custom_start, custom_end = get_custom_date_bounds(start_date, end_date)
+    interval_start = custom_start if (custom_start is not None or custom_end is not None) else get_interval_start_date(interval)
 
     team_employees = session.exec(
         select(AppUser).where(AppUser.manager_user_id == current_manager.user_id)
@@ -115,22 +144,18 @@ def get_team_kpis(
 
     total_employees = len(team_employees)
 
-    user_kpis = session.exec(
-        select(
-            func.coalesce(func.sum(AppUser.points), 0),
-            func.coalesce(func.avg(AppUser.points), 0),
-            func.coalesce(func.sum(AppUser.credit), 0),
-        ).where(AppUser.manager_user_id == current_manager.user_id)
-    ).one()
-
-    total_points = user_kpis[0] or 0
-    average_points = user_kpis[1] or 0.0
-    total_credit = user_kpis[2] or 0.0
+    total_credit = session.exec(
+        select(func.coalesce(func.sum(AppUser.credit), 0)).where(
+            AppUser.manager_user_id == current_manager.user_id
+        )
+    ).one() or 0.0
 
     team_sales_conditions = [AppUser.manager_user_id == current_manager.user_id]
 
-    if start_date is not None:
-        team_sales_conditions.append(SaleTransaction.transaction_date >= start_date)
+    if interval_start is not None:
+        team_sales_conditions.append(SaleTransaction.transaction_date >= interval_start)
+    if custom_end is not None:
+        team_sales_conditions.append(SaleTransaction.transaction_date < custom_end)
 
     sales_result = session.exec(
         select(
@@ -147,6 +172,9 @@ def get_team_kpis(
     total_sales_amount = sales_result[1]
     total_points_earned = sales_result[2]
     last_transaction_date = sales_result[3]
+
+    total_points = int(total_points_earned or 0)
+    average_points = (float(total_points) / total_employees) if total_employees > 0 else 0.0
 
     total_products_sold = session.exec(
         select(func.coalesce(func.sum(SaleTransactionItem.quantity), 0))
@@ -227,17 +255,22 @@ def get_team_performance_trend(
     session: Session,
     current_manager: AppUser,
     interval: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
 ) -> list[PerformanceTrendPoint]:
     validate_manager(current_manager)
 
-    start_date = get_interval_start_date(interval)
+    custom_start, custom_end = get_custom_date_bounds(start_date, end_date)
+    interval_start = custom_start if (custom_start is not None or custom_end is not None) else get_interval_start_date(interval)
 
     conditions = [
         AppUser.manager_user_id == current_manager.user_id
     ]
 
-    if start_date is not None:
-        conditions.append(SaleTransaction.transaction_date >= start_date)
+    if interval_start is not None:
+        conditions.append(SaleTransaction.transaction_date >= interval_start)
+    if custom_end is not None:
+        conditions.append(SaleTransaction.transaction_date < custom_end)
 
     transactions = session.exec(
         select(
@@ -258,6 +291,8 @@ def get_user_performance_trend(
     current_manager: AppUser,
     user_id: int,
     interval: str,
+    start_date: date | None = None,
+    end_date: date | None = None,
 ) -> list[PerformanceTrendPoint]:
     validate_manager(current_manager)
 
@@ -269,14 +304,17 @@ def get_user_performance_trend(
             detail="User not found or not under your management",
         )
 
-    start_date = get_interval_start_date(interval)
+    custom_start, custom_end = get_custom_date_bounds(start_date, end_date)
+    interval_start = custom_start if (custom_start is not None or custom_end is not None) else get_interval_start_date(interval)
 
     conditions = [
         SaleTransaction.user_id == user_id
     ]
 
-    if start_date is not None:
-        conditions.append(SaleTransaction.transaction_date >= start_date)
+    if interval_start is not None:
+        conditions.append(SaleTransaction.transaction_date >= interval_start)
+    if custom_end is not None:
+        conditions.append(SaleTransaction.transaction_date < custom_end)
 
     transactions = session.exec(
         select(

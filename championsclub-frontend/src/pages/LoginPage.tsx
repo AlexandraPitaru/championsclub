@@ -57,15 +57,24 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#060b13] px-6">
-      <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(circle_at_15%_15%,rgba(34,211,238,0.16),transparent_28%),radial-gradient(circle_at_85%_10%,rgba(56,189,248,0.14),transparent_30%),linear-gradient(to_bottom,rgba(6,11,19,0.85),rgba(6,11,19,1))]" />
-
+    <div
+      className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 text-[var(--text)]"
+      style={{
+        backgroundColor: "var(--bg)",
+        backgroundImage: "var(--app-shell-gradient)",
+      }}
+    >
       <div className="pointer-events-none absolute right-[-120px] top-[-80px] h-[340px] w-[340px] rounded-full border border-cyan-400/20 bg-cyan-400/5 blur-2xl" />
       <div className="pointer-events-none absolute bottom-[-120px] left-[-100px] h-[300px] w-[300px] rounded-full border border-sky-400/20 bg-sky-400/5 blur-2xl" />
 
       <form
         onSubmit={handleLogin}
-        className="relative z-10 w-full max-w-md rounded-2xl border border-[#24405b] bg-[#0b1524]/90 p-8 shadow-[0_20px_50px_rgba(2,8,20,0.55)] backdrop-blur"
+        className="relative z-10 w-full max-w-md rounded-2xl border p-8 backdrop-blur"
+        style={{
+          borderColor: "var(--card-border)",
+          background: "var(--card-bg)",
+          boxShadow: "var(--card-shadow)",
+        }}
       >
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300/80">
           Secure Access
@@ -88,7 +97,11 @@ export default function LoginPage() {
               value={email}
               disabled={isLoading}
               onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-xl border border-[#2e4663] bg-[#0f1d31] px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-400/70 focus:ring-2 focus:ring-cyan-400/20"
+              className="w-full rounded-xl border px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-400/70 focus:ring-2 focus:ring-cyan-400/20"
+              style={{
+                borderColor: "var(--panel-border-strong)",
+                background: "var(--panel-input-bg)",
+              }}
               placeholder="name@example.com"
             />
           </div>
@@ -103,7 +116,11 @@ export default function LoginPage() {
               value={password}
               disabled={isLoading}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-xl border border-[#2e4663] bg-[#0f1d31] px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-400/70 focus:ring-2 focus:ring-cyan-400/20"
+              className="w-full rounded-xl border px-4 py-3 text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-400/70 focus:ring-2 focus:ring-cyan-400/20"
+              style={{
+                borderColor: "var(--panel-border-strong)",
+                background: "var(--panel-input-bg)",
+              }}
               placeholder="Enter your password"
             />
           </div>
