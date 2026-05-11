@@ -15,18 +15,6 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-      // Forward orice alt request (ex: /auth, /docs, etc) către backend
-      '/auth': {
-        target: 'http://backend:8000',
-        changeOrigin: true,
-        secure: false,
-      },
-      '/docs': {
-        target: 'http://backend:8000',
-        changeOrigin: true,
-        secure: false,
-      },
-      // Adaugă aici orice alt prefix de backend necesar
     },
   },
 })

@@ -34,10 +34,6 @@ class SalesAdvisorAiImprovementArea(BaseModel):
     priority: PriorityLevel
 
 
-class SalesAdvisorAiSkillsAnalysis(BaseModel):
-    strong_skills: list[str]
-    skills_to_develop: list[str]
-    summary: str
 
 
 class SalesAdvisorAiAnalysisResponse(BaseModel):

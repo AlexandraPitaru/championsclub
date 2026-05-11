@@ -34,6 +34,22 @@ function SkillBar({
 type Props = { data: AISkillsAnalysis };
 
 export default function AISkillsAnalysisCard({ data }: Props) {
+  // Fallback: dacă primim string-uri, le mapăm la obiecte cu level_pct=0
+  const strongSkills = Array.isArray(data.strong_skills)
+    ? data.strong_skills.map((sk) =>
+        typeof sk === 'string'
+          ? { name: sk, level_pct: 0 }
+          : sk
+      )
+    : [];
+  const skillsToDevelop = Array.isArray(data.skills_to_develop)
+    ? data.skills_to_develop.map((sk) =>
+        typeof sk === 'string'
+          ? { name: sk, level_pct: 0 }
+          : sk
+      )
+    : [];
+
   return (
     <Card className="space-y-5">
       <div className="flex items-center justify-between">
@@ -51,17 +67,19 @@ export default function AISkillsAnalysisCard({ data }: Props) {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">
             Strong skills
           </p>
-          {Array.isArray(data.strong_skills) && data.strong_skills.length === 0 ? (
+          {strongSkills.length === 0 ? (
             <p className="mt-3 text-xs text-slate-400">No strong skills identified yet.</p>
           ) : (
             <ul className="mt-3 space-y-3">
-              {data.strong_skills.map((sk) => (
-                <li key={sk.name + '-' + sk.level_pct} className="flex items-center gap-3">
-                  <div className="flex-1">
-                    <SkillBar skill={sk} variant="strong" />
-                  </div>
-                </li>
-              ))}
+              {strongSkills
+                .filter(sk => sk.name && sk.level_pct !== undefined)
+                .map((sk) => (
+                  <li key={sk.name + '-' + sk.level_pct} className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <SkillBar skill={sk} variant="strong" />
+                    </div>
+                  </li>
+                ))}
             </ul>
           )}
         </div>
@@ -70,17 +88,19 @@ export default function AISkillsAnalysisCard({ data }: Props) {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-300">
             Skills to develop
           </p>
-          {Array.isArray(data.skills_to_develop) && data.skills_to_develop.length === 0 ? (
+          {skillsToDevelop.length === 0 ? (
             <p className="mt-3 text-xs text-slate-400">No skills to develop identified.</p>
           ) : (
             <ul className="mt-3 space-y-3">
-              {data.skills_to_develop.map((sk) => (
-                <li key={sk.name + '-' + sk.level_pct} className="flex items-center gap-3">
-                  <div className="flex-1">
-                    <SkillBar skill={sk} variant="develop" />
-                  </div>
-                </li>
-              ))}
+              {skillsToDevelop
+                .filter(sk => sk.name && sk.level_pct !== undefined)
+                .map((sk) => (
+                  <li key={sk.name + '-' + sk.level_pct} className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <SkillBar skill={sk} variant="develop" />
+                    </div>
+                  </li>
+                ))}
             </ul>
           )}
         </div>
