@@ -26,11 +26,7 @@ export default function AppRouter() {
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/redemption-history" element={<RedemptionHistoryPage />} />
-<<<<<<< HEAD
-            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/advisor-ai" element={<AdvisorAIProfilePage />} />
-=======
->>>>>>> fe688cb3c78623276dfc3472f26d7b4ebe210ffd
             <Route path="/leaderboard" element={<LeaderboardPage />} /> 
             <Route path="/advisor-leaderboard" element={<AdvisorLeaderboardPage />} />
 

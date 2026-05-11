@@ -159,7 +159,7 @@ Pentru frontend local, `VITE_API_URL` trebuie sa fie:
 VITE_API_URL=http://localhost:8000
 ```
 
-Frontend-ul va fi disponibil pe `http://localhost:5173`.
+Frontend-ul va fi disponibil pe `http://localhost:5173`.uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 ## Varianta B. Rulare completa cu Docker
 
