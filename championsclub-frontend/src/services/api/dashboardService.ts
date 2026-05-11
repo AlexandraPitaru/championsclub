@@ -55,7 +55,7 @@ export type LeaderboardResponse = {
   summary: LeaderboardSummary;
 };
 
-const API_BASE_URL = "http://localhost:8000";
+
 
 function getCurrentUserId(): number {
   const raw = localStorage.getItem("currentUser");
@@ -85,7 +85,7 @@ export async function getLeaderboard(
   }
 
   const response = await fetch(
-    `${API_BASE_URL}/api/manager/dashboard/leaderboard?${params.toString()}`,
+    `/api/manager/dashboard/leaderboard?${params.toString()}`,
     {
       method: "GET",
       headers: {
@@ -125,7 +125,7 @@ export async function getLeaderboardSummary(
   const userId = getCurrentUserId();
 
   const response = await fetch(
-    `${API_BASE_URL}/api/manager/dashboard/leaderboard/summary?interval=${interval}`,
+    `/api/manager/dashboard/leaderboard/summary?interval=${interval}`,
     {
       method: "GET",
       headers: {

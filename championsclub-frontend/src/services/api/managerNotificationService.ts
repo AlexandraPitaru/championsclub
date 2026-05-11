@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import axiosInstance from "./axiosInstance";
+=======
+
+>>>>>>> origin/main
 
 export type NotificationPriority = "high" | "medium" | "low";
 
@@ -75,8 +79,26 @@ export async function getManagerNotifications({
   limit = 10,
   offset = 0,
 }: GetManagerNotificationsParams): Promise<ManagerNotificationsResponse> {
+<<<<<<< HEAD
   const response = await axiosInstance.get<ManagerNotificationsResponse>(
     "/api/manager/dashboard/notifications",
+=======
+  const params = new URLSearchParams();
+
+  params.set("limit", String(limit));
+  params.set("offset", String(offset));
+
+  if (priority) {
+    params.set("priority", priority);
+  }
+
+  if (isRead !== undefined) {
+    params.set("is_read", String(isRead));
+  }
+
+  const response = await fetch(
+    `/api/manager/dashboard/notifications?${params.toString()}`,
+>>>>>>> origin/main
     {
       headers: { "x-user-id": String(managerId) },
       params: {

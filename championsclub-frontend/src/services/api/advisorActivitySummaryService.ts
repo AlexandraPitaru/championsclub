@@ -1,6 +1,6 @@
 import type { KpiInterval } from "./managerStatisticsService";
 
-const API_BASE_URL = "http://localhost:8000";
+
 
 export type AdvisorActivitySummaryResponse = {
   advisor_id: number;
@@ -16,7 +16,7 @@ export async function getAdvisorActivitySummary(
   interval: KpiInterval
 ): Promise<AdvisorActivitySummaryResponse> {
   const response = await fetch(
-    `${API_BASE_URL}/api/manager/profile/users/${advisorId}/activity-summary?interval=${interval}`,
+    `/api/manager/profile/users/${advisorId}/activity-summary?interval=${interval}`,
     {
       headers: {
         "x-user-id": String(managerId),

@@ -1,11 +1,13 @@
 //Definim rutele principale pentru aplicatie, folosind react-router-dom cum ar fi /login, /dashboard, /alerts, /manager/advisor/:id, /leaderboard
 import { Routes, Route, Navigate } from "react-router-dom";
+import HomePage from "../../pages/HomePage";
 import LoginPage from "../../pages/LoginPage";
 import ManagerDashboardPage from "../../pages/ManagerDashboardPage";
 import AdvisorProfilePage from "../../pages/AdvisorProfilePage";
 import LeaderboardPage from "../../pages/LeaderboardPage";
 import AdvisorLeaderboardPage from "../../pages/AdvisorLeaderboardPage";
 import AdvisorDashboardPage from "../../pages/AdvisorDashboardPage";
+import AdvisorAIProfilePage from "../../pages/AdvisorAIProfilePage";
 import AlertsPage from "../../pages/AlertsPage";
 import SalesAdvisorAlertsPage from "../../pages/SalesAdvisorAlertsPage";
 import ShopPage from "../../pages/ShopPage";
@@ -15,6 +17,7 @@ import RedemptionHistoryPage from "../../pages/RedemptionHistoryPage";
 export default function AppRouter() {
     return (
         <Routes>
+            <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/dashboard" element={<ManagerDashboardPage />} />
             <Route path="/alerts" element={<AlertsPage />} />
@@ -25,11 +28,12 @@ export default function AppRouter() {
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/redemption-history" element={<RedemptionHistoryPage />} />
+            <Route path="/advisor-ai" element={<AdvisorAIProfilePage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} /> 
             <Route path="/advisor-leaderboard" element={<AdvisorLeaderboardPage />} />
 
             {/* fallback */}
-      <Route path="*" element={<Navigate to="/login" />} />
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
     );
 }

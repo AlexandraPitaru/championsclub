@@ -1,0 +1,206 @@
+import type { AIAnalysisResponse, AIForecastResponse } from "./types";
+
+// Replace with real API responses when endpoints are wired in.
+
+export const mockAnalysis: AIAnalysisResponse = {
+  ai_summary:
+    "You are performing above the team average on conversion and follow-up. There is a clear opportunity to grow on upsell and product knowledge to reach Gold faster.",
+  tone: "coaching",
+  is_fallback: false,
+  fallback_reason: null,
+  generated_at: "2026-05-06T08:42:00Z",
+  model_version: "ai-coach-1.0",
+  strengths: [
+    {
+      title: "Strong closing rate",
+      description: "Your conversion is consistently above the team median.",
+      supporting_reason: "Customers respond well to your proposal structure.",
+      metric_evidence: "Conversion 18% above team average",
+    },
+    {
+      title: "Reliable follow-up",
+      description: "Few leads drop without a touchpoint.",
+      supporting_reason: "Your follow-up cadence keeps deals warm.",
+      metric_evidence: "92% of leads followed up within 48h",
+    },
+    {
+      title: "Customer satisfaction",
+      description: "Repeat customers ask for you.",
+      supporting_reason: "Your post-sale care is consistent.",
+      metric_evidence: "4.8 / 5 average customer rating",
+    },
+  ],
+  improvement_areas: [
+    {
+      title: "Upsell on accessories",
+      description: "Few transactions include accessory items.",
+      reason: "Lower attach rate than the team average.",
+      suggested_next_step: "Offer 2 accessory options on every closed deal.",
+      priority: "high",
+      category: "conversion",
+      expected_points_gain: 120,
+    },
+    {
+      title: "Product knowledge — EV lineup",
+      description: "Lower confidence when discussing EV specs.",
+      reason: "Skill gap detected on EV-related questions.",
+      suggested_next_step: "Complete the EV Essentials training.",
+      priority: "medium",
+      category: "skills",
+      expected_points_gain: 80,
+    },
+    {
+      title: "Lead activity volume",
+      description: "Daily contacted-leads count below target.",
+      reason: "Activity dipped over the last 2 weeks.",
+      suggested_next_step: "Aim for 8 contacted leads / day this week.",
+      priority: "medium",
+      category: "activity",
+      expected_points_gain: 60,
+    },
+  ],
+  skills_analysis: {
+    strong_skills: [
+      { name: "Negotiation", level_pct: 86 },
+      { name: "Customer relationship", level_pct: 81 },
+      { name: "Closing", level_pct: 78 },
+    ],
+    skills_to_develop: [
+      { name: "Upsell", level_pct: 48 },
+      { name: "EV product knowledge", level_pct: 41 },
+      { name: "Financing options", level_pct: 55 },
+    ],
+    summary:
+      "Strong on the human side of selling. Product breadth and upsell are the next levers.",
+  },
+  motivational_summary:
+    "You are one focused month away from Gold. Lock in two upsell habits this week and the rank is yours.",
+};
+
+export const mockForecast: AIForecastResponse = {
+  is_fallback: false,
+  fallback_reason: null,
+  generated_at: "2026-05-06T08:42:00Z",
+  model_version: "ai-coach-1.0",
+  forecast: {
+    trend: "upward",
+    next_rank_likelihood: { probability_pct: 76, label: "high" },
+    confidence_pct: 72,
+    confidence_label: "high",
+    forecast_summary:
+      "If the current pace holds, you will reach Gold within the next forecast window.",
+    main_factors: [
+      {
+        title: "Stable points growth",
+        impact: "positive",
+        weight: "high",
+        explanation: "Points have grown steadily across the last 3 weeks.",
+      },
+      {
+        title: "Low upsell attach rate",
+        impact: "negative",
+        weight: "medium",
+        explanation: "Limits the speed at which you accumulate points.",
+      },
+      {
+        title: "Consistent follow-up",
+        impact: "positive",
+        weight: "medium",
+        explanation: "Reduces lead loss and stabilizes conversion.",
+      },
+    ],
+    recommended_focus: "Upsell + EV product knowledge.",
+    projected_points_in_window: 980,
+    projected_points_target: 1100,
+    days_window: 30,
+    history_used_days: 60,
+  },
+  risk_areas: [
+    {
+      title: "Activity dip risk",
+      description: "Daily activity trending below personal baseline.",
+      reason: "Could slow down points accumulation.",
+      mitigation_action: "Set a daily lead-contact target and track it.",
+      priority: "medium",
+      severity: "medium",
+      category: "activity",
+      expected_points_loss: 90,
+    },
+    {
+      title: "Skill coverage gap",
+      description: "EV product knowledge below team threshold.",
+      reason: "Risk of losing EV-interested customers.",
+      mitigation_action: "Complete EV Essentials within 2 weeks.",
+      priority: "high",
+      severity: "high",
+      category: "skills",
+      expected_points_loss: 130,
+    },
+  ],
+  recommended_actions: [
+    {
+      title: "Push 2 accessory offers per closed deal",
+      description: "Add a structured accessory pitch at the end of every sale.",
+      reason: "Closes the upsell gap fastest.",
+      expected_impact: "+120 points / month",
+      priority: "high",
+      category: "conversion",
+      expected_points_gain: 120,
+      time_estimate_minutes: 5,
+      cta_label: "Open my deals",
+      cta_target: "leads",
+    },
+    {
+      title: "Complete EV Essentials training",
+      description: "Closes the EV product knowledge gap.",
+      reason: "Skill gap flagged in analysis.",
+      expected_impact: "+80 points / month",
+      priority: "high",
+      category: "skills",
+      expected_points_gain: 80,
+      time_estimate_minutes: 45,
+      cta_label: "Start training",
+      cta_target: "trainings",
+    },
+    {
+      title: "Hit 8 contacted leads / day",
+      description: "Re-establish baseline activity volume.",
+      reason: "Activity dipped over the last 2 weeks.",
+      expected_impact: "+60 points / month",
+      priority: "medium",
+      category: "activity",
+      expected_points_gain: 60,
+      time_estimate_minutes: 10,
+      cta_label: "View leaderboard",
+      cta_target: "leaderboard",
+    },
+  ],
+  recommended_trainings: [
+    {
+      title: "EV Essentials",
+      description: "Core EV specs, batteries, charging, incentives.",
+      related_skill: "EV product knowledge",
+      reason: "Closes the largest skill gap.",
+      expected_benefit: "Better EV close rate.",
+      priority: "high",
+      duration_minutes: 45,
+      level: "beginner",
+      is_recommended_now: true,
+      cta_target: "training_internal",
+    },
+    {
+      title: "Upsell mastery",
+      description: "Frameworks for accessory and service upsell.",
+      related_skill: "Upsell",
+      reason: "Improves attach rate.",
+      expected_benefit: "+1 accessory per deal target.",
+      priority: "medium",
+      duration_minutes: 30,
+      level: "intermediate",
+      is_recommended_now: true,
+      cta_target: "training_internal",
+    },
+  ],
+  recommendation_summary:
+    "Focus on upsell habits this week, training next week. Your forecast goes from likely to almost certain.",
+};
