@@ -40,8 +40,8 @@ CREDIT_EPSILON = 1e-6
 
 def normalize_credit(value: float | int | None) -> float:
     result = round(float(value or 0), 2)
-    # Convert -0.0 to 0.0 to avoid negative zero in responses
-    return 0.0 if result == 0 else result
+    # Convert near-zero values (including -0.0) to 0.0 to avoid precision edge cases.
+    return 0.0 if abs(result) <= CREDIT_EPSILON else result
 
 
 def validate_sales_advisor(current_user: AppUser) -> None:
@@ -129,7 +129,7 @@ def build_cart_response(
     total_credit_cost = normalize_credit(total_credit_cost)
     available_credit = normalize_credit(current_user.credit)
     remaining_credit_after_checkout = normalize_credit(available_credit - total_credit_cost)
-    checkout_eligible = bool(response_items) and remaining_credit_after_checkout >= 0
+    checkout_eligible = bool(response_items) and remaining_credit_after_checkout >= -CREDIT_EPSILON
 
     return SalesAdvisorCartResponse(
         cart_id=cart.cart_id,
@@ -282,7 +282,8 @@ def checkout_cart(
     total_credit_spent = normalize_credit(total_credit_spent)
 
     current_credit = normalize_credit(current_user.credit)
-    if (total_credit_spent - current_credit) > CREDIT_EPSILON:
+    remaining_credit_after_checkout = normalize_credit(current_credit - total_credit_spent)
+    if remaining_credit_after_checkout < -CREDIT_EPSILON:
         raise HTTPException(status_code=400, detail="Insufficient credit for checkout")
 
     redeemed_items: list[RedemptionHistoryItemResponse] = []
@@ -323,7 +324,7 @@ def checkout_cart(
         for item in cart_items:
             session.delete(item)
 
-        current_user.credit = normalize_credit(max(0.0, current_credit - total_credit_spent))
+        current_user.credit = normalize_credit(max(0.0, remaining_credit_after_checkout))
         session.add(current_user)
 
         session.commit()
