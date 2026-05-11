@@ -35,7 +35,7 @@ export default function AIForecastCard({ forecast }: Props) {
         <div className="flex items-center justify-between text-xs text-slate-400">
           <span>Projected in {forecast.days_window} days</span>
           <span>
-            Target: {forecast.projected_points_target.toLocaleString()} pts
+            Target: {typeof forecast.projected_points_target === 'number' ? forecast.projected_points_target.toLocaleString() : 'N/A'} pts
           </span>
         </div>
         <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-[#091422]">
@@ -46,7 +46,7 @@ export default function AIForecastCard({ forecast }: Props) {
         </div>
         <div className="mt-2 flex items-center justify-between text-xs">
           <span className="text-cyan-200">
-            {forecast.projected_points_in_window.toLocaleString()} pts projected
+            {typeof forecast.projected_points_in_window === 'number' ? forecast.projected_points_in_window.toLocaleString() : 'N/A'} pts projected
           </span>
           <span className="text-slate-400">
             Next rank likelihood {forecast.next_rank_likelihood.probability_pct}% ·{" "}
@@ -60,9 +60,9 @@ export default function AIForecastCard({ forecast }: Props) {
           Why this forecast
         </p>
         <ul className="mt-3 space-y-2">
-          {forecast.main_factors.map((f) => (
+          {forecast.main_factors.map((f, idx) => (
             <li
-              key={f.title}
+              key={f.title + '-' + f.weight + '-' + idx}
               className="flex items-start gap-3 rounded-xl border border-[#1f3045] bg-[#0a1322] p-3"
             >
               <span
@@ -71,9 +71,11 @@ export default function AIForecastCard({ forecast }: Props) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-semibold text-slate-100">{f.title}</p>
-                  <span className="rounded-full border border-slate-500/40 bg-slate-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
-                    weight {f.weight}
-                  </span>
+                  {f.weight && f.weight !== 'none' && (
+                    <span className="rounded-full border border-slate-500/40 bg-slate-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+                      Impact: {f.weight === 'high' ? 'Mare' : f.weight === 'medium' ? 'Mediu' : f.weight === 'low' ? 'Scăzut' : f.weight}
+                    </span>
+                  )}
                 </div>
                 <p className="mt-0.5 text-xs text-slate-400">{f.explanation}</p>
               </div>

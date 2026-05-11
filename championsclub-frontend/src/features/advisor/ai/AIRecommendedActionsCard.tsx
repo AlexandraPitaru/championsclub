@@ -5,7 +5,32 @@ import type { AIRecommendedAction } from "./types";
 
 type Props = { items: AIRecommendedAction[] };
 
+const ctaTargetToUrl = (target: string | null) => {
+  switch (target) {
+    case "leads":
+      return "/leads";
+    case "trainings":
+      return "/trainings";
+    case "profile":
+      return "/profile";
+    case "leaderboard":
+      return "/leaderboard";
+    default:
+      return null;
+  }
+};
+
 export default function AIRecommendedActionsCard({ items }: Props) {
+  const handleActionClick = (action: AIRecommendedAction) => {
+    const url = ctaTargetToUrl(action.cta_target);
+    if (url) {
+      window.location.href = url;
+    } else {
+      // eslint-disable-next-line no-alert
+      alert(`Action: ${action.title}`);
+    }
+  };
+
   return (
     <Card className="space-y-4">
       <div className="flex items-center justify-between">
@@ -42,7 +67,7 @@ export default function AIRecommendedActionsCard({ items }: Props) {
 
             <div className="mt-3 flex flex-wrap gap-1.5">
               <span
-                className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${categoryChipClass(a.category)}`}
+                className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${categoryChipClass(a.category ?? 'uncategorized')}`}
               >
                 {formatCategory(a.category)}
               </span>
@@ -64,6 +89,7 @@ export default function AIRecommendedActionsCard({ items }: Props) {
             <button
               type="button"
               className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-full bg-cyan-400/90 px-3 py-1.5 text-xs font-semibold text-[#04101e] shadow-[0_0_18px_rgba(34,211,238,0.35)] transition hover:bg-cyan-300"
+              onClick={() => handleActionClick(a)}
             >
               {a.cta_label}
               <ArrowUpRight className="h-3.5 w-3.5" />

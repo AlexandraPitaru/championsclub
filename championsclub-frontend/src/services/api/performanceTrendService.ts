@@ -1,5 +1,5 @@
 import type { KpiInterval } from "./managerStatisticsService";
-const API_BASE_URL = "http://localhost:8000";
+
 
 function toApiInterval(interval: KpiInterval): Exclude<KpiInterval, "custom"> {
     return interval === "custom" ? "all" : interval;
@@ -27,7 +27,7 @@ export async function getPerformanceTrend(
     if (dateRange?.endDate) params.set("end_date", dateRange.endDate);
 
     const response = await fetch(
-        `${API_BASE_URL}/api/manager/dashboard/team/performance-trend?${params.toString()}`,
+        `/api/manager/dashboard/team/performance-trend?${params.toString()}`,
         {
             headers: {
                 "x-user-id": String(managerId),
@@ -52,7 +52,7 @@ export async function getPerformanceTrend(
             if (dateRange?.endDate) params.set("end_date", dateRange.endDate);
 
     const response = await fetch(
-                `${API_BASE_URL}/api/manager/dashboard/users/${userId}/performance-trend?${params.toString()}`,
+                `/api/manager/dashboard/users/${userId}/performance-trend?${params.toString()}`,
         {
             headers: {
                 "x-user-id": String(managerId),

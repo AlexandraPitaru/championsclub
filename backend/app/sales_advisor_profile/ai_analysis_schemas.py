@@ -1,7 +1,19 @@
 from datetime import date, datetime
 from typing import Literal
 
+# FIX: import BaseModel if missing
 from pydantic import BaseModel, Field
+# --- PATCH: Adaugă model pentru skill detaliat ---
+class SalesAdvisorAiSkill(BaseModel):
+    name: str
+    level_pct: int = 0
+
+# --- PATCH: Modifică skills_analysis să folosească obiecte ---
+class SalesAdvisorAiSkillsAnalysis(BaseModel):
+    strong_skills: list[SalesAdvisorAiSkill]
+    skills_to_develop: list[SalesAdvisorAiSkill]
+    summary: str
+
 
 
 PriorityLevel = Literal["high", "medium", "low"]

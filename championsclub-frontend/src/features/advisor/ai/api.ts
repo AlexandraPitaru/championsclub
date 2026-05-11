@@ -1,3 +1,6 @@
+export async function refreshAdvisorAIInsights(): Promise<void> {
+  await axiosInstance.post("/api/sales-advisor/profile/ai-insights/refresh");
+}
 import axiosInstance from "../../../services/api/axiosInstance";
 import type { AIAnalysisResponse, AIForecastResponse } from "./types";
 

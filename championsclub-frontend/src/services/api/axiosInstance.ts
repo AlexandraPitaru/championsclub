@@ -1,9 +1,7 @@
 import axios from "axios";
 
 
-const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-});
+const axiosInstance = axios.create();
 
 // Adaugă X-User-Id la fiecare request dacă există în localStorage
 axiosInstance.interceptors.request.use((config) => {

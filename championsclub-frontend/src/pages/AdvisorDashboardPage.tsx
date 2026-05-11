@@ -140,7 +140,7 @@ export default function AdvisorDashboardPage() {
                 <div className="w-full mt-6 flex flex-col items-center border-t pt-6 rounded-b-2xl" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
                   <h3 className="text-xl font-bold text-cyan-100 mb-1 tracking-tight">Meet your AI Coach</h3>
                   <p className="text-base text-slate-300 mb-4">Providing detailed insights regarding improvement possibilities.</p>
-                  <a href="/ai-coach" className="inline-block px-6 py-3 rounded-lg bg-cyan-500 text-slate-900 font-bold text-lg hover:bg-cyan-400 transition-colors shadow">Go to AI Coach</a>
+                  <a href="/advisor-ai" className="inline-block px-6 py-3 rounded-lg bg-cyan-500 text-slate-900 font-bold text-lg hover:bg-cyan-400 transition-colors shadow">Go to AI Coach</a>
                 </div>
               </Card>
               {/* Card mare cu cele 3 secțiuni */}

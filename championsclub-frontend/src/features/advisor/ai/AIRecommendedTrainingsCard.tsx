@@ -3,9 +3,22 @@ import Card from "../../../components/ui/Card";
 import { priorityChipClass } from "./chips";
 import type { AIRecommendedTraining } from "./types";
 
+
 type Props = { items: AIRecommendedTraining[] };
 
-export default function AIRecommendedTrainingsCard({ items }: Props) {
+
+const handleTrainingClick = (training: AIRecommendedTraining) => {
+  if (training.cta_target === "training_external_url" && (training as any).external_url) {
+    window.open((training as any).external_url, "_blank");
+  } else if (training.cta_target === "training_internal") {
+    window.location.href = "/trainings";
+  } else {
+    // eslint-disable-next-line no-alert
+    alert(`Navigating to training: ${training.title}`);
+  }
+};
+
+function AIRecommendedTrainingsCard({ items }: Props) {
   return (
     <Card className="space-y-4">
       <div className="flex items-center justify-between">
@@ -58,6 +71,7 @@ export default function AIRecommendedTrainingsCard({ items }: Props) {
             <button
               type="button"
               className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-200 hover:text-cyan-100"
+              onClick={() => handleTrainingClick(t)}
             >
               Start training
               <ChevronRight className="h-3.5 w-3.5" />
@@ -68,3 +82,5 @@ export default function AIRecommendedTrainingsCard({ items }: Props) {
     </Card>
   );
 }
+
+export default AIRecommendedTrainingsCard;

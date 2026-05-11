@@ -16,7 +16,7 @@ function SkillBar({
       : "bg-gradient-to-r from-amber-400 to-rose-300";
 
   return (
-    <li>
+    <div>
       <div className="flex items-center justify-between text-sm">
         <span className="text-slate-200">{skill.name}</span>
         <span className={valueColor}>{skill.level_pct}%</span>
@@ -27,7 +27,7 @@ function SkillBar({
           style={{ width: `${skill.level_pct}%` }}
         />
       </div>
-    </li>
+    </div>
   );
 }
 
@@ -51,22 +51,38 @@ export default function AISkillsAnalysisCard({ data }: Props) {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">
             Strong skills
           </p>
-          <ul className="mt-3 space-y-3">
-            {data.strong_skills.map((sk) => (
-              <SkillBar key={sk.name} skill={sk} variant="strong" />
-            ))}
-          </ul>
+          {Array.isArray(data.strong_skills) && data.strong_skills.length === 0 ? (
+            <p className="mt-3 text-xs text-slate-400">No strong skills identified yet.</p>
+          ) : (
+            <ul className="mt-3 space-y-3">
+              {data.strong_skills.map((sk) => (
+                <li key={sk.name + '-' + sk.level_pct} className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <SkillBar skill={sk} variant="strong" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-300">
             Skills to develop
           </p>
-          <ul className="mt-3 space-y-3">
-            {data.skills_to_develop.map((sk) => (
-              <SkillBar key={sk.name} skill={sk} variant="develop" />
-            ))}
-          </ul>
+          {Array.isArray(data.skills_to_develop) && data.skills_to_develop.length === 0 ? (
+            <p className="mt-3 text-xs text-slate-400">No skills to develop identified.</p>
+          ) : (
+            <ul className="mt-3 space-y-3">
+              {data.skills_to_develop.map((sk) => (
+                <li key={sk.name + '-' + sk.level_pct} className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <SkillBar skill={sk} variant="develop" />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </Card>

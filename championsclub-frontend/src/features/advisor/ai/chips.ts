@@ -42,6 +42,7 @@ export function formatRelative(iso: string): string {
   return d.toLocaleString();
 }
 
-export function formatCategory(category: AICategory | string): string {
+export function formatCategory(category: AICategory | string | undefined): string {
+  if (!category || typeof category !== 'string') return 'uncategorized';
   return category.replace("_", " ");
 }

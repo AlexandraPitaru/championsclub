@@ -16,9 +16,10 @@ import AISkillsAnalysisCard from "../features/advisor/ai/AISkillsAnalysisCard";
 import AIStepNavigation from "../features/advisor/ai/AIStepNavigation";
 import AIStrengthsList from "../features/advisor/ai/AIStrengthsList";
 import AIWelcomeHero from "../features/advisor/ai/AIWelcomeHero";
-import { mockAnalysis, mockForecast } from "../features/advisor/ai/mockData";
+// import { mockAnalysis, mockForecast } from "../features/advisor/ai/mockData";
 import { useAdvisorAIAnalysis } from "../features/advisor/ai/useAdvisorAIAnalysis";
 import { useAdvisorAIForecast } from "../features/advisor/ai/useAdvisorAIForecast";
+import { refreshAdvisorAIInsights } from "../features/advisor/ai/api";
 import type { AIInterval } from "../features/advisor/ai/types";
 import { useAIRefresh } from "../features/advisor/ai/useAIRefresh";
 
@@ -114,36 +115,33 @@ const AdvisorAIProfilePage = () => {
   const { data: analysisData, isLoading: isLoadingAnalysis, isError: isErrorAnalysis } = useAdvisorAIAnalysis();
   const { data: forecastData, isLoading: isLoadingForecast, isError: isErrorForecast } = useAdvisorAIForecast();
 
-  const analysis = !isLoadingAnalysis && !isErrorAnalysis && analysisData ? analysisData : mockAnalysis;
-  const forecast = !isLoadingForecast && !isErrorForecast && forecastData ? forecastData : mockForecast;
+  const analysis = !isLoadingAnalysis && !isErrorAnalysis && analysisData ? analysisData : undefined;
+  const forecast = !isLoadingForecast && !isErrorForecast && forecastData ? forecastData : undefined;
 
+  // Fallback UI dacă datele lipsesc
+
+  // TOATE HOOK-URILE SUS
   const { refreshing, cooldown, refresh } = useAIRefresh(async () => {
-    // TODO: call POST /api/sales-advisor/profile/ai-insights/refresh
-    await new Promise((resolve) => window.setTimeout(resolve, 1200));
+    await refreshAdvisorAIInsights();
   });
-
   const currentIndex = journey.findIndex((s) => s.id === currentStepId);
   const currentStep = journey[currentIndex];
-
   const goTo = (id: StepId) => {
     setCompleted((prev) =>
       prev.includes(currentStepId) ? prev : [...prev, currentStepId],
     );
     setCurrentStepId(id);
   };
-
   const goNext = () => {
     if (currentIndex < journey.length - 1) {
       goTo(journey[currentIndex + 1].id);
     }
   };
-
   const goPrev = () => {
     if (currentIndex > 0) {
       setCurrentStepId(journey[currentIndex - 1].id);
     }
   };
-
   const stepperSteps = useMemo(
     () =>
       journey.map((s) => ({
@@ -153,6 +151,28 @@ const AdvisorAIProfilePage = () => {
       })),
     [],
   );
+
+  // Fallback UI după hook-uri
+  if (isErrorAnalysis || isErrorForecast) {
+    return (
+      <AppShell>
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <h2 className="text-2xl font-bold text-rose-400 mb-4">AI Coach unavailable</h2>
+          <p className="text-slate-300 mb-2">We couldn't load your AI analysis or forecast. Please try again later.</p>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!analysis || !forecast) {
+    return (
+      <AppShell>
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <h2 className="text-xl font-semibold text-cyan-300 mb-2">Loading AI insights...</h2>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>
