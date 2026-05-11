@@ -3,7 +3,7 @@ import type {
   TeamKpisData,
 } from "./managerStatisticsService";
 
-const API_BASE_URL = "http://localhost:8000";
+
 
 export type ManagerTeamSummaryRequest = {
   interval: KpiInterval;
@@ -47,7 +47,7 @@ export async function generateManagerTeamSummary(
   payload: ManagerTeamSummaryRequest
 ): Promise<ManagerTeamSummaryResponse> {
   const response = await fetch(
-    `${API_BASE_URL}/api/manager/dashboard/summary`,
+    `/api/manager/dashboard/summary`,
     {
       method: "POST",
       headers: {

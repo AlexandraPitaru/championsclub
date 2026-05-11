@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000";
+
 
 export type NotificationPriority = "high" | "medium" | "low";
 
@@ -89,7 +89,7 @@ export async function getManagerNotifications({
   }
 
   const response = await fetch(
-    `${API_BASE_URL}/api/manager/dashboard/notifications?${params.toString()}`,
+    `/api/manager/dashboard/notifications?${params.toString()}`,
     {
       headers: {
         "x-user-id": String(managerId),

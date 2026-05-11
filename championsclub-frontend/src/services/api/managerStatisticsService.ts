@@ -61,7 +61,7 @@ export type DateRangeFilter = {
   endDate?: string;
 };
 
-const API_BASE_URL = "http://localhost:8000";
+
 
 function toApiInterval(interval: KpiInterval): Exclude<KpiInterval, "custom"> {
   return interval === "custom" ? "all" : interval;
@@ -70,7 +70,7 @@ function toApiInterval(interval: KpiInterval): Exclude<KpiInterval, "custom"> {
 export async function getManagedUsers(
   managerId: number
 ): Promise<ManagedUserResponse[]> {
-  const response = await fetch(`${API_BASE_URL}/api/manager/dashboard/users`, {
+  const response = await fetch(`/api/manager/dashboard/users`, {
     headers: {
       "x-user-id": String(managerId),
     },
@@ -95,7 +95,7 @@ export async function getTeamKpis(
     if (dateRange?.endDate) params.set("end_date", dateRange.endDate);
 
     const response = await fetch(
-    `${API_BASE_URL}/api/manager/dashboard/team/kpis?${params.toString()}`,
+    `/api/manager/dashboard/team/kpis?${params.toString()}`,
     {
       headers: {
         "x-user-id": String(managerId),
@@ -121,7 +121,7 @@ export async function getUserKpis(
   if (dateRange?.endDate) params.set("end_date", dateRange.endDate);
 
   const response = await fetch(
-    `${API_BASE_URL}/api/manager/dashboard/users/${userId}/kpis?${params.toString()}`,
+    `/api/manager/dashboard/users/${userId}/kpis?${params.toString()}`,
     {
       headers: {
         "x-user-id": String(managerId),
@@ -147,7 +147,7 @@ export async function getAdvisorProfileKpis(
   if (dateRange?.endDate) params.set("end_date", dateRange.endDate);
 
   const response = await fetch(
-    `${API_BASE_URL}/api/manager/profile/users/${userId}/kpis?${params.toString()}`,
+    `/api/manager/profile/users/${userId}/kpis?${params.toString()}`,
     {
       headers: {
         "x-user-id": String(managerId),

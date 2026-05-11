@@ -529,29 +529,37 @@ def _build_fallback_skills_analysis(
             ),
         )
 
-    strong_skills = _skill_names_for_levels(
+    # Patch: returnează obiecte cu name și level_pct
+    strong_skill_names = _skill_names_for_levels(
         payload,
         levels={"advanced"},
         verified_only=False,
     )[:3]
-    skills_to_develop = _skill_names_for_levels(
+    skills_to_develop_names = _skill_names_for_levels(
         payload,
         levels={"beginner"},
         verified_only=False,
     )[:3]
 
+    strong_skills = [
+        {"name": name, "level_pct": 100} for name in strong_skill_names
+    ]
+    skills_to_develop = [
+        {"name": name, "level_pct": 0} for name in skills_to_develop_names
+    ]
+
     if strong_skills and skills_to_develop:
         summary = (
-            f"You already show strength in {', '.join(strong_skills)}, and the clearest development opportunities are "
-            f"{', '.join(skills_to_develop)}."
+            f"You already show strength in {', '.join([s['name'] for s in strong_skills])}, and the clearest development opportunities are "
+            f"{', '.join([s['name'] for s in skills_to_develop])}."
         )
     elif strong_skills:
         summary = (
-            f"Your profile shows clear strength in {', '.join(strong_skills)}. More recent skill updates would help identify the next development priorities."
+            f"Your profile shows clear strength in {', '.join([s['name'] for s in strong_skills])}. More recent skill updates would help identify the next development priorities."
         )
     elif skills_to_develop:
         summary = (
-            f"Current skill records suggest a need to focus on {', '.join(skills_to_develop)}. Stronger skill evidence is still limited."
+            f"Current skill records suggest a need to focus on {', '.join([s['name'] for s in skills_to_develop])}. Stronger skill evidence is still limited."
         )
     else:
         summary = (
