@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000";
+import axiosInstance from "./axiosInstance";
 
 export type NotificationPriority = "high" | "medium" | "low";
 
@@ -75,31 +75,18 @@ export async function getManagerNotifications({
   limit = 10,
   offset = 0,
 }: GetManagerNotificationsParams): Promise<ManagerNotificationsResponse> {
-  const params = new URLSearchParams();
-
-  params.set("limit", String(limit));
-  params.set("offset", String(offset));
-
-  if (priority) {
-    params.set("priority", priority);
-  }
-
-  if (isRead !== undefined) {
-    params.set("is_read", String(isRead));
-  }
-
-  const response = await fetch(
-    `${API_BASE_URL}/api/manager/dashboard/notifications?${params.toString()}`,
+  const response = await axiosInstance.get<ManagerNotificationsResponse>(
+    "/api/manager/dashboard/notifications",
     {
-      headers: {
-        "x-user-id": String(managerId),
+      headers: { "x-user-id": String(managerId) },
+      params: {
+        limit,
+        offset,
+        priority,
+        is_read: isRead,
       },
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch manager notifications");
-  }
-
-  return response.json();
+  return response.data;
 }
