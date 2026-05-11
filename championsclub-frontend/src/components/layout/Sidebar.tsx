@@ -24,7 +24,7 @@ const navItems = [
   { label: "Shop", to: "/shop", icon: ShoppingBag },
   { label: "Cart", to: "/cart", icon: ShoppingCart },
   { label: "Redemption History", to: "/redemption-history", icon: History },
-  { label: "Leaderboard", to: "/leaderboard", icon: Trophy },
+  { label: "Leaderboard", to: "/leaderboard", icon: Trophy, isLeaderboard: true },
   { label: "Alerts", to: "/alerts", icon: Bell },
   { label: "Profile", to: "/profile", icon: User },
 ];
@@ -56,8 +56,11 @@ export default function Sidebar() {
 
   const trimmedSearch = useMemo(() => searchInput.trim(), [searchInput]);
   const userRole = useMemo(() => getCurrentUserRole(), []);
-  const dashboardRoute = userRole?.toLowerCase() === "sales_advisor" ? "/advisor-dashboard" : "/dashboard";
-  const canSearchAdvisor = userRole?.toLowerCase() !== "sales_advisor";
+  const normalizedRole = userRole?.toLowerCase();
+  const isSalesAdvisor = normalizedRole === "sales_advisor";
+  const dashboardRoute = isSalesAdvisor ? "/advisor-dashboard" : "/dashboard";
+  const leaderboardRoute = isSalesAdvisor ? "/advisor-leaderboard" : "/leaderboard";
+  const canSearchAdvisor = !isSalesAdvisor;
   const visibleNavItems = useMemo(() => {
     if (userRole?.toLowerCase() !== "manager") return navItems;
 
@@ -245,9 +248,6 @@ export default function Sidebar() {
             // Handle dynamic routing for Dashboard
             if (item.isDynamic) {
               const handleDashboardClick = () => {
-                const dashboardRoute = userRole?.toLowerCase() === "sales_advisor" 
-                  ? "/advisor-dashboard" 
-                  : "/dashboard";
                 navigate(dashboardRoute);
                 closeMobileMenu();
               };
@@ -281,6 +281,45 @@ export default function Sidebar() {
                   <Icon className="h-5 w-5" />
                   <span>{item.label}</span>
                 </button>
+              );
+            }
+
+            if (item.isLeaderboard) {
+              return (
+                <NavLink
+                  key={item.to}
+                  to={leaderboardRoute}
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) =>
+                    [
+                      "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
+                      isActive
+                        ? [
+                            "border border-cyan-500/40 bg-cyan-500/15 shadow-[0_0_22px_rgba(6,182,212,0.18)]",
+                            isLight ? "text-cyan-800" : "text-cyan-100",
+                          ].join(" ")
+                        : [
+                            isLight
+                              ? "text-slate-700 hover:text-cyan-800"
+                              : "text-slate-300 hover:text-cyan-100",
+                          ].join(" "),
+                    ].join(" ")
+                  }
+                  style={({ isActive }) => ({
+                    background: isActive ? undefined : "transparent",
+                  })}
+                  onMouseEnter={(event) => {
+                    const isActive = event.currentTarget.getAttribute("aria-current") === "page";
+                    if (!isActive) event.currentTarget.style.background = "var(--sidebar-hover)";
+                  }}
+                  onMouseLeave={(event) => {
+                    const isActive = event.currentTarget.getAttribute("aria-current") === "page";
+                    if (!isActive) event.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </NavLink>
               );
             }
 

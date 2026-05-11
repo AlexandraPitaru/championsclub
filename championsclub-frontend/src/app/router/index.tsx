@@ -4,6 +4,7 @@ import LoginPage from "../../pages/LoginPage";
 import ManagerDashboardPage from "../../pages/ManagerDashboardPage";
 import AdvisorProfilePage from "../../pages/AdvisorProfilePage";
 import LeaderboardPage from "../../pages/LeaderboardPage";
+import AdvisorLeaderboardPage from "../../pages/AdvisorLeaderboardPage";
 import AdvisorDashboardPage from "../../pages/AdvisorDashboardPage";
 import AlertsPage from "../../pages/AlertsPage";
 import ShopPage from "../../pages/ShopPage";
@@ -25,6 +26,7 @@ export default function AppRouter() {
             <Route path="/redemption-history" element={<RedemptionHistoryPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} /> 
+            <Route path="/advisor-leaderboard" element={<AdvisorLeaderboardPage />} />
 
             {/* fallback */}
       <Route path="*" element={<Navigate to="/login" />} />
