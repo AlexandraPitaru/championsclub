@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import AppShell from "../app/layouts/AppShell";
 import Card from "../components/ui/Card";
 import {
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Crown,
@@ -202,6 +201,20 @@ export default function LeaderboardPage() {
   const canPrev = page > 1;
   const canNext = page < totalPages;
 
+  const displayedItems = useMemo(() => {
+    if (sortBy !== "points") return items;
+
+    const sorted = [...items];
+    sorted.sort((a, b) => {
+      const pointsDiff = sortDir === "asc" ? a.points - b.points : b.points - a.points;
+      if (pointsDiff !== 0) return pointsDiff;
+
+      // For equal points: High→Low shows #1 to #N, Low→High shows #N to #1
+      return sortDir === "desc" ? a.position - b.position : b.position - a.position;
+    });
+    return sorted;
+  }, [items, sortBy, sortDir]);
+
   const sortLabel = useMemo(() => {
     if (sortBy === "points")
       return sortDir === "desc" ? "Points (High to Low)" : "Points (Low to High)";
@@ -341,7 +354,6 @@ export default function LeaderboardPage() {
                 style={{ borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)" }}
               >
                 Sort by: {sortLabel}
-                <ChevronDown className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -364,7 +376,7 @@ export default function LeaderboardPage() {
               </thead>
 
               <tbody className="divide-y" style={{ borderColor: "var(--panel-border)" }}>
-                {!isLoading && items.length === 0 ? (
+                {!isLoading && displayedItems.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-8 text-center text-slate-400">
                       No advisors found.
@@ -372,7 +384,7 @@ export default function LeaderboardPage() {
                   </tr>
                 ) : null}
 
-                {items.map((row) => (
+                {displayedItems.map((row) => (
                   <tr
                     key={row.user_id}
                     className={row.position === 1 ? "bg-amber-500/10" : ""}

@@ -68,16 +68,17 @@ def get_manager_leaderboard(
 
     interval_start = get_interval_start_date(interval)
 
-    rows = get_leaderboard_rows_for_manager(
+    # Get ALL rows first (without search filter) to calculate real positions
+    all_rows = get_leaderboard_rows_for_manager(
         session=session,
         manager_user_id=current_user.user_id,
         interval_start=interval_start,
-        q=q,
+        q=None,  # No search filter for position calculation
     )
 
     # Assign positions always based on points descending (stable tiebreak by name)
     rows_by_points = sorted(
-        rows,
+        all_rows,
         key=lambda row: (
             -row.points,
             row.last_name.lower(),
@@ -87,7 +88,22 @@ def get_manager_leaderboard(
     )
     position_map = {row.user_id: idx for idx, row in enumerate(rows_by_points, start=1)}
 
-    max_points = max((row.points for row in rows), default=0)
+    # Now apply search filter if provided
+    if q:
+        search_lower = q.strip().lower()
+        rows = [
+            row for row in all_rows
+            if (
+                search_lower in (row.first_name or "").lower()
+                or search_lower in (row.last_name or "").lower()
+                or search_lower in (row.email or "").lower()
+            )
+        ]
+    else:
+        rows = all_rows
+
+    # Calculate max_points from all rows for consistent performance percentages
+    max_points = max((row.points for row in all_rows), default=0)
 
     enriched_map: dict[int, LeaderboardItemResponse] = {}
     for row in rows:
@@ -117,6 +133,18 @@ def get_manager_leaderboard(
             key=lambda item: item.position,
             reverse=not reverse,
         )
+    elif sort_by == "points":
+        # For equal points, high-to-low uses reverse tie-break of low-to-high.
+        if reverse:
+            enriched_rows = sorted(
+                enriched_map.values(),
+                key=lambda item: (-item.points, item.position, item.user_id),
+            )
+        else:
+            enriched_rows = sorted(
+                enriched_map.values(),
+                key=lambda item: (item.points, -item.position, item.user_id),
+            )
     else:
         enriched_rows = sorted(
             enriched_map.values(),

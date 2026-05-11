@@ -51,24 +51,6 @@ function formatCurrency(value: number) {
   return `€${Number(value).toLocaleString()}`;
 }
 
-function formatDate(value: string | null) {
-  if (!value) {
-    return "No transactions yet";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
-
 function toTitleCase(value: string) {
   return value
     .split(/[_\s-]+/)
@@ -93,6 +75,25 @@ function getRankTrophyColor(rank: string) {
   }
 
   return "#67e8f9";
+}
+
+function getNextRank(currentRank: string): string {
+  const normalizedRank = currentRank.trim().toLowerCase();
+
+  if (normalizedRank === "bronze") {
+    return "Silver";
+  }
+
+  if (normalizedRank === "silver") {
+    return "Gold";
+  }
+
+  if (normalizedRank === "gold") {
+    return "Top Rank Achieved";
+  }
+
+  // Default rank
+  return "Bronze";
 }
 
 function normalizeAlertPriority(priority?: string): "high" | "medium" | "low" {
@@ -432,23 +433,25 @@ export default function AdvisorProfilePage() {
                 </h2>
                 <div className="mt-4 space-y-4">
                   <div className="rounded-xl border p-4" style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-input-bg)" }}>
-                    <p className="text-sm text-slate-400">Advisor ID</p>
+                    <p className="text-sm text-slate-400">Email Address</p>
+                    <p className="mt-2 flex items-center gap-2 text-sm font-medium text-slate-100">
+                      <Mail className="h-4 w-4 text-cyan-400" />
+                      {advisor.email}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-input-bg)" }}>
+                    <p className="text-sm text-slate-400">Total Transactions</p>
                     <p className="mt-2 text-2xl font-bold text-slate-100">
-                      {advisor.user_id}
+                      {advisor.total_transactions}
                     </p>
                   </div>
 
                   <div className="rounded-xl border p-4" style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-input-bg)" }}>
-                    <p className="text-sm text-slate-400">Last Transaction Date</p>
-                    <p className="mt-2 text-lg font-semibold text-slate-100">
-                      {formatDate(advisor.last_transaction_date)}
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border p-4" style={{ borderColor: "var(--panel-border-strong)", background: "var(--panel-input-bg)" }}>
-                    <p className="text-sm text-slate-400">Selected Interval</p>
-                    <p className="mt-2 text-lg font-semibold capitalize text-cyan-100">
-                      {interval}
+                    <p className="text-sm text-slate-400">Next Rank</p>
+                    <p className="mt-2 flex items-center gap-2 text-lg font-semibold" style={{ color: getRankTrophyColor(getNextRank(advisor.current_rank)) }}>
+                      <Trophy className="h-5 w-5" />
+                      {getNextRank(advisor.current_rank)}
                     </p>
                   </div>
                 </div>
