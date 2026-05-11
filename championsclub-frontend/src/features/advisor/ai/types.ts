@@ -9,7 +9,7 @@ export type AIInterval = "week" | "month" | "all";
 export type AIPriority = "low" | "medium" | "high";
 export type AICategory = "skills" | "activity" | "conversion" | "follow_up";
 export type AIImpact = "positive" | "negative" | "neutral";
-export type AIWeight = "low" | "medium" | "high";
+export type AIWeight = "low" | "medium" | "high" | "none";
 
 export type AIFallbackReason = "ai_unavailable" | "insufficient_data" | null;
 
