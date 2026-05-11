@@ -13,7 +13,6 @@ import {
   ShoppingCart,
   Sun,
   Trophy,
-  User,
   X,
 } from "lucide-react";
 import { getLeaderboard } from "../../services/api/dashboardService";
@@ -26,7 +25,6 @@ const navItems = [
   { label: "Redemption History", to: "/redemption-history", icon: History },
   { label: "Leaderboard", to: "/leaderboard", icon: Trophy },
   { label: "Alerts", to: "/alerts", icon: Bell },
-  { label: "Profile", to: "/profile", icon: User },
 ];
 
 function normalizeName(value: string) {
@@ -65,8 +63,7 @@ export default function Sidebar() {
       (item) =>
         item.to !== "/shop" &&
         item.to !== "/cart" &&
-        item.to !== "/redemption-history" &&
-        item.to !== "/profile"
+        item.to !== "/redemption-history"
     );
   }, [userRole]);
 
