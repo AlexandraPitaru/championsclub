@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import {
   CalendarDays,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   ChevronDown,
   CircleDollarSign,
   Clock3,
@@ -14,9 +16,13 @@ import AppShell from "../app/layouts/AppShell";
 import Card from "../components/ui/Card";
 import { useTheme } from "../app/theme/ThemeProvider";
 import { useRedemptionHistory } from "../services/hooks/useRedemptionHistory";
+import { useSearchParams } from "react-router-dom";
+
+const REDEMPTIONS_PER_PAGE = 10;
 
 type RedemptionStatus = "Completed" | "Pending" | "Cancelled";
 type DateRangeFilter = "all" | "last30" | "last90";
+type SortOrder = "newest" | "oldest";
 
 type RedemptionItem = {
   id: string;
@@ -88,6 +94,7 @@ function toDisplayStatus(value: string): RedemptionStatus {
 
 export default function RedemptionHistoryPage() {
   const { isLight } = useTheme();
+  const [searchParams, setSearchParams] = useSearchParams();
   const currentUserRaw = localStorage.getItem("currentUser");
   const currentUser = useMemo(() => {
     if (!currentUserRaw) return null;
@@ -102,6 +109,7 @@ export default function RedemptionHistoryPage() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | RedemptionStatus>("All");
   const [dateRange, setDateRange] = useState<DateRangeFilter>("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const [expandedRedemptionId, setExpandedRedemptionId] = useState<string | null>(null);
 
   const redemptions = useMemo<RedemptionRecord[]>(() => {
@@ -122,14 +130,14 @@ export default function RedemptionHistoryPage() {
         creditCostPerItem: item.credit_cost_per_item,
         totalCreditCost: item.total_credit_cost,
       })),
-    }));
+      }));
   }, [historyQuery.data]);
 
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     const now = Date.now();
 
-    return redemptions.filter((entry) => {
+    const filteredEntries = redemptions.filter((entry) => {
       const matchesQuery =
         !normalizedQuery ||
         entry.id.toLowerCase().includes(normalizedQuery) ||
@@ -144,7 +152,37 @@ export default function RedemptionHistoryPage() {
 
       return matchesQuery && matchesStatus && matchesDateRange;
     });
-  }, [dateRange, query, redemptions, statusFilter]);
+
+    return [...filteredEntries].sort((left, right) => {
+      const leftTime = new Date(left.placedAt).getTime();
+      const rightTime = new Date(right.placedAt).getTime();
+      return sortOrder === "newest" ? rightTime - leftTime : leftTime - rightTime;
+    });
+  }, [dateRange, query, redemptions, sortOrder, statusFilter]);
+
+  const requestedPage = Number.parseInt(searchParams.get("page") ?? "1", 10);
+  const currentPage = Number.isNaN(requestedPage) || requestedPage < 1 ? 1 : requestedPage;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / REDEMPTIONS_PER_PAGE));
+  const activePage = Math.min(currentPage, totalPages);
+
+  const paginatedRedemptions = useMemo(() => {
+    const offset = (activePage - 1) * REDEMPTIONS_PER_PAGE;
+    return filtered.slice(offset, offset + REDEMPTIONS_PER_PAGE);
+  }, [activePage, filtered]);
+
+  const firstVisibleIndex = filtered.length === 0 ? 0 : (activePage - 1) * REDEMPTIONS_PER_PAGE + 1;
+  const lastVisibleIndex = Math.min(activePage * REDEMPTIONS_PER_PAGE, filtered.length);
+
+  function setPage(nextPage: number) {
+    const clampedPage = Math.max(1, Math.min(nextPage, totalPages));
+    const nextParams = new URLSearchParams(searchParams);
+    if (clampedPage === 1) {
+      nextParams.delete("page");
+    } else {
+      nextParams.set("page", String(clampedPage));
+    }
+    setSearchParams(nextParams);
+  }
 
   const summary = useMemo(() => {
     const totalRedemptions = redemptions.length;
@@ -206,7 +244,7 @@ export default function RedemptionHistoryPage() {
         </Card>
 
         <Card style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_200px_180px]">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px_220px]">
             <div
               className="flex items-center gap-2 rounded-xl border px-3"
               style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}
@@ -252,6 +290,21 @@ export default function RedemptionHistoryPage() {
               </select>
               <CalendarDays className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400" />
             </label>
+
+            <label
+              className="relative flex items-center rounded-xl border px-3"
+              style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}
+            >
+              <select
+                value={sortOrder}
+                onChange={(event) => setSortOrder(event.target.value as SortOrder)}
+                className="h-11 w-full appearance-none bg-transparent pr-8 text-sm text-slate-200 outline-none"
+              >
+                <option value="newest">Newest to Oldest</option>
+                <option value="oldest">Oldest to Newest</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400" />
+            </label>
           </div>
 
           <div className="mt-4 overflow-hidden rounded-2xl border" style={{ borderColor: "var(--panel-border)" }}>
@@ -274,7 +327,7 @@ export default function RedemptionHistoryPage() {
               <div className="p-8 text-center text-sm text-slate-400">No redemptions match the selected filters.</div>
             ) : (
               <div className="divide-y" style={{ borderColor: "var(--panel-border)" }}>
-                {filtered.map((entry) => (
+                {paginatedRedemptions.map((entry) => (
                   <div key={entry.id} className="px-4 py-4 md:px-6 md:py-5">
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-[180px_minmax(0,1fr)_130px_150px_160px] md:items-center">
                       <div>
@@ -382,9 +435,39 @@ export default function RedemptionHistoryPage() {
             )}
           </div>
 
-          <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-            <span>Showing {filtered.length} of {redemptions.length} redemptions</span>
-            <span className="inline-flex items-center gap-1 text-cyan-300">
+          <div className="mt-4 grid grid-cols-1 items-center gap-3 text-xs text-slate-500 md:grid-cols-3">
+            <span className="text-left">
+              Showing {firstVisibleIndex}-{lastVisibleIndex} of {filtered.length} redemptions
+            </span>
+            <div className="flex justify-center">
+              {filtered.length > REDEMPTIONS_PER_PAGE && (
+                <div className="inline-flex items-center gap-1 rounded-lg border px-1 py-1" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
+                  <button
+                    type="button"
+                    onClick={() => setPage(activePage - 1)}
+                    disabled={activePage <= 1}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-300 transition hover:text-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label="Previous redemption page"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+
+                  <span className="min-w-[24px] text-center text-xs font-semibold text-slate-300">{activePage}</span>
+
+                  <button
+                    type="button"
+                    onClick={() => setPage(activePage + 1)}
+                    disabled={activePage >= totalPages}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-300 transition hover:text-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label="Next redemption page"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <span className="inline-flex items-center justify-start gap-1 text-cyan-300 md:justify-end">
               <CircleDollarSign className="h-3.5 w-3.5" />
               Synced from backend
             </span>

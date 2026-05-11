@@ -13,7 +13,6 @@ import {
   ShoppingCart,
   Sun,
   Trophy,
-  User,
   X,
 } from "lucide-react";
 import { getLeaderboard } from "../../services/api/dashboardService";
@@ -25,8 +24,8 @@ const navItems = [
   { label: "Cart", to: "/cart", icon: ShoppingCart },
   { label: "Redemption History", to: "/redemption-history", icon: History },
   { label: "Leaderboard", to: "/leaderboard", icon: Trophy },
-  { label: "Alerts", to: "/alerts", icon: Bell },
-  { label: "Profile", to: "/profile", icon: User },
+  { label: "Alerts", to: "/alerts", icon: Bell, roleRestrict: "manager" },
+  { label: "Alerts", to: "/advisor-alerts", icon: Bell, roleRestrict: "sales_advisor" },
 ];
 
 function normalizeName(value: string) {
@@ -59,15 +58,29 @@ export default function Sidebar() {
   const dashboardRoute = userRole?.toLowerCase() === "sales_advisor" ? "/advisor-dashboard" : "/dashboard";
   const canSearchAdvisor = userRole?.toLowerCase() !== "sales_advisor";
   const visibleNavItems = useMemo(() => {
-    if (userRole?.toLowerCase() !== "manager") return navItems;
+    return navItems.filter((item) => {
+      // If item has roleRestrict, only show if user role matches
+      if ("roleRestrict" in item && item.roleRestrict) {
+        return userRole?.toLowerCase() === item.roleRestrict.toLowerCase();
+      }
 
-    return navItems.filter(
-      (item) =>
-        item.to !== "/shop" &&
-        item.to !== "/cart" &&
-        item.to !== "/redemption-history" &&
-        item.to !== "/profile"
-    );
+      // For managers, exclude sales advisor only features
+      if (userRole?.toLowerCase() === "manager") {
+        return (
+          item.to !== "/shop" &&
+          item.to !== "/cart" &&
+          item.to !== "/redemption-history" &&
+          item.to !== "/advisor-alerts"
+        );
+      }
+
+      // For sales advisors, show everything except manager-only alerts route
+      if (userRole?.toLowerCase() === "sales_advisor") {
+        return item.to !== "/alerts";
+      }
+
+      return true;
+    });
   }, [userRole]);
 
   useEffect(() => {

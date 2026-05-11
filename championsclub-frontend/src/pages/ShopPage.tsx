@@ -33,6 +33,7 @@ import type {
 } from "../services/api/shopService";
 
 type RewardCategory = "all" | "electronics" | "cards" | "travel";
+const CREDIT_EPSILON = 1e-6;
 
 function getCurrentUserFromStorage() {
   const currentUserRaw = localStorage.getItem("currentUser");
@@ -49,7 +50,8 @@ function getCurrentUserFromStorage() {
 }
 
 function formatCredits(value: number): string {
-  return Math.round(value).toLocaleString("en-US");
+  const rounded = Math.round(value);
+  return (rounded === 0 ? 0 : rounded).toLocaleString("en-US");
 }
 
 function formatHistoryDate(value: string): string {
@@ -135,6 +137,7 @@ export default function ShopPage() {
   const totalCost = cartQuery.data?.total_credit_cost ?? 0;
   const availableCredits = overviewQuery.data?.available_credit ?? cartQuery.data?.available_credit ?? 0;
   const remainingCredits = cartQuery.data?.remaining_credit_after_checkout ?? availableCredits;
+  const hasEnoughCredits = totalCost - availableCredits <= CREDIT_EPSILON;
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const redemptions = historyQuery.data ?? [];
 
@@ -488,7 +491,7 @@ export default function ShopPage() {
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-400">Remaining Credit</span>
-                    <span className={`font-bold ${remainingCredits >= 0 ? "text-cyan-300" : "text-rose-300"}`}>
+                    <span className={`font-bold ${hasEnoughCredits ? "text-cyan-300" : "text-rose-300"}`}>
                       {formatCredits(remainingCredits)}
                     </span>
                   </div>
@@ -505,21 +508,21 @@ export default function ShopPage() {
                 <div
                   className="mt-4 flex items-start gap-2 rounded-xl border p-3"
                   style={{
-                    borderColor: remainingCredits >= 0 ? "rgba(16,185,129,0.35)" : "rgba(244,63,94,0.35)",
-                    background: remainingCredits >= 0 ? "rgba(16,185,129,0.08)" : "rgba(244,63,94,0.08)",
+                    borderColor: hasEnoughCredits ? "rgba(16,185,129,0.35)" : "rgba(244,63,94,0.35)",
+                    background: hasEnoughCredits ? "rgba(16,185,129,0.08)" : "rgba(244,63,94,0.08)",
                   }}
                 >
-                  {remainingCredits >= 0 ? (
+                  {hasEnoughCredits ? (
                     <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-300" />
                   ) : (
                     <Clock3 className="mt-0.5 h-4 w-4 text-rose-300" />
                   )}
                   <div>
-                    <p className={`text-sm font-semibold ${remainingCredits >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
-                      {remainingCredits >= 0 ? "You're good to go!" : "Not enough credits"}
+                    <p className={`text-sm font-semibold ${hasEnoughCredits ? "text-emerald-300" : "text-rose-300"}`}>
+                      {hasEnoughCredits ? "You're good to go!" : "Not enough credits"}
                     </p>
                     <p className="text-xs text-slate-400">
-                      {remainingCredits >= 0
+                      {hasEnoughCredits
                         ? "You have enough credit to checkout. Credit and stock will be revalidated during checkout."
                         : "Add fewer items or earn more credits."}
                     </p>
