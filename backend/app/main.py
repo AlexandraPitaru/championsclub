@@ -19,6 +19,9 @@ from app.sales_advisor_leaderboard.leaderboard_router import (
 from app.sales_advisor_leaderboard_my_position.my_position_router import (
     router as sales_advisor_leaderboard_my_position_router,
 )
+from app.sales_advisor_profile.profile_router import (
+    router as sales_advisor_profile_router,
+)
 from app.sales_advisor_performance_charts.performance_charts_router import (
     router as sales_advisor_performance_charts_router,
 )
@@ -65,6 +68,7 @@ app.include_router(ai_activity_summary_router)
 app.include_router(sales_advisor_dashboard_router)
 app.include_router(sales_advisor_leaderboard_router)
 app.include_router(sales_advisor_leaderboard_my_position_router)
+app.include_router(sales_advisor_profile_router)
 app.include_router(sales_advisor_performance_charts_router)
 app.include_router(sales_advisor_profile_ai_router)
 app.include_router(sales_advisor_shop_router)
