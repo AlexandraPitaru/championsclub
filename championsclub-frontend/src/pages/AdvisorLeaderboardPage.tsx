@@ -3,7 +3,6 @@ import {
   Award,
   Crown,
   Globe2,
-  ListFilter,
   Medal,
   RefreshCw,
   Target,
@@ -156,61 +155,6 @@ export default function AdvisorLeaderboardPage() {
               See where you stand against your peers and track the points race.
             </p>
           </div>
-
-          <Card
-            className="min-w-full p-4 sm:min-w-[340px]"
-            style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="rounded-full bg-cyan-500/15 p-2 text-cyan-300">
-                <ListFilter className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-cyan-100">Leaderboard Scope</p>
-                <p className="text-xs text-slate-400">Team and global standings.</p>
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {(["team", "global"] as AdvisorLeaderboardScope[]).map((option) => {
-                const isSelected = scope === option;
-                return (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => setScope(option)}
-                    className={[
-                      "rounded-xl border px-3 py-2 text-sm font-semibold capitalize transition",
-                      isSelected ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-100" : "text-slate-300",
-                    ].join(" ")}
-                    style={
-                      isSelected
-                        ? undefined
-                        : { borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)" }
-                    }
-                  >
-                    {option}
-                  </button>
-                );
-              })}
-            </div>
-
-            <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-              Show top
-            </label>
-            <select
-              value={limit}
-              onChange={(event) => setLimit(Number(event.target.value))}
-              className="mt-2 w-full rounded-xl border px-3 py-2 text-sm text-slate-200 outline-none focus:border-cyan-500/60"
-              style={{ borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)" }}
-            >
-              {limitOptions.map((option) => (
-                <option key={option} value={option}>
-                  Top {option}
-                </option>
-              ))}
-            </select>
-          </Card>
         </section>
 
         {!currentUser ? (
@@ -308,26 +252,70 @@ export default function AdvisorLeaderboardPage() {
               style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}
             >
               <div
-                className="flex flex-col gap-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-4 border-b p-4"
                 style={{ borderColor: "var(--panel-border)" }}
               >
-                <div>
-                  <h2 className="text-lg font-semibold text-cyan-100">{scopeLabel(scope)} Standings</h2>
-                  <p className="text-sm text-slate-400">
-                    Ranked by total points.
-                  </p>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-cyan-100">{scopeLabel(scope)} Standings</h2>
+                    <p className="text-sm text-slate-400">
+                      Ranked by total points.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setRefreshToken((current) => current + 1)}
+                    disabled={isLoading}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold text-cyan-100 transition disabled:cursor-not-allowed disabled:opacity-50"
+                    style={{ borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)" }}
+                  >
+                    <RefreshCw className={["h-4 w-4", isLoading ? "animate-spin" : ""].join(" ")} />
+                    Refresh
+                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setRefreshToken((current) => current + 1)}
-                  disabled={isLoading}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold text-cyan-100 transition disabled:cursor-not-allowed disabled:opacity-50"
-                  style={{ borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)" }}
-                >
-                  <RefreshCw className={["h-4 w-4", isLoading ? "animate-spin" : ""].join(" ")} />
-                  Refresh
-                </button>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex gap-2">
+                    {(["team", "global"] as AdvisorLeaderboardScope[]).map((option) => {
+                      const isSelected = scope === option;
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => setScope(option)}
+                          className={[
+                            "min-w-[80px] rounded-lg border px-3 py-1.5 text-sm font-semibold capitalize transition",
+                            isSelected ? "border-cyan-500/50 bg-cyan-500/15 text-cyan-100 shadow-[0_0_12px_rgba(6,182,212,0.15)]" : "text-slate-300 hover:border-cyan-500/30 hover:text-cyan-100",
+                          ].join(" ")}
+                          style={
+                            isSelected
+                              ? undefined
+                              : { borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)" }
+                          }
+                        >
+                          {option === "team" ? <Users className="inline h-3.5 w-3.5 mr-1" /> : <Globe2 className="inline h-3.5 w-3.5 mr-1" />}
+                          {option}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={limit}
+                      onChange={(event) => setLimit(Number(event.target.value))}
+                      className="rounded-lg border px-3 py-1.5 text-sm font-medium text-slate-200 outline-none transition focus:border-cyan-500/60"
+                      style={{ borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)" }}
+                    >
+                      {limitOptions.map((option) => (
+                        <option key={option} value={option}>
+                          Top {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
 
               {errorMessage ? (
