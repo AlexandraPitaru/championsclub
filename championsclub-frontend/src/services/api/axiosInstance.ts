@@ -5,7 +5,16 @@ const axiosInstance = axios.create();
 
 // Adaugă X-User-Id la fiecare request dacă există în localStorage
 axiosInstance.interceptors.request.use((config) => {
-  let userId = localStorage.getItem("user_id");
+  let userId: string | null = null;
+  const currentUserRaw = localStorage.getItem("currentUser");
+  if (currentUserRaw) {
+    try {
+      const currentUser = JSON.parse(currentUserRaw);
+      if (currentUser && currentUser.user_id) {
+        userId = String(currentUser.user_id);
+      }
+    } catch {}
+  }
   // Fallback pentru development/local: dacă nu există user_id, folosește "1"
   if (!userId && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
     userId = "1";
