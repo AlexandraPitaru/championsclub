@@ -1,4 +1,7 @@
+import { useEffect, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
+
+const TYPING_SPEED_MS = 18;
 
 type Props = {
   summary: string | null;
@@ -13,6 +16,41 @@ export default function AdvisorAIActivitySummary({
   isError,
   isFallback,
 }: Props) {
+  const [displayedText, setDisplayedText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const typingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Typewriter effect — runs whenever a new full summary lands
+  useEffect(() => {
+    if (!summary) {
+      setDisplayedText("");
+      return;
+    }
+
+    setDisplayedText("");
+    setIsTyping(true);
+
+    let index = 0;
+
+    function typeNextChar() {
+      index += 1;
+      setDisplayedText(summary!.slice(0, index));
+
+      if (index < summary!.length) {
+        typingRef.current = setTimeout(typeNextChar, TYPING_SPEED_MS);
+      } else {
+        setIsTyping(false);
+      }
+    }
+
+    typingRef.current = setTimeout(typeNextChar, TYPING_SPEED_MS);
+
+    return () => {
+      if (typingRef.current !== null) {
+        clearTimeout(typingRef.current);
+      }
+    };
+  }, [summary]);
   if (isError && !isLoading) {
     return (
       <div
@@ -108,7 +146,15 @@ export default function AdvisorAIActivitySummary({
         </div>
       ) : (
         <>
-          <p className="text-[15px] leading-8" style={{ color: "var(--summary-text)" }}>{summary}</p>
+          <p className="text-[15px] leading-8" style={{ color: "var(--summary-text)" }}>
+            {displayedText}
+            {isTyping && (
+              <span className="ml-0.5 inline-block w-[2px] animate-[blink_0.75s_step-end_infinite] rounded-sm bg-amber-300 align-middle"
+                style={{ height: "1.1em" }}
+                aria-hidden="true"
+              />
+            )}
+          </p>
           {isFallback ? (
             <p className="mt-3 text-sm" style={{ color: "var(--summary-muted)" }}>
               Limited KPI activity detected for this interval, so this summary is concise.
