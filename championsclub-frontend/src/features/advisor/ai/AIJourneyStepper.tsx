@@ -38,17 +38,19 @@ export default function AIJourneyStepper({
                     ? "border-cyan-300/60 bg-cyan-400/15 text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.3)]"
                     : isDone
                       ? "border-emerald-300/40 bg-emerald-400/10 text-emerald-200 hover:bg-emerald-400/15"
-                      : "border-[#28415f] bg-[#0d1a2b] text-slate-500"
+                      : ""
                 } ${!isClickable ? "cursor-not-allowed" : "cursor-pointer"}`}
+                style={!isCurrent && !isDone ? { borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)", color: "var(--text-muted)" } : undefined}
               >
                 <span
                   className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
                     isCurrent
                       ? "bg-cyan-400 text-[#04101e]"
                       : isDone
-                        ? "bg-emerald-400 text-[#04101e]"
-                        : "bg-[#1f3045] text-slate-400"
+                        ? "bg-emerald-400 text-white"
+                        : ""
                   }`}
+                  style={!isCurrent && !isDone ? { background: "var(--panel-border)", color: "var(--text-muted)" } : undefined}
                 >
                   {isDone ? <Check className="h-3 w-3" /> : idx + 1}
                 </span>
@@ -57,9 +59,8 @@ export default function AIJourneyStepper({
               </button>
               {idx < steps.length - 1 && (
                 <span
-                  className={`mx-1 h-px w-6 ${
-                    isDone ? "bg-emerald-400/40" : "bg-[#28415f]"
-                  }`}
+                  className={`mx-1 h-px w-6`}
+                  style={{ background: isDone ? "rgba(52, 211, 153, 0.4)" : "var(--panel-border)" }}
                 />
               )}
             </li>

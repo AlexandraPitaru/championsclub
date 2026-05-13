@@ -256,7 +256,7 @@ export default function LeaderboardPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Card className="flex items-center gap-4" style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
+          <Card className="flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] animate-fade-in" style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)", animationDelay: "0ms" }}>
             <div className="rounded-full bg-amber-500/20 p-3 text-amber-400">
               <Crown className="h-5 w-5" />
             </div>
@@ -269,7 +269,7 @@ export default function LeaderboardPage() {
             </div>
           </Card>
 
-          <Card className="flex items-center gap-4" style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
+          <Card className="flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] animate-fade-in" style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)", animationDelay: "100ms" }}>
             <div className="rounded-full bg-blue-500/20 p-3 text-blue-400">
               <Users className="h-5 w-5" />
             </div>
@@ -280,7 +280,7 @@ export default function LeaderboardPage() {
             </div>
           </Card>
 
-          <Card className="flex items-center gap-4" style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
+          <Card className="flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] animate-fade-in" style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)", animationDelay: "200ms" }}>
             <div className="rounded-full bg-emerald-500/20 p-3 text-emerald-400">
               <TrendingUp className="h-5 w-5" />
             </div>
@@ -295,7 +295,7 @@ export default function LeaderboardPage() {
             </div>
           </Card>
 
-          <Card className="flex items-center gap-4" style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}>
+          <Card className="flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] animate-fade-in" style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)", animationDelay: "300ms" }}>
             <div className="rounded-full bg-violet-500/20 p-3 text-violet-400">
               <Star className="h-5 w-5" />
             </div>
@@ -348,13 +348,20 @@ export default function LeaderboardPage() {
                 <option value="all">All</option>
               </select>
 
-              <button
-                onClick={togglePointSort}
-                className="inline-flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm text-slate-200"
+              <select
+                value={`${sortBy}-${sortDir}`}
+                onChange={(e) => {
+                  const [newSortBy, newSortDir] = e.target.value.split('-');
+                  setPage(1);
+                  setSortBy(newSortBy as LeaderboardSortBy);
+                  setSortDir(newSortDir as LeaderboardSortDir);
+                }}
+                className="rounded-lg border px-3 py-2 text-sm text-slate-200"
                 style={{ borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)" }}
               >
-                Sort by: {sortLabel}
-              </button>
+                <option value="points-desc">Points (High to Low)</option>
+                <option value="points-asc">Points (Low to High)</option>
+              </select>
             </div>
           </div>
 
@@ -362,7 +369,15 @@ export default function LeaderboardPage() {
             <div className="p-4 text-sm text-red-400">{errorMessage}</div>
           ) : null}
 
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
+            {isLoading && displayedItems.length === 0 && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm transition-opacity duration-300" style={{ background: "rgba(15, 23, 42, 0.7)" }}>
+                <div className="flex flex-col items-center gap-3">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-cyan-400 border-t-transparent"></div>
+                  <p className="text-sm font-medium text-cyan-300">Loading...</p>
+                </div>
+              </div>
+            )}
             <table className="min-w-[820px] w-full text-left text-sm">
               <thead className="text-slate-300 border-b" style={{ background: "var(--panel-subtle-bg)", borderColor: "var(--panel-border)" }}>
                 <tr>
@@ -377,18 +392,24 @@ export default function LeaderboardPage() {
 
               <tbody className="divide-y" style={{ borderColor: "var(--panel-border)" }}>
                 {!isLoading && displayedItems.length === 0 ? (
-                  <tr>
+                  <tr className="animate-fade-in">
                     <td colSpan={6} className="px-6 py-8 text-center text-slate-400">
                       No advisors found.
                     </td>
                   </tr>
                 ) : null}
 
-                {displayedItems.map((row) => (
+                {displayedItems.map((row, index) => (
                   <tr
-                    key={row.user_id}
-                    className={row.position === 1 ? "bg-amber-500/10" : ""}
-                    style={row.position === 1 ? undefined : { background: "var(--panel-bg)" }}
+                    key={`${row.user_id}-${page}-${interval}`}
+                    className={[
+                      "transition-all duration-300 hover:scale-[1.01] animate-fade-in-up",
+                      row.position === 1 ? "bg-amber-500/10" : ""
+                    ].join(" ")}
+                    style={{
+                      ...(row.position === 1 ? undefined : { background: "var(--panel-bg)" }),
+                      animationDelay: `${index * 50}ms`
+                    }}
                   >
                     <td className="px-6 py-4 font-semibold text-slate-300">
                       <div className="flex items-center gap-2">

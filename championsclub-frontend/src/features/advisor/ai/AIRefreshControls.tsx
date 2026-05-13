@@ -26,7 +26,7 @@ export default function AIRefreshControls({
 
   return (
     <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-      <div className="inline-flex items-center gap-1 rounded-full border border-[#28415f] bg-[#0d1a2b] p-1">
+      <div className="inline-flex items-center gap-1 rounded-full border p-1" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
         {intervalOptions.map((opt) => {
           const active = interval === opt.value;
           return (
@@ -37,8 +37,9 @@ export default function AIRefreshControls({
               className={`min-w-[68px] rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                 active
                   ? "bg-cyan-400/90 text-[#04101e] shadow-[0_0_18px_rgba(34,211,238,0.35)]"
-                  : "text-slate-300 hover:text-cyan-100"
+                  : "hover:text-cyan-100"
               }`}
+              style={!active ? { color: "var(--text)" } : undefined}
             >
               {opt.label}
             </button>

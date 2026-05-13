@@ -20,9 +20,7 @@ export default function AIWelcomeHero({
   onStart,
 }: Props) {
   return (
-    <section className="relative overflow-hidden rounded-[28px] border border-amber-300/30 bg-[linear-gradient(145deg,#0b1624_0%,#102033_60%,#1a1304_100%)] p-7 shadow-[0_24px_48px_rgba(2,8,20,0.5)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(251,191,36,0.18),transparent_45%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_85%,rgba(34,211,238,0.12),transparent_50%)]" />
+    <section className="relative overflow-hidden rounded-[28px] border border-amber-300/30 p-7" style={{ background: "var(--panel-bg)" }}>
 
       <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-[auto,1fr,auto] lg:items-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-300/45 bg-amber-300/15 shadow-[0_0_28px_rgba(251,191,36,0.32)]">
@@ -33,11 +31,11 @@ export default function AIWelcomeHero({
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-200">
             Hi, I'm your AI Coach
           </p>
-          <h2 className="mt-2 text-2xl font-bold text-slate-50">
+          <h2 className="mt-2 text-2xl font-bold" style={{ color: "var(--text-h)" }}>
             Let's look at your performance together
           </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-300">{summary}</p>
-          <p className="mt-3 text-[11px] text-slate-500">
+          <p className="mt-2 text-sm leading-6" style={{ color: "var(--text)" }}>{summary}</p>
+          <p className="mt-3 text-[11px]" style={{ color: "var(--text-muted)" }}>
             Updated {formatRelative(generatedAt)} · {modelVersion}
           </p>
         </div>
