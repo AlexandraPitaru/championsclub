@@ -109,7 +109,7 @@ export default function AdvisorDashboardPage() {
                     : "Advisor Account"}
                 </h2>
                 <p className="text-base text-cyan-200 mb-6 font-mono tracking-wide">{currentUser.email}</p>
-                <div className="rounded-xl border p-6 w-full flex flex-col items-center mb-6" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
+                <div className="rounded-xl border p-6 w-full flex flex-col items-center mb-3" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
                   <p className="text-base font-semibold uppercase tracking-[0.2em] text-slate-500 mb-1">Next Rank</p>
                   <p
                     className="text-2xl font-bold mb-0.5"
@@ -123,7 +123,7 @@ export default function AdvisorDashboardPage() {
                   </p>
                   <p className="text-base text-slate-400">Points to next rank: <span className="font-bold text-cyan-200">{overview.dashboard_summary?.is_highest_rank ? '-' : (overview.dashboard_summary?.points_to_next_rank ?? '-')}</span></p>
                 </div>
-                <div className="grid grid-cols-2 gap-6 w-full mb-1">
+                <div className="grid grid-cols-2 gap-6 w-full mb-4">
                   <div className="rounded-xl border p-6 flex flex-col items-center" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-1">Current Points</p>
                     <p className="text-4xl font-extrabold text-cyan-300 drop-shadow-lg">{overview.dashboard_summary?.current_points ?? 'N/A'}</p>
@@ -138,7 +138,7 @@ export default function AdvisorDashboardPage() {
                 </div>
                 {/* AI Coach Section in Advisor Account */}
                 <div
-                  className="mt-0 flex w-full flex-col items-center rounded-xl border px-6 py-4 text-center shadow-sm"
+                  className="mt-2 flex w-full flex-col items-center rounded-xl border px-6 py-4 text-center shadow-sm"
                   style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}
                 >
                   <h3 className="mb-2 text-2xl font-bold tracking-tight text-cyan-100">Meet your AI Coach</h3>

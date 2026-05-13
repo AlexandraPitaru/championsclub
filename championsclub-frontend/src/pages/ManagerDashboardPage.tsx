@@ -418,7 +418,9 @@ export default function ManagerDashboardPage() {
               </p>
             )}
           </div>
+        </section>
 
+        <div className="fixed top-20 right-20 z-50">
           <ManagerFilterDrawer
             scope={kpiScope}
             interval={kpiInterval}
@@ -438,7 +440,7 @@ export default function ManagerDashboardPage() {
             onEndDateChange={setEndDate}
             onUserChange={setSelectedUserId}
           />
-        </section>
+        </div>
 
         {kpiScope === "user" && selectedUserId !== null && (() => {
           const selectedAdvisor = advisorOptions.find((a) => a.id === selectedUserId);

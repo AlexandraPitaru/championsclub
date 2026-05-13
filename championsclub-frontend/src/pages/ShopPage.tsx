@@ -252,13 +252,6 @@ export default function ShopPage() {
                     <p className="mt-1 text-sm" style={{ color: isLight ? "#475569" : "#94a3b8" }}>
                       Rewards and available credit come directly from the backend. Add items to your cart and checkout when you are ready.
                     </p>
-                    <Link
-                      to="/cart"
-                      className="mt-3 inline-flex items-center gap-1 text-sm font-semibold transition"
-                      style={{ color: isLight ? "#0e7490" : "#67e8f9" }}
-                    >
-                      Go to cart <ChevronRight className="h-4 w-4" />
-                    </Link>
                   </div>
                 </div>
               </Card>

@@ -75,7 +75,7 @@ export default function ManagerFilterDrawer({
         type="button"
         onClick={() => setIsOpen(true)}
         aria-label="Open filters"
-        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-cyan-500/40 bg-cyan-500/15 text-cyan-100 shadow-[0_0_18px_rgba(6,182,212,0.18)] transition-all duration-150 hover:bg-cyan-500/20 hover:shadow-[0_0_24px_rgba(6,182,212,0.26)] active:scale-95"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-full border-2 border-cyan-400 bg-cyan-500/25 text-white shadow-[0_0_24px_rgba(6,182,212,0.35)] transition-all duration-150 hover:bg-cyan-500/35 hover:border-cyan-300 hover:shadow-[0_0_32px_rgba(6,182,212,0.45)] active:scale-95"
       >
         <ListFilter className="h-5 w-5" />
       </button>
