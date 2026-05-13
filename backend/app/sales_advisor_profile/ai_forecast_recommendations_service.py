@@ -15,12 +15,17 @@ from app.sales_advisor_profile.ai_forecast_recommendations_schemas import (
     ForecastTrend,
     NextRankLikelihood,
     SalesAdvisorForecastRecommendedAction,
+    SalesAdvisorForecastFactor,
     SalesAdvisorForecastRecommendationsContext,
     SalesAdvisorForecastRecommendationsResponse,
     SalesAdvisorForecastRiskArea,
     SalesAdvisorForecastSection,
     SalesAdvisorForecastTrainingRecommendation,
     SalesAdvisorPerformancePeriodContext,
+)
+from app.sales_advisor_profile.forecast_model_service import (
+    AdvisorForecastPrediction,
+    build_advisor_forecast_prediction,
 )
 
 
@@ -60,6 +65,17 @@ def _dedupe_keep_order(values: list[str]) -> list[str]:
         result.append(normalized)
 
     return result
+
+
+def _normalize_external_url(value: str | None) -> str | None:
+    if value is None:
+        return None
+
+    normalized = value.strip()
+    if not normalized.startswith(("https://", "http://")):
+        return None
+
+    return normalized
 
 
 def _skill_names_for_levels(
@@ -307,67 +323,9 @@ def _determine_confidence(
 def _build_main_factors(
     payload: SalesAdvisorForecastRecommendationsContext,
     *,
-    average_points_per_period: float,
-) -> list[str]:
-    factors: list[str] = []
-    latest, previous = _get_latest_periods(payload)
-
-    if latest is not None:
-        factors.append(
-            "Recent 30-day activity shows "
-            f"{latest.total_transactions} transactions and {latest.total_points_earned} points."
-        )
-
-    if previous is not None:
-        factors.append(
-            "The prior 30-day period recorded "
-            f"{previous.total_transactions} transactions and {previous.total_points_earned} points."
-        )
-
-    if payload.rank_progress.is_highest_rank:
-        factors.append("The advisor already holds the highest configured rank.")
-    elif payload.rank_progress.points_to_next_rank is not None:
-        factors.append(
-            f"{payload.rank_progress.points_to_next_rank} points remain to reach {payload.rank_progress.next_rank}."
-        )
-
-    if average_points_per_period > 0:
-        factors.append(
-            "Average points earned across active 30-day periods are "
-            f"{average_points_per_period:.1f}."
-        )
-
-    if payload.team_comparison is not None:
-        comparison = payload.team_comparison
-        if comparison.comparison_to_team_average == "above":
-            factors.append(
-                "Current total points are above the team average."
-            )
-        elif comparison.comparison_to_team_average == "below":
-            factors.append(
-                "Current total points are below the team average."
-            )
-        else:
-            factors.append("Current total points are aligned with the team average.")
-
-    skill_gaps = _skill_names_for_levels(payload, "beginner")
-    strong_skills = _skill_names_for_levels(payload, "advanced")
-
-    if skill_gaps:
-        factors.append(
-            "Skill records highlight development needs in "
-            f"{', '.join(skill_gaps[:3])}."
-        )
-    elif strong_skills:
-        factors.append(
-            "Skill records show strengths in "
-            f"{', '.join(strong_skills[:3])}."
-        )
-
-    if payload.missing_data:
-        factors.append(payload.missing_data[0])
-
-    return factors[:5]
+    prediction: AdvisorForecastPrediction,
+) -> list[SalesAdvisorForecastFactor]:
+    return prediction.main_factors
 
 
 def _build_recommended_focus(
@@ -406,55 +364,58 @@ def _build_recommended_focus(
 def _build_forecast_summary(
     payload: SalesAdvisorForecastRecommendationsContext,
     *,
-    trend: ForecastTrend,
-    next_rank_likelihood: NextRankLikelihood,
-    confidence_level: ConfidenceLevel,
+    prediction: AdvisorForecastPrediction,
     ai_unavailable: bool,
 ) -> str:
+    if prediction.active_period_count == 0:
+        next_rank_text = (
+            f" The next-rank likelihood is {prediction.next_rank_probability_pct}% for "
+            f"{payload.rank_progress.next_rank} until new activity is recorded."
+            if payload.rank_progress.next_rank
+            else ""
+        )
+        return (
+            f"No sales activity was found in the last {prediction.history_used_days} days, "
+            "so the forecast cannot calculate a meaningful pace yet. "
+            f"It shows {prediction.projected_points_in_window} projected points for the next "
+            f"{prediction.days_window} days only because there is no recent performance signal to extrapolate from."
+            f"{next_rank_text} Confidence is {prediction.confidence_label} at "
+            f"{prediction.confidence_pct}%."
+        )
+
     trend_text = {
         "upward": "trending upward",
         "stable": "holding a stable pace",
         "downward": "trending downward",
-    }[trend]
+    }[prediction.trend]
 
-    if next_rank_likelihood == "not_available":
+    if payload.rank_progress.is_highest_rank:
         next_rank_sentence = (
             "Next-rank likelihood is not applicable because you already hold the highest configured rank."
         )
     elif payload.rank_progress.next_rank is not None:
         next_rank_sentence = (
-            f"The current likelihood of reaching {payload.rank_progress.next_rank} is {next_rank_likelihood}."
+            f"The local forecast model estimates a {prediction.next_rank_probability_pct}% likelihood of reaching "
+            f"{payload.rank_progress.next_rank} in the next {prediction.days_window} days."
         )
     else:
         next_rank_sentence = (
             "There is not enough rank-progress information to estimate the next-rank likelihood."
         )
 
-    if confidence_level == "low":
-        confidence_sentence = (
-            "Confidence is low because recent history or supporting comparison data is limited."
-        )
-    elif confidence_level == "medium":
-        confidence_sentence = (
-            "Confidence is medium because there is some recent history, but the signal is not complete."
-        )
-    else:
-        confidence_sentence = (
-            "Confidence is high because recent performance history and supporting context are both available."
-        )
+    confidence_sentence = (
+        f"Confidence is {prediction.confidence_label} at {prediction.confidence_pct}% because "
+        f"{prediction.active_period_count} active 30-day period(s) were available."
+    )
 
     summary = (
-        f"If your current performance continues, you are {trend_text}. "
+        f"If your current performance continues, you are {trend_text} with about "
+        f"{prediction.projected_points_in_window} projected points in the next "
+        f"{prediction.days_window} days. "
         f"{next_rank_sentence} {confidence_sentence}"
     )
 
-    if not ai_unavailable:
-        return summary
-
-    return (
-        "AI forecast is temporarily unavailable right now, so this is a simplified estimate based on your current advisor data. "
-        + summary
-    )
+    return summary
 
 
 def _build_no_risk_item() -> list[SalesAdvisorForecastRiskArea]:
@@ -496,6 +457,9 @@ def _build_risk_areas(
                     "Build a short weekly plan around active prospects and track each follow-up until the next sale is closed."
                 ),
                 priority="high",
+                severity="high",
+                category="activity",
+                expected_points_loss=120,
             )
         )
 
@@ -519,6 +483,9 @@ def _build_risk_areas(
                     "Review your recent pipeline and set one weekly target for sales activity and one for points earned."
                 ),
                 priority="high",
+                severity="high",
+                category="activity",
+                expected_points_loss=max(30, previous.total_points_earned - latest.total_points_earned),
             )
         )
 
@@ -546,6 +513,9 @@ def _build_risk_areas(
                     "Compare one successful habit from higher-performing teammates and apply it to your next two weeks of customer activity."
                 ),
                 priority=priority,
+                severity=priority,
+                category="activity",
+                expected_points_loss=int(min(200, abs(payload.team_comparison.points_difference_from_average))),
             )
         )
 
@@ -563,6 +533,9 @@ def _build_risk_areas(
                     "Pick one development skill and practice it intentionally with feedback from a manager or peer this week."
                 ),
                 priority="medium",
+                severity="medium",
+                category="skills",
+                expected_points_loss=80,
             )
         )
 
@@ -589,6 +562,9 @@ def _build_risk_areas(
                         "Re-engage your current opportunity list and schedule follow-ups in the next two business days."
                     ),
                     priority="medium",
+                    severity="medium",
+                    category="follow_up",
+                    expected_points_loss=60,
                 )
             )
 
@@ -623,6 +599,11 @@ def _build_recommended_actions(
                     "A steadier activity rhythm should improve sales visibility and create a more reliable points trend."
                 ),
                 priority="high",
+                category="activity",
+                expected_points_gain=120,
+                time_estimate_minutes=15,
+                cta_label="Build activity plan",
+                cta_target="leads",
             )
         )
 
@@ -652,6 +633,11 @@ def _build_recommended_actions(
                     "Smaller weekly targets should make next-rank progress easier to track and easier to adjust."
                 ),
                 priority=priority,
+                category="activity",
+                expected_points_gain=weekly_target,
+                time_estimate_minutes=10,
+                cta_label="View rank plan",
+                cta_target="profile",
             )
         )
 
@@ -671,6 +657,11 @@ def _build_recommended_actions(
                     "Applying a proven behavior should help close the gap to the team average with less trial and error."
                 ),
                 priority="medium",
+                category="conversion",
+                expected_points_gain=90,
+                time_estimate_minutes=20,
+                cta_label="Open leaderboard",
+                cta_target="leaderboard",
             )
         )
 
@@ -688,6 +679,11 @@ def _build_recommended_actions(
                     "More intentional practice should improve execution quality and support stronger sales outcomes."
                 ),
                 priority="medium",
+                category="skills",
+                expected_points_gain=80,
+                time_estimate_minutes=15,
+                cta_label="Open trainings",
+                cta_target="trainings",
             )
         )
 
@@ -705,6 +701,11 @@ def _build_recommended_actions(
                     "Consistency should protect current momentum while keeping future improvement options open."
                 ),
                 priority="low",
+                category="activity",
+                expected_points_gain=None,
+                time_estimate_minutes=10,
+                cta_label="View action plan",
+                cta_target=None,
             )
         )
 
@@ -718,6 +719,7 @@ def _build_training_recommendations(
     payload: SalesAdvisorForecastRecommendationsContext,
     *,
     trend: ForecastTrend,
+    session: Session | None = None,
 ) -> tuple[list[SalesAdvisorForecastTrainingRecommendation], str | None]:
     skill_gaps = _skill_names_for_levels(payload, "beginner")
 
@@ -734,7 +736,9 @@ def _build_training_recommendations(
         )
 
     trainings: list[SalesAdvisorForecastTrainingRecommendation] = []
+    used_training_ids = set()
 
+    # Pentru fiecare skill gap, caută traininguri relevante
     for index, skill_name in enumerate(skill_gaps[:3]):
         priority = (
             "high"
@@ -743,22 +747,59 @@ def _build_training_recommendations(
             if index == 0
             else "low"
         )
-        trainings.append(
-            SalesAdvisorForecastTrainingRecommendation(
-                title=f"{skill_name} practice workshop",
-                description=(
-                    f"A focused training session on {skill_name} with real customer scenarios and short practice loops."
-                ),
-                related_skill=skill_name,
-                reason=(
-                    f"{skill_name} is currently recorded as a beginner-level skill and is a likely blocker for faster progress."
-                ),
-                expected_benefit=(
-                    f"Stronger execution in {skill_name} should improve consistency and support better sales results."
-                ),
-                priority=priority,
+        results = []
+        if session is not None:
+            from app.models.training import Training, TrainingSkillLink
+            from sqlmodel import select
+
+            stmt = (
+                select(Training)
+                .join(TrainingSkillLink)
+                .where(TrainingSkillLink.skill_name == skill_name)
             )
-        )
+            results = session.exec(stmt).all()
+
+        for t in results:
+            if t.id in used_training_ids:
+                continue
+
+            training_url = _normalize_external_url(t.url)
+            training_level = (
+                t.level
+                if t.level in {"beginner", "intermediate", "advanced"}
+                else "beginner"
+            )
+            trainings.append(
+                SalesAdvisorForecastTrainingRecommendation(
+                    title=t.title,
+                    description=t.description,
+                    related_skill=skill_name,
+                    reason=f"{skill_name} is currently recorded as a beginner-level skill and this training is recommended to accelerate your development.",
+                    expected_benefit=f"Completing this training should improve your {skill_name} and support better sales results.",
+                    priority=priority,
+                    level=training_level,
+                    cta_target=(
+                        "training_external_url"
+                        if training_url
+                        else "training_internal"
+                    ),
+                    external_url=training_url,
+                )
+            )
+            used_training_ids.add(t.id)
+            break
+        else:
+            trainings.append(
+                SalesAdvisorForecastTrainingRecommendation(
+                    title=f"{skill_name} practice workshop",
+                    description=f"A focused training session on {skill_name} with real customer scenarios and short practice loops.",
+                    related_skill=skill_name,
+                    reason=f"{skill_name} is currently recorded as a beginner-level skill and is a likely blocker for faster progress.",
+                    expected_benefit=f"Stronger execution in {skill_name} should improve consistency and support better sales results.",
+                    priority=priority,
+                    cta_target="training_internal",
+                )
+            )
 
     return trainings, None
 
@@ -770,11 +811,7 @@ def _build_recommendation_summary(
     trainings_note: str | None,
     ai_unavailable: bool,
 ) -> str:
-    prefix = (
-        "AI forecast and recommendations are temporarily unavailable right now, so we prepared this guidance using your current advisor data instead. "
-        if ai_unavailable
-        else ""
-    )
+    prefix = ""
     focus = _build_recommended_focus(payload, trend=trend)
 
     if trainings_note:
@@ -795,44 +832,55 @@ def build_fallback_sales_advisor_ai_forecast_recommendations(
     payload: SalesAdvisorForecastRecommendationsContext,
     *,
     ai_unavailable: bool,
+    session: Session | None = None,
 ) -> SalesAdvisorForecastRecommendationsResponse:
-    trend = _determine_trend(payload)
-    average_points_per_period = _average_points_per_active_period(payload)
-    next_rank_likelihood = _estimate_next_rank_likelihood(
+    prediction = build_advisor_forecast_prediction(payload)
+    trainings, trainings_note = _build_training_recommendations(
         payload,
-        trend=trend,
+        trend=prediction.trend,
+        session=session,
     )
-    confidence_level = _determine_confidence(payload)
-    trainings, trainings_note = _build_training_recommendations(payload, trend=trend)
 
     return SalesAdvisorForecastRecommendationsResponse(
+        is_fallback=ai_unavailable,
+        fallback_reason="ai_unavailable" if ai_unavailable else None,
         forecast=SalesAdvisorForecastSection(
-            trend=trend,
-            next_rank_likelihood=next_rank_likelihood,
-            confidence_level=confidence_level,
+            trend=prediction.trend,
+            next_rank_likelihood={
+                "probability_pct": prediction.next_rank_probability_pct,
+                "label": prediction.next_rank_likelihood_label,
+            },
+            confidence_level=prediction.confidence_label,
+            confidence_pct=prediction.confidence_pct,
+            confidence_label=prediction.confidence_label,
             forecast_summary=_build_forecast_summary(
                 payload,
-                trend=trend,
-                next_rank_likelihood=next_rank_likelihood,
-                confidence_level=confidence_level,
+                prediction=prediction,
                 ai_unavailable=ai_unavailable,
             ),
             main_factors=_build_main_factors(
                 payload,
-                average_points_per_period=average_points_per_period,
+                prediction=prediction,
             ),
-            recommended_focus=_build_recommended_focus(payload, trend=trend),
+            recommended_focus=_build_recommended_focus(
+                payload,
+                trend=prediction.trend,
+            ),
+            projected_points_in_window=prediction.projected_points_in_window,
+            projected_points_target=prediction.projected_points_target,
+            days_window=prediction.days_window,
+            history_used_days=prediction.history_used_days,
         ),
-        risk_areas=_build_risk_areas(payload, trend=trend),
+        risk_areas=_build_risk_areas(payload, trend=prediction.trend),
         recommended_actions=_build_recommended_actions(
             payload,
-            trend=trend,
-            average_points_per_period=average_points_per_period,
+            trend=prediction.trend,
+            average_points_per_period=prediction.average_points_per_active_period,
         ),
         recommended_trainings=trainings,
         recommendation_summary=_build_recommendation_summary(
             payload,
-            trend=trend,
+            trend=prediction.trend,
             trainings_note=trainings_note,
             ai_unavailable=ai_unavailable,
         ),
@@ -853,54 +901,96 @@ Return only valid JSON. Do not add markdown, explanations, or code fences.
 
 Required JSON structure:
 {{
-  "forecast": {{
-    "trend": "upward|stable|downward",
-    "next_rank_likelihood": "high|medium|low|not_available",
-    "confidence_level": "low|medium|high",
-    "forecast_summary": "string",
-    "main_factors": ["string"],
-    "Recommended_focus": "string"
-  }},
-  "risk_areas": [
-    {{
-      "title": "string",
-      "description": "string",
-      "reason": "string",
-      "mitigation_action": "string",
-      "priority": "high|medium|low"
-    }}
-  ],
-  "recommended_actions": [
-    {{
-      "title": "string",
-      "description": "string",
-      "reason": "string",
-      "expected_impact": "string",
-      "priority": "high|medium|low"
-    }}
-  ],
-  "recommended_trainings": [
-    {{
-      "title": "string",
-      "description": "string",
-      "related_skill": "string",
-      "reason": "string",
-      "expected_benefit": "string",
-      "priority": "high|medium|low"
-    }}
-  ],
-  "recommendation_summary": "string"
+    "forecast": {{
+        "trend": "upward|stable|downward",
+        "next_rank_likelihood": {{
+            "probability_pct": 0,
+            "label": "high|medium|low"
+        }},
+        "confidence_level": "low|medium|high",
+        "confidence_pct": 0,
+        "confidence_label": "low|medium|high",
+        "forecast_summary": "string",
+        "main_factors": [
+            {{
+                "title": "string",
+                "impact": "positive|negative|neutral",
+                "weight": "low|medium|high|none",
+                "explanation": "string"
+            }}
+        ],
+        "Recommended_focus": "string",
+        "projected_points_in_window": 0,
+        "projected_points_target": 0,
+        "days_window": 30,
+        "history_used_days": 90
+    }},
+    "risk_areas": [
+        {{
+            "title": "string",
+            "description": "string",
+            "reason": "string",
+            "mitigation_action": "string",
+            "priority": "high|medium|low",
+            "severity": "high|medium|low",
+            "category": "skills|activity|conversion|follow_up",
+            "expected_points_loss": 0
+        }}
+    ],
+    "recommended_actions": [
+        {{
+            "title": "string",
+            "description": "string",
+            "reason": "string",
+            "expected_impact": "string",
+            "priority": "high|medium|low",
+            "category": "skills|activity|conversion|follow_up",
+            "expected_points_gain": 0,
+            "time_estimate_minutes": 0,
+            "cta_label": "string",
+            "cta_target": "leads|trainings|profile|leaderboard|null",
+            "cta_url": "string|null"
+        }}
+    ],
+    "recommended_trainings": [
+        {{
+            "title": "string",
+            "description": "string",
+            "related_skill": "string",
+            "reason": "string",
+            "expected_benefit": "string",
+            "priority": "high|medium|low",
+            "duration_minutes": 45,
+            "level": "beginner|intermediate|advanced",
+            "is_recommended_now": true,
+            "cta_target": "training_external_url|training_internal|null",
+            "external_url": "string|null"
+        }}
+    ],
+    "recommendation_summary": "string"
 }}
+
 
 Rules:
 - Use only the advisor data provided below.
 - Do not invent metrics, trends, team positions, skill gaps, or recommendations that are not supported by the provided data.
 - Keep all categorical values exactly as they appear in the baseline response:
-  - forecast.trend
-  - forecast.next_rank_likelihood
-  - forecast.confidence_level
-  - all priority values
+    - forecast.trend
+    - forecast.next_rank_likelihood.label
+    - forecast.confidence_level
+    - forecast.confidence_label
+    - all priority values
+- Keep all numeric forecast model outputs exactly as they appear in the baseline response:
+    - forecast.next_rank_likelihood.probability_pct
+    - forecast.confidence_pct
+    - forecast.projected_points_in_window
+    - forecast.projected_points_target
+    - forecast.days_window
+    - forecast.history_used_days
 - Keep the same number and order of items in risk_areas, recommended_actions, and recommended_trainings.
+- For recommended_trainings, preserve duration_minutes, level, is_recommended_now, cta_target, and external_url from the baseline response.
+- For forecast.main_factors, preserve each factor title, impact, and weight from the baseline; you may only improve the explanation wording.
+- For each recommended_action related to training, product knowledge, or external learning, always provide a relevant cta_url (external link) to a suggested resource, course, or article. For other actions, set cta_url to null.
 - You may improve the tone and wording so the output is clear, constructive, and personalized for the advisor.
 - If the baseline response explains that data is missing, keep that explanation instead of guessing.
 - If recommended_trainings is empty, keep it empty and explain why in recommendation_summary.
@@ -938,33 +1028,71 @@ def merge_ai_forecast_recommendations_with_fallback(
     analysis: SalesAdvisorForecastRecommendationsResponse,
     fallback: SalesAdvisorForecastRecommendationsResponse,
 ) -> SalesAdvisorForecastRecommendationsResponse:
+    recommended_trainings = []
+    for index, fallback_training in enumerate(fallback.recommended_trainings):
+        ai_training = (
+            analysis.recommended_trainings[index]
+            if index < len(analysis.recommended_trainings)
+            else None
+        )
+        if ai_training is None:
+            recommended_trainings.append(fallback_training)
+            continue
+
+        recommended_trainings.append(
+            SalesAdvisorForecastTrainingRecommendation(
+                title=ai_training.title.strip() or fallback_training.title,
+                description=(
+                    ai_training.description.strip()
+                    or fallback_training.description
+                ),
+                related_skill=(
+                    ai_training.related_skill.strip()
+                    or fallback_training.related_skill
+                ),
+                reason=ai_training.reason.strip() or fallback_training.reason,
+                expected_benefit=(
+                    ai_training.expected_benefit.strip()
+                    or fallback_training.expected_benefit
+                ),
+                priority=fallback_training.priority,
+                duration_minutes=fallback_training.duration_minutes,
+                level=fallback_training.level,
+                is_recommended_now=fallback_training.is_recommended_now,
+                cta_target=fallback_training.cta_target,
+                external_url=fallback_training.external_url,
+            )
+        )
+
     return SalesAdvisorForecastRecommendationsResponse(
         forecast=SalesAdvisorForecastSection(
-            trend=analysis.forecast.trend,
-            next_rank_likelihood=analysis.forecast.next_rank_likelihood,
-            confidence_level=analysis.forecast.confidence_level,
+            trend=fallback.forecast.trend,
+            next_rank_likelihood=fallback.forecast.next_rank_likelihood,
+            confidence_level=fallback.forecast.confidence_level,
+            confidence_pct=fallback.forecast.confidence_pct,
+            confidence_label=fallback.forecast.confidence_label,
             forecast_summary=(
                 analysis.forecast.forecast_summary.strip()
                 or fallback.forecast.forecast_summary
             ),
-            main_factors=[
-                factor.strip()
-                for factor in analysis.forecast.main_factors
-                if factor and factor.strip()
-            ]
+            main_factors=analysis.forecast.main_factors
             or fallback.forecast.main_factors,
             recommended_focus=(
                 analysis.forecast.recommended_focus.strip()
                 or fallback.forecast.recommended_focus
             ),
+            projected_points_in_window=(
+                fallback.forecast.projected_points_in_window
+            ),
+            projected_points_target=fallback.forecast.projected_points_target,
+            days_window=fallback.forecast.days_window,
+            history_used_days=fallback.forecast.history_used_days,
         ),
         risk_areas=analysis.risk_areas or fallback.risk_areas,
         recommended_actions=(
             analysis.recommended_actions or fallback.recommended_actions
         ),
-        recommended_trainings=(
-            analysis.recommended_trainings or fallback.recommended_trainings
-        ),
+        recommended_trainings=recommended_trainings,
         recommendation_summary=(
             analysis.recommendation_summary.strip()
             or fallback.recommendation_summary
@@ -974,6 +1102,8 @@ def merge_ai_forecast_recommendations_with_fallback(
 
 def generate_sales_advisor_ai_forecast_recommendations_with_ai(
     payload: SalesAdvisorForecastRecommendationsContext,
+    *,
+    session: Session | None = None,
 ) -> SalesAdvisorForecastRecommendationsResponse:
     try:
         from openai import OpenAI
@@ -983,6 +1113,7 @@ def generate_sales_advisor_ai_forecast_recommendations_with_ai(
     fallback = build_fallback_sales_advisor_ai_forecast_recommendations(
         payload,
         ai_unavailable=False,
+        session=session,
     )
 
     client = OpenAI()
@@ -1009,9 +1140,13 @@ def get_sales_advisor_ai_forecast_recommendations(
     payload = build_sales_advisor_ai_forecast_context(session, current_user)
 
     try:
-        return generate_sales_advisor_ai_forecast_recommendations_with_ai(payload)
+        return generate_sales_advisor_ai_forecast_recommendations_with_ai(
+            payload,
+            session=session,
+        )
     except Exception:
         return build_fallback_sales_advisor_ai_forecast_recommendations(
             payload,
             ai_unavailable=True,
+            session=session,
         )

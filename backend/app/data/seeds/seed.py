@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import List, Dict, Tuple, Optional
 from faker import Faker
 from sqlmodel import Session, delete
+from app.models.training import Skill, Training, TrainingSkillLink
+import sys; sys.stdout.flush()
 
 from app.database import engine, create_db_and_tables
 from app.models import (
@@ -37,6 +39,7 @@ TARGET_TRANSACTIONS = 1000
 TARGET_TRANSACTION_ITEMS = 2500
 TARGET_ALERTS = 500
 TARGET_REDEMPTIONS = 300
+FORECAST_RECENT_PERIODS_PER_ACTIVE_ADVISOR = 3
 
 ROLES = ["manager", "sales_advisor"]
 DEPARTMENTS = ["Sales", "Service", "Finance"]
@@ -160,6 +163,9 @@ def calculate_credit(points: int) -> float:
 
 def clear_data(session: Session) -> None:
     for model in [
+        TrainingSkillLink,
+        Training,
+        Skill,
         RewardRedemption,
         UserAlert,
         UserSkill,
@@ -733,6 +739,79 @@ def create_transactions(session: Session, users, products):
     return transactions
 
 
+def create_forecast_support_transactions(session: Session, users, products):
+    transactions = []
+    active_advisors = [
+        user
+        for user in users
+        if user.role == "sales_advisor" and user.status == "active"
+    ]
+
+    vehicles = [product for product in products if product.item_type == "vehicle"]
+    services = [product for product in products if product.item_type == "service"]
+    upgrades = [product for product in products if product.item_type == "upgrade"]
+
+    forecast_windows = [
+        ("-85d", "-65d"),
+        ("-55d", "-35d"),
+        ("-20d", "-3d"),
+    ][:FORECAST_RECENT_PERIODS_PER_ACTIVE_ADVISOR]
+
+    for user in active_advisors:
+        for start_date, end_date in forecast_windows:
+            transaction = SaleTransaction(
+                dealership_id=user.dealership_id,
+                user_id=user.user_id,
+                transaction_date=fake.date_time_between(
+                    start_date=start_date,
+                    end_date=end_date,
+                ),
+                amount=0.0,
+                points_earned=0,
+                status="completed",
+            )
+            session.add(transaction)
+            session.flush()
+
+            chosen_products = []
+            if vehicles and random.random() < 0.55:
+                chosen_products.append(random.choice(vehicles))
+            else:
+                base_pool = services + upgrades + products
+                if base_pool:
+                    chosen_products.append(random.choice(base_pool))
+
+            addon_pool = services + upgrades
+            for _ in range(random.randint(0, 2)):
+                if addon_pool:
+                    chosen_products.append(random.choice(addon_pool))
+
+            total_amount = 0.0
+            total_points = 0
+
+            for product in chosen_products:
+                session.add(
+                    SaleTransactionItem(
+                        transaction_id=transaction.transaction_id,
+                        product_id=product.product_id,
+                        quantity=1,
+                    )
+                )
+                total_amount += product.price
+                total_points += product.points_value
+
+            transaction.amount = total_amount
+            transaction.points_earned = total_points
+            transactions.append(transaction)
+
+    session.commit()
+
+    for transaction in transactions:
+        session.refresh(transaction)
+
+    return transactions
+
+
 def update_user_points_and_credit_from_transactions(session: Session, users, transactions):
     points_by_user_id = {user.user_id: 0 for user in users}
 
@@ -781,46 +860,192 @@ def create_reward_redemptions(session: Session, users, rewards):
     session.commit()
 
 
+def seed_trainings(session: Session):
+    skill_matches = {
+        0: ["Customer Communication", "Problem Solving", "Objection Handling"],
+        1: ["Negotiation", "Closing Deals"],
+        2: ["Customer Communication", "After Sales Support"],
+        3: ["Closing Deals", "Upselling", "Cross-selling"],
+        4: ["Problem Solving", "Objection Handling", "Customer Retention"],
+        5: ["Customer Retention", "Product Knowledge"],
+        6: ["Customer Communication", "Product Knowledge"],
+        7: ["Negotiation", "Problem Solving"],
+        8: ["Solution Selling", "Problem Solving"],
+        9: ["Customer Communication", "Closing Deals"],
+        10: ["Vehicle Financing Basics"],
+        11: ["CRM Usage"],
+        12: ["Lead Management"],
+        13: ["Time Management"],
+        14: ["Service Package Knowledge"],
+    }
+
+    session.exec(delete(TrainingSkillLink))
+    session.exec(delete(Training))
+    session.exec(delete(Skill))
+
+    all_training_skills = {
+        skill
+        for matched_skills in skill_matches.values()
+        for skill in matched_skills
+    }
+    for skill in sorted(set(SKILLS) | all_training_skills):
+        session.add(Skill(name=skill))
+
+    trainings = [
+        Training(
+            title="The Language of Sales by SC Training (formerly EdApp)",
+            description="building customer relationships & cultivating trust, building convincing arguments, navigating tough situations/scenarios.",
+            url="https://safetyculture.com/library/professional-services/the-language-of-sales/",
+            level="beginner"
+        ),
+        Training(
+            title="Negotiation Fundamentals by SC Training (formerly EdApp)",
+            description="the importance of negotiation, how to develop negotiation skills, influencing authority, the art of getting what you want, and how to negotiate with confidence.",
+            url="https://safetyculture.com/library/professional-services/negotiation/",
+            level="advanced"
+        ),
+        Training(
+            title="Creating a Positive Customer Experience by SC Training (formerly EdApp)",
+            description=" Role of customer service in customer experience, impressing customers, how to make good conversations with customers, how to engage customers, and how to handle difficult customers.",
+            url="https://safetyculture.com/library/retail/creating-a-positive-customer-experience/",
+            level="intermediate"
+        ),
+        Training(
+            title="Closing a Deal by SC Training (formerly EdApp)",
+            description=" modern sales strategies, relationships with stakeholders, closing deals during/after COVID-19.",
+            url="https://safetyculture.com/library/professional-services/closing-a-deal/",
+            level="beginner"
+        ),
+        Training(
+            title="Dealing with Difficult Customers by SC Training (formerly EdApp)",
+            description="types of difficult customers, how to respond to guest complaints, how to handle errors in deals, dealing with intoxicated customers, and how to manage stress from difficult customers.",
+            url="https://safetyculture.com/library/hospitality/dealing-with-difficult-customers/",
+            level="intermediate"
+        ),
+        Training(
+            title="Building a Customer-Focused Culture by SC Training (formerly EdApp)",
+            description="What customer focus means, understanding buying habits, delivering customers through customer-focused behavior, and how to build a customer-focused culture.",
+            url="https://safetyculture.com/library/hospitality/building-a-customer-focused-culture/",
+            level="beginner"
+        ),
+        Training(
+            title="Active Listening by SC Training (formerly EdApp)",
+            description=" active listening in sales, principles of active listening, nonverbal communication, barriers to active learning",
+            url="https://safetyculture.com/library/professional-services/active-listening/",
+            level="intermediate"
+        ),
+        Training(
+            title="Advanced Negotiation by SC Training (formerly EdApp)",
+            description="stages of negotiation, sequencing strategies and tactics, dealmaking, building coalitions, information sharing at the bargaining table",
+            url="https://safetyculture.com/library/professional-services/advanced-negotiation/",
+            level="advanced"
+        ),
+        Training(
+            title="Solution Selling Strategy by SC Training (formerly EdApp)",
+            description="Solution selling 101, risk and opportunity for solution selling, creative problem solving, solution selling action plans",
+            url="https://safetyculture.com/library/professional-services/solution-selling-strategy/",
+            level="beginner"
+        ),
+        Training(
+            title="Selling Strategies and Interacting with Customers by SC Training (formerly EdApp)",
+            description="greeting customers, selling by asking questions, using curiosity to sell, value-based selling, sale closing techniques",
+            url="https://safetyculture.com/library/retail/selling-strategies-and-interacting-with-customers/",
+            level="beginner"
+        ),
+        Training(
+            title="Automotive Sales Advisor Training by Elevify",
+            description="automotive sales process, pricing and financing basics, objection handling, CRM follow-up, and customer loyalty.",
+            url="https://www.elevify.com/en-na/courses/business-and-economics/sales/automotive-sales-advisor-training-f45d9",
+            level="beginner"
+        ),
+        Training(
+            title="Salesforce for the Sales Force by SC Training (formerly EdApp)",
+            description="CRM basics for sales teams, including Salesforce navigation and using customer records to support the sales process.",
+            url="https://safetyculture.com/library/information-technology/salesforce-for-the-sales-force/",
+            level="beginner"
+        ),
+        Training(
+            title="Introduction to Lead Management by HubSpot Academy",
+            description="lead management fundamentals, lead lifecycle stages, qualification, nurturing, and conversion basics.",
+            url="https://academy.hubspot.com/lessons/introduction-lead-management",
+            level="beginner"
+        ),
+        Training(
+            title="Sales Professionals' Guide to Time Management by SC Training (formerly EdApp)",
+            description="time management for sales professionals, process setup, prioritization, and efficient customer communication.",
+            url="https://safetyculture.com/library/professional-services/sales-professionals-guide-to-time-management/",
+            level="beginner"
+        ),
+        Training(
+            title="Product Training with SafetyCulture",
+            description="practical product training guidance for making sure teams understand service details, packages, and product knowledge.",
+            url="https://safetyculture.com/training",
+            level="beginner"
+        ),
+    ]
+    session.add_all(trainings)
+    session.flush()
+
+    for idx, training in enumerate(trainings):
+        for skill in skill_matches.get(idx, []):
+            link = TrainingSkillLink(training_id=training.id, skill_name=skill)
+            session.add(link)
+    session.commit()
+
 def main():
+    import traceback
     print("Creating tables...")
     create_db_and_tables()
 
-    with Session(engine) as session:
-        print("Clearing old data...")
-        clear_data(session)
+    try:
+        with Session(engine) as session:
+            print("Clearing old data...")
+            clear_data(session)
 
-        print("Creating dealerships...")
-        dealerships = create_dealerships(session)
+            print("Creating dealerships...")
+            dealerships = create_dealerships(session)
 
-        print("Creating departments...")
-        departments = create_departments(session, dealerships)
+            print("Creating departments...")
+            departments = create_departments(session, dealerships)
 
-        print("Creating products...")
-        products = create_products(session)
+            print("Creating products...")
+            products = create_products(session)
 
-        print("Creating users...")
-        users = create_users(session, dealerships, departments)
+            print("Creating users...")
+            users = create_users(session, dealerships, departments)
 
-        print("Creating user skills...")
-        create_user_skills(session, users)
+            print("Creating user skills...")
+            create_user_skills(session, users)
 
-        print("Creating rewards...")
-        rewards = create_rewards(session)
+            print("Creating rewards...")
+            rewards = create_rewards(session)
 
-        print("Creating transactions and transaction items...")
-        transactions = create_transactions(session, users, products)
+            print("Creating transactions and transaction items...")
+            transactions = create_transactions(session, users, products)
 
-        print("Updating user points, rank and credit from completed transactions...")
-        update_user_points_and_credit_from_transactions(session, users, transactions)
+            print("Adding recent forecast support transactions...")
+            transactions.extend(
+                create_forecast_support_transactions(session, users, products)
+            )
 
-        print("Creating reward redemptions...")
-        create_reward_redemptions(session, users, rewards)
+            print("Updating user points, rank and credit from completed transactions...")
+            update_user_points_and_credit_from_transactions(session, users, transactions)
 
-        # Create alerts last, so messages can reference up-to-date points/credit
-        print("Creating alerts...")
-        create_alerts(session, users, products, rewards, transactions)
+            print("Creating reward redemptions...")
+            create_reward_redemptions(session, users, rewards)
 
-        print("Seed completed successfully.")
+            # Create alerts last, so messages can reference up-to-date points/credit
+            print("Creating alerts...")
+            create_alerts(session, users, products, rewards, transactions)
+
+            print("Creating trainings...")
+            seed_trainings(session)
+
+            print("Seed completed successfully.")
+    except Exception as e:
+        print("\n--- ERROR IN SEED ---")
+        print(str(e))
+        traceback.print_exc()
 
 
 if __name__ == "__main__":

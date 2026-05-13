@@ -22,6 +22,7 @@ from app.sales_advisor_profile.ai_analysis_schemas import (
     SalesAdvisorAiAnalysisContext,
     SalesAdvisorAiAnalysisResponse,
     SalesAdvisorAiImprovementArea,
+    SalesAdvisorAiSkill,
     SalesAdvisorAiSkillsAnalysis,
     SalesAdvisorAiStrength,
     SalesAdvisorProfileContext,
@@ -32,6 +33,11 @@ from app.sales_advisor_profile.ai_analysis_schemas import (
 
 RECENT_PERFORMANCE_DAYS = 30
 AI_MODEL = "gpt-4.1-mini"
+SKILL_LEVEL_DISPLAY_SCORE = {
+    "beginner": 35,
+    "intermediate": 65,
+    "advanced": 90,
+}
 
 
 def _get_recent_performance_start() -> datetime:
@@ -193,8 +199,40 @@ def build_sales_advisor_ai_analysis_context(
     )
 
 
+def _skill_items_for_levels(
+    context: SalesAdvisorAiAnalysisContext,
+    *,
+    levels: set[str],
+) -> list[SalesAdvisorAiSkill]:
+    items: list[SalesAdvisorAiSkill] = []
+    seen: set[str] = set()
+
+    for skill in context.skills:
+        level = skill.skill_level.lower()
+        name = skill.skill_name.strip()
+        key = name.lower()
+
+        if level not in levels or not name or key in seen:
+            continue
+
+        seen.add(key)
+        items.append(
+            SalesAdvisorAiSkill(
+                name=name,
+                level_pct=SKILL_LEVEL_DISPLAY_SCORE.get(level, 50),
+            )
+        )
+
+    return items
+
+
 def build_sales_advisor_ai_prompt(payload: SalesAdvisorAiAnalysisContext) -> str:
     data = payload.model_dump(mode="json")
+    skill_score_table = {
+        "beginner": SKILL_LEVEL_DISPLAY_SCORE["beginner"],
+        "intermediate": SKILL_LEVEL_DISPLAY_SCORE["intermediate"],
+        "advanced": SKILL_LEVEL_DISPLAY_SCORE["advanced"],
+    }
 
     return f"""
 You are generating an AI performance analysis for a sales advisor viewing their own profile.
@@ -203,41 +241,46 @@ Return only valid JSON. Do not add markdown, explanations, or code fences.
 
 Required JSON structure:
 {{
-  "ai_summary": "string",
-  "strengths": [
-    {{
-      "title": "string",
-      "description": "string",
-      "supporting_reason": "string"
-    }}
-  ],
-  "improvement_areas": [
-    {{
-      "title": "string",
-      "description": "string",
-      "reason": "string",
-      "suggested_next_step": "string",
-      "priority": "high|medium|low"
-    }}
-  ],
-  "skills_analysis": {{
-    "strong_skills": ["string"],
-    "skills_to_develop": ["string"],
-    "summary": "string"
-  }},
-  "motivational_summary": "string"
+    "ai_summary": "string",
+    "strengths": [
+        {{
+            "title": "string",
+            "description": "string",
+            "supporting_reason": "string"
+        }}
+    ],
+    "improvement_areas": [
+        {{
+            "title": "string",
+            "description": "string",
+            "reason": "string",
+            "suggested_next_step": "string",
+            "priority": "high|medium|low"
+        }}
+    ],
+    "skills_analysis": {{
+        "strong_skills": [{{"name": "string", "level_pct": 0}}],
+        "skills_to_develop": [{{"name": "string", "level_pct": 0}}],
+        "summary": "string"
+    }},
+    "motivational_summary": "string"
 }}
 
 Rules:
 - Use only the data provided below.
 - Do not invent metrics, trends, comparisons, skill ratings, or achievements.
 - Write in an encouraging, constructive, advisor-friendly tone.
-- Be clear and concrete whenever data exists.
+- Be clear, specific, and actionable in every message. Avoid vague or generic statements.
+- Always reference concrete data from the context (such as skill names, points, rank, team position, recent activity, etc) in every section.
 - If data is missing, say what is missing instead of guessing.
-- Every strength must include a short explanation and a supporting reason.
-- Every improvement area must include a reason, a suggested next step, and a priority.
+- Every strength must include a short explanation and a supporting reason, both based on actual data.
+- Every improvement area must include a reason, a suggested next step, and a priority, all based on actual data.
+- Skills analysis must return strong_skills and skills_to_develop as lists of objects, each with keys 'name' (string) and 'level_pct' (integer between 0 and 100). Do NOT return lists of strings for these fields.
+- Skill percentages are display scores derived only from recorded skill_level, not measured performance scores. Use exactly this mapping and do not invent different percentages: {json.dumps(skill_score_table)}.
+- Put advanced skills in strong_skills. Put beginner and intermediate skills in skills_to_develop.
 - Skills analysis must clearly state if skill data is missing or incomplete.
-- The motivational summary must be short, realistic, and personalized.
+- The motivational summary must be short, realistic, and personalized, and should reference the user's current progress or next milestone.
+- Avoid repeating the same advice in multiple sections.
 - Return 1 to 3 strengths.
 - Return 1 to 3 improvement areas.
 
@@ -529,41 +572,41 @@ def _build_fallback_skills_analysis(
             ),
         )
 
-    # Patch: returnează obiecte cu name și level_pct
-    strong_skill_names = _skill_names_for_levels(
+    strong_skills = _skill_items_for_levels(
         payload,
         levels={"advanced"},
-        verified_only=False,
     )[:3]
-    skills_to_develop_names = _skill_names_for_levels(
-        payload,
-        levels={"beginner"},
-        verified_only=False,
+    skills_to_develop = (
+        _skill_items_for_levels(
+            payload,
+            levels={"beginner"},
+        )
+        + _skill_items_for_levels(
+            payload,
+            levels={"intermediate"},
+        )
     )[:3]
-
-    strong_skills = [
-        {"name": name, "level_pct": 100} for name in strong_skill_names
-    ]
-    skills_to_develop = [
-        {"name": name, "level_pct": 0} for name in skills_to_develop_names
-    ]
-
     if strong_skills and skills_to_develop:
+        strong = ", ".join([skill.name for skill in strong_skills])
+        develop = ", ".join([skill.name for skill in skills_to_develop])
         summary = (
-            f"You already show strength in {', '.join([s['name'] for s in strong_skills])}, and the clearest development opportunities are "
-            f"{', '.join([s['name'] for s in skills_to_develop])}."
+            f"Skill scores are based on recorded profile levels: beginner {SKILL_LEVEL_DISPLAY_SCORE['beginner']}%, "
+            f"intermediate {SKILL_LEVEL_DISPLAY_SCORE['intermediate']}%, and advanced {SKILL_LEVEL_DISPLAY_SCORE['advanced']}%. "
+            f"Your strongest recorded skills are {strong}, while {develop} are the best development priorities."
         )
     elif strong_skills:
+        strong = ", ".join([skill.name for skill in strong_skills])
         summary = (
-            f"Your profile shows clear strength in {', '.join([s['name'] for s in strong_skills])}. More recent skill updates would help identify the next development priorities."
+            f"Skill scores are based on recorded profile levels. Your advanced skills are {strong}, each shown at {SKILL_LEVEL_DISPLAY_SCORE['advanced']}%."
         )
     elif skills_to_develop:
+        develop = ", ".join([skill.name for skill in skills_to_develop])
         summary = (
-            f"Current skill records suggest a need to focus on {', '.join([s['name'] for s in skills_to_develop])}. Stronger skill evidence is still limited."
+            f"Skill scores are based on recorded profile levels. The current development priorities are {develop}."
         )
     else:
         summary = (
-            "Skill records exist, but they do not yet show a clear split between strong areas and development needs."
+            "Skill records exist, but they do not yet show a clear split between advanced strengths and development areas."
         )
 
     return SalesAdvisorAiSkillsAnalysis(
@@ -623,15 +666,14 @@ def merge_ai_analysis_with_fallback(
         payload,
         ai_unavailable=False,
     )
-
     return SalesAdvisorAiAnalysisResponse(
         ai_summary=analysis.ai_summary.strip() or fallback.ai_summary,
         strengths=analysis.strengths or fallback.strengths,
         improvement_areas=analysis.improvement_areas or fallback.improvement_areas,
-        skills_analysis=(
-            analysis.skills_analysis
-            if analysis.skills_analysis.summary.strip()
-            else fallback.skills_analysis
+        skills_analysis=SalesAdvisorAiSkillsAnalysis(
+            strong_skills=fallback.skills_analysis.strong_skills,
+            skills_to_develop=fallback.skills_analysis.skills_to_develop,
+            summary=fallback.skills_analysis.summary,
         ),
         motivational_summary=(
             analysis.motivational_summary.strip() or fallback.motivational_summary

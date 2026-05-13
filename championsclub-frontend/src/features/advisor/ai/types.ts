@@ -4,8 +4,6 @@
 //   GET  /api/sales-advisor/profile/ai-forecast-recommendations
 //   POST /api/sales-advisor/profile/ai-insights/refresh
 
-export type AIInterval = "week" | "month" | "all";
-
 export type AIPriority = "low" | "medium" | "high";
 export type AICategory = "skills" | "activity" | "conversion" | "follow_up";
 export type AIImpact = "positive" | "negative" | "neutral";
@@ -100,6 +98,7 @@ export type AIRecommendedAction = {
   time_estimate_minutes: number | null;
   cta_label: string;
   cta_target: "leads" | "trainings" | "profile" | "leaderboard" | null;
+  cta_url?: string | null; // link extern sugerat de AI
 };
 
 export type AIRecommendedTraining = {
@@ -113,6 +112,7 @@ export type AIRecommendedTraining = {
   level: "beginner" | "intermediate" | "advanced";
   is_recommended_now: boolean;
   cta_target: "training_external_url" | "training_internal" | null;
+  external_url?: string | null;
 };
 
 export type AIForecastResponse = AIBaseMeta & {

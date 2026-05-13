@@ -20,10 +20,16 @@ export function useAIRefresh(refreshFn: RefreshFn) {
   const refresh = useCallback(async () => {
     if (refreshing || cooldown > 0) return;
     setRefreshing(true);
+    let succeeded = false;
     try {
       await refreshFn();
+      succeeded = true;
+    } catch (error) {
+      console.error("AI insight refresh failed", error);
     } finally {
       setRefreshing(false);
+      if (!succeeded) return;
+
       setCooldown(COOLDOWN_SECONDS);
       if (timerRef.current !== null) {
         window.clearInterval(timerRef.current);

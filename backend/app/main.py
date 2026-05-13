@@ -3,8 +3,8 @@ from sqlmodel import Session, select
 
 from app.config import settings
 from app.database import create_db_and_tables, engine
-from app.data.seeds.seed import main as run_seed_data
-from app.models import AppUser
+from app.data.seeds.seed import main as run_seed_data, seed_trainings
+from app.models import AppUser, Training, TrainingSkillLink
 from app import models
 from app.account.account_router import router as account_router
 from app.manager_statistics.router import router as manager_statistics_router
@@ -101,10 +101,18 @@ def seed_database_if_empty() -> None:
     with Session(engine) as session:
         has_users = session.exec(select(AppUser).limit(1)).first() is not None
 
-    if has_users:
+    if not has_users:
+        run_seed_data()
         return
 
-    run_seed_data()
+    with Session(engine) as session:
+        has_trainings = session.exec(select(Training).limit(1)).first() is not None
+        has_training_links = (
+            session.exec(select(TrainingSkillLink).limit(1)).first() is not None
+        )
+
+        if not has_trainings or not has_training_links:
+            seed_trainings(session)
 
 
 @app.on_event("startup")
