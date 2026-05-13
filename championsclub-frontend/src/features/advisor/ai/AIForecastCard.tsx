@@ -5,6 +5,19 @@ import type { AIForecast } from "./types";
 
 type Props = { forecast: AIForecast };
 
+const weightLabel = (weight: AIForecast["main_factors"][number]["weight"]) => {
+  switch (weight) {
+    case "high":
+      return "High";
+    case "medium":
+      return "Medium";
+    case "low":
+      return "Low";
+    default:
+      return weight;
+  }
+};
+
 export default function AIForecastCard({ forecast }: Props) {
   const progressPct = Math.min(
     100,
@@ -73,7 +86,7 @@ export default function AIForecastCard({ forecast }: Props) {
                   <p className="text-sm font-semibold text-slate-100">{f.title}</p>
                   {f.weight && f.weight !== 'none' && (
                     <span className="rounded-full border border-slate-500/40 bg-slate-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
-                      Impact: {f.weight === 'high' ? 'Mare' : f.weight === 'medium' ? 'Mediu' : f.weight === 'low' ? 'Scăzut' : f.weight}
+                      Impact: {weightLabel(f.weight)}
                     </span>
                   )}
                 </div>
