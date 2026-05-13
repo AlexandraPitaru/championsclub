@@ -42,6 +42,9 @@ from app.sales_advisor_profile.ai_analysis_router import (
     router as sales_advisor_profile_ai_router,
 )
 from app.sales_advisor_shop.router import router as sales_advisor_shop_router
+from app.AI.manager_ai.analysis_router import (
+    router as manager_ai_router,
+)
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -89,6 +92,7 @@ app.include_router(sales_advisor_checkout_router)
 app.include_router(sales_advisor_history_router)
 app.include_router(sales_advisor_profile_ai_router)
 app.include_router(sales_advisor_shop_router)
+app.include_router(manager_ai_router)
 
 app.include_router(manager_notifications_router)
 from app.sales_advisor_alerts.router import router as sales_advisor_alerts_router
