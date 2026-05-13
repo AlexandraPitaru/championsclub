@@ -9,6 +9,7 @@ services:
         condition: service_started
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://backend:8000}
+
     ports:
       - "${FRONTEND_PORT:-5173}:5173"
     networks:
