@@ -15,7 +15,9 @@ def get_manager_notifications_from_db(
     limit: int = 10,
     offset: int = 0,
 ):
-    filters = [AppUser.manager_user_id == manager_id]
+    # Return ONLY the manager's own alerts (manager-specific KPI alerts),
+    # not the cumulative alerts of their team members.
+    filters = [UserAlert.user_id == manager_id]
 
     if priority is not None:
         filters.append(func.lower(UserAlert.priority) == priority.lower())
@@ -56,7 +58,7 @@ def get_manager_notifications_from_db(
         unread_alerts = 0
     else:
         unread_filters = [
-            AppUser.manager_user_id == manager_id,
+            UserAlert.user_id == manager_id,
             UserAlert.is_read == False,
         ]
 

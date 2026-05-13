@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { AlertCircle, Info, TrendingDown } from "lucide-react";
 import Card from "../../components/ui/Card";
 
@@ -19,8 +18,6 @@ type PriorityAlertsPanelProps = {
 export default function PriorityAlertsPanel({
   alerts,
 }: PriorityAlertsPanelProps) {
-  const navigate = useNavigate();
-
   const getSeverityIcon = (severity: string) => {
     if (severity === "high") return <AlertCircle className="h-6 w-6" />;
     if (severity === "medium") return <Info className="h-6 w-6" />;
@@ -49,16 +46,6 @@ export default function PriorityAlertsPanel({
     }
 
     return "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30";
-  };
-
-  const getSeverityButtonClasses = (severity: string) => {
-    if (severity === "high") {
-      return "border border-rose-500/50 text-rose-300 hover:bg-rose-500/10";
-    }
-    if (severity === "medium") {
-      return "border border-amber-500/50 text-amber-300 hover:bg-amber-500/10";
-    }
-    return "border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/10";
   };
 
   return (
@@ -106,24 +93,24 @@ export default function PriorityAlertsPanel({
                 <p className="mt-2 text-sm text-slate-400">{alert.summary}</p>
 
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div className="flex items-center gap-2 text-sm">
+                  <div className="flex min-w-0 items-center gap-2 text-sm">
                     <img
                       src="/alert-icons/advisor-small.svg"
-                      alt="Advisor"
-                      className="h-4 w-4"
+                      alt="Manager"
+                      className="h-4 w-4 flex-shrink-0"
                     />
-                    <span className="text-slate-400">Advisor</span>
-                    <span className="font-medium text-slate-200">{alert.advisorName}</span>
+                    <span className="flex-shrink-0 text-slate-400">Manager</span>
+                    <span className="min-w-0 truncate font-medium text-slate-200">{alert.advisorName}</span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-sm">
+                  <div className="flex min-w-0 items-center gap-2 text-sm">
                     <img
                       src="/alert-icons/email-small.svg"
                       alt="Email"
-                      className="h-4 w-4"
+                      className="h-4 w-4 flex-shrink-0"
                     />
-                    <span className="text-slate-400">Email</span>
-                    <span className="font-medium text-slate-200">{alert.email}</span>
+                    <span className="flex-shrink-0 text-slate-400">Email</span>
+                    <span className="min-w-0 truncate font-medium text-slate-200">{alert.email}</span>
                   </div>
                 </div>
               </div>
@@ -137,23 +124,7 @@ export default function PriorityAlertsPanel({
                   {alert.severity}
                 </span>
 
-                <button
-                  onClick={() =>
-                    navigate(`/manager/advisor/${alert.advisorId}`, {
-                      state: {
-                        fromAlert: true,
-                        alertTitle: alert.title,
-                        alertMessage: alert.summary,
-                        alertPriority: alert.severity,
-                      },
-                    })
-                  }
-                  className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${getSeverityButtonClasses(
-                    alert.severity
-                  )}`}
-                >
-                  View advisor
-                </button>
+
               </div>
             </div>
           </div>

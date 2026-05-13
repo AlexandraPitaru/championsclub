@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+import axiosInstance from "./axiosInstance";
 
 export type AlertPriority = "high" | "medium" | "low";
 
@@ -35,46 +35,21 @@ type GetSalesAdvisorAlertsParams = {
 export async function getSalesAdvisorAlerts(
   params: GetSalesAdvisorAlertsParams
 ): Promise<SalesAdvisorAlertsResponse> {
-  const searchParams = new URLSearchParams();
+  const response = await axiosInstance.get<SalesAdvisorAlertsResponse>(
+    "/api/sales-advisor/alerts",
+    {
+      headers: { "X-User-Id": String(params.userId) },
+      params: {
+        ...(params.priority !== undefined && { priority: params.priority }),
+        ...(params.isRead !== undefined && { is_read: params.isRead }),
+        ...(params.alertType !== undefined && { alert_type: params.alertType }),
+        ...(params.limit !== undefined && { limit: params.limit }),
+        ...(params.offset !== undefined && { offset: params.offset }),
+      },
+    }
+  );
 
-  if (params.priority) {
-    searchParams.append("priority", params.priority);
-  }
-
-  if (params.isRead !== undefined) {
-    searchParams.append("is_read", String(params.isRead));
-  }
-
-  if (params.alertType) {
-    searchParams.append("alert_type", params.alertType);
-  }
-
-  if (params.limit !== undefined) {
-    searchParams.append("limit", String(params.limit));
-  }
-
-  if (params.offset !== undefined) {
-    searchParams.append("offset", String(params.offset));
-  }
-
-  const url = new URL(`${API_BASE_URL}/api/sales-advisor/alerts`);
-  url.search = searchParams.toString();
-
-  const response = await fetch(url.toString(), {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "X-User-Id": String(params.userId),
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch sales advisor alerts: ${response.statusText}`
-    );
-  }
-
-  return response.json();
+  return response.data;
 }
 
 function getAlertPriorityRank(priority: AlertPriority): number {

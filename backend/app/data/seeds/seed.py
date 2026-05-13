@@ -1,5 +1,5 @@
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict, Tuple, Optional
 from faker import Faker
 from sqlmodel import Session, delete
@@ -860,6 +860,172 @@ def create_reward_redemptions(session: Session, users, rewards):
     session.commit()
 
 
+def create_manager_alerts(
+    session: Session,
+    users: List[AppUser],
+    rewards: List[RewardCatalog],
+    transactions: List[SaleTransaction],
+):
+    now = datetime.utcnow()
+    last_7 = now - timedelta(days=7)
+    prev_7_start = now - timedelta(days=14)
+    last_30 = now - timedelta(days=30)
+
+    team_by_manager: Dict[int, List[AppUser]] = {}
+    for u in users:
+        if u.manager_user_id is not None:
+            team_by_manager.setdefault(u.manager_user_id, []).append(u)
+
+    tx_by_user: Dict[int, List[SaleTransaction]] = {}
+    for tx in transactions:
+        if getattr(tx, "status", None) == "completed":
+            tx_by_user.setdefault(tx.user_id, []).append(tx)
+
+    min_reward_cost = min((r.credit_cost for r in rewards), default=999999)
+
+    def affordable_rewards_count(u: AppUser) -> int:
+        return 1 if u.credit >= min_reward_cost else 0
+
+    created = 0
+
+    for manager in users:
+        if manager.role != "manager":
+            continue
+
+        team = team_by_manager.get(manager.user_id, [])
+        if not team:
+            continue
+
+        active_team = [m for m in team if m.status == "active"]
+        team_ids = {m.user_id for m in active_team}
+
+        team_points_total = sum(m.points for m in active_team) if active_team else 0
+        team_points_avg = int(team_points_total / len(active_team)) if active_team else 0
+
+        top_member = max(active_team, key=lambda m: m.points, default=None)
+        bottom_member = min(active_team, key=lambda m: m.points, default=None)
+
+        # Transactions windows
+        last7_points = 0
+        prev7_points = 0
+        last30_completed = 0
+        for uid in team_ids:
+            for tx in tx_by_user.get(uid, []):
+                if tx.transaction_date >= last_7:
+                    last7_points += tx.points_earned
+                elif prev_7_start <= tx.transaction_date < last_7:
+                    prev7_points += tx.points_earned
+                if tx.transaction_date >= last_30:
+                    last30_completed += 1
+
+        trend_delta_pct: Optional[int] = None
+        trend_dir = "flat"
+        if prev7_points > 0:
+            pct = round(((last7_points - prev7_points) / prev7_points) * 100)
+            trend_delta_pct = abs(pct)
+            trend_dir = "up" if pct > 0 else ("down" if pct < 0 else "flat")
+        elif last7_points > 0:
+            trend_delta_pct = 100
+            trend_dir = "up"
+
+        # Stale activity: members with no completed tx in last 30d or stale login
+        stale_login_count = sum(
+            1
+            for m in active_team
+            if (m.last_login_at is None) or ((now - m.last_login_at).days >= 14)
+        )
+        no_tx_last30 = sum(
+            1
+            for m in active_team
+            if all((t.transaction_date < last_30) for t in tx_by_user.get(m.user_id, []))
+        )
+
+        rewards_ready = sum(affordable_rewards_count(m) for m in active_team)
+
+        # 1) Team momentum insight
+        title = (
+            f"Team momentum {trend_dir} {trend_delta_pct}%"
+            if trend_delta_pct is not None
+            else "Team momentum update"
+        )
+        message = (
+            f"Last 7d earned {last7_points} pts vs prev 7d {prev7_points}. "
+            f"Avg per rep: {team_points_avg}."
+        )
+        priority = "medium" if trend_dir != "down" else ("high" if (trend_delta_pct or 0) >= 20 else "medium")
+        session.add(
+            UserAlert(
+                user_id=manager.user_id,
+                alert_type="manager_insight",
+                title=title,
+                message=message,
+                priority=priority,
+                is_read=random.choice([True, False]),
+                created_at=fake.date_time_between(start_date="-7d", end_date="now"),
+            )
+        )
+        created += 1
+
+        # 2) Top performer shoutout
+        if top_member is not None:
+            session.add(
+                UserAlert(
+                    user_id=manager.user_id,
+                    alert_type="team_leaderboard",
+                    title=f"Top performer: {top_member.first_name} {top_member.last_name}",
+                    message=(
+                        f"{top_member.points} pts • Credit {int(top_member.credit)}. "
+                        f"Consider a spotlight or reward."
+                    ),
+                    priority="medium",
+                    is_read=random.choice([True, False]),
+                    created_at=fake.date_time_between(start_date="-10d", end_date="now"),
+                )
+            )
+            created += 1
+
+        # 3) Pipeline risk alert
+        team_size = len(active_team) or 1
+        risk_ratio = (stale_login_count + no_tx_last30) / team_size
+        if risk_ratio >= 0.3:  # 30% of team is stale
+            session.add(
+                UserAlert(
+                    user_id=manager.user_id,
+                    alert_type="team_pipeline_risk",
+                    title="Pipeline at risk",
+                    message=(
+                        f"{stale_login_count} inactive logins (>=14d) and {no_tx_last30} reps without completed tx in 30d. "
+                        f"Book follow-ups and coaching sessions."
+                    ),
+                    priority="high",
+                    is_read=random.choice([True, False]),
+                    created_at=fake.date_time_between(start_date="-14d", end_date="now"),
+                )
+            )
+            created += 1
+
+        # 4) Rewards opportunity
+        if rewards_ready > 0:
+            session.add(
+                UserAlert(
+                    user_id=manager.user_id,
+                    alert_type="team_rewards",
+                    title="Team rewards opportunity",
+                    message=(
+                        f"{rewards_ready} team member(s) can redeem a reward now. "
+                        f"Recognition can boost momentum this week."
+                    ),
+                    priority="low",
+                    is_read=random.choice([True, False]),
+                    created_at=fake.date_time_between(start_date="-5d", end_date="now"),
+                )
+            )
+            created += 1
+
+    session.commit()
+    print(f"Created {created} manager alerts.")
+
+
 def seed_trainings(session: Session):
     skill_matches = {
         0: ["Customer Communication", "Problem Solving", "Objection Handling"],
@@ -1033,6 +1199,9 @@ def main():
 
             print("Creating reward redemptions...")
             create_reward_redemptions(session, users, rewards)
+
+            print("Creating manager alerts...")
+            create_manager_alerts(session, users, rewards, transactions)
 
             # Create alerts last, so messages can reference up-to-date points/credit
             print("Creating alerts...")
