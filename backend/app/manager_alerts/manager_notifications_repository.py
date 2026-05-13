@@ -7,6 +7,14 @@ from app.models.app_user import AppUser
 from app.models.user_alert import UserAlert
 
 
+MANAGER_ALERT_TYPES = [
+    "manager_insight",
+    "team_leaderboard",
+    "team_pipeline_risk",
+    "team_rewards",
+]
+
+
 def get_manager_notifications_from_db(
     session: Session,
     manager_id: int,
@@ -15,9 +23,12 @@ def get_manager_notifications_from_db(
     limit: int = 10,
     offset: int = 0,
 ):
-    # Return ONLY the manager's own alerts (manager-specific KPI alerts),
-    # not the cumulative alerts of their team members.
-    filters = [UserAlert.user_id == manager_id]
+    # Return ONLY manager-specific team alerts, not personal advisor-type alerts
+    # that the seed may have assigned to the manager user.
+    filters = [
+        UserAlert.user_id == manager_id,
+        func.lower(UserAlert.alert_type).in_(MANAGER_ALERT_TYPES),
+    ]
 
     if priority is not None:
         filters.append(func.lower(UserAlert.priority) == priority.lower())
@@ -59,6 +70,7 @@ def get_manager_notifications_from_db(
     else:
         unread_filters = [
             UserAlert.user_id == manager_id,
+            func.lower(UserAlert.alert_type).in_(MANAGER_ALERT_TYPES),
             UserAlert.is_read == False,
         ]
 

@@ -265,12 +265,15 @@ export default function RedemptionHistoryPage() {
               <select
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value as "All" | RedemptionStatus)}
-                className="h-11 w-full appearance-none bg-transparent pr-6 text-sm text-slate-200 outline-none"
+                className={`h-11 w-full appearance-none bg-transparent pr-6 text-sm outline-none ${
+                  isLight ? "text-slate-700" : "text-slate-200"
+                }`}
+                style={{ colorScheme: isLight ? "light" : "dark" }}
               >
-                <option value="All">All Statuses</option>
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
-                <option value="Cancelled">Cancelled</option>
+                <option value="All" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>All Statuses</option>
+                <option value="Completed" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Completed</option>
+                <option value="Pending" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Pending</option>
+                <option value="Cancelled" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Cancelled</option>
               </select>
               <ChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400" />
             </label>
@@ -282,11 +285,14 @@ export default function RedemptionHistoryPage() {
               <select
                 value={dateRange}
                 onChange={(event) => setDateRange(event.target.value as DateRangeFilter)}
-                className="h-11 w-full appearance-none bg-transparent pr-8 text-sm text-slate-200 outline-none"
+                className={`h-11 w-full appearance-none bg-transparent pr-8 text-sm outline-none ${
+                  isLight ? "text-slate-700" : "text-slate-200"
+                }`}
+                style={{ colorScheme: isLight ? "light" : "dark" }}
               >
-                <option value="all">Date range</option>
-                <option value="last30">Last 30 days</option>
-                <option value="last90">Last 90 days</option>
+                <option value="all" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Date range</option>
+                <option value="last30" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Last 30 days</option>
+                <option value="last90" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Last 90 days</option>
               </select>
               <CalendarDays className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400" />
             </label>
@@ -298,10 +304,13 @@ export default function RedemptionHistoryPage() {
               <select
                 value={sortOrder}
                 onChange={(event) => setSortOrder(event.target.value as SortOrder)}
-                className="h-11 w-full appearance-none bg-transparent pr-8 text-sm text-slate-200 outline-none"
+                className={`h-11 w-full appearance-none bg-transparent pr-8 text-sm outline-none ${
+                  isLight ? "text-slate-700" : "text-slate-200"
+                }`}
+                style={{ colorScheme: isLight ? "light" : "dark" }}
               >
-                <option value="newest">Newest to Oldest</option>
-                <option value="oldest">Oldest to Newest</option>
+                <option value="newest" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Newest to Oldest</option>
+                <option value="oldest" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Oldest to Newest</option>
               </select>
               <ChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400" />
             </label>

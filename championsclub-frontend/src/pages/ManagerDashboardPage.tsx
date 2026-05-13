@@ -484,6 +484,12 @@ export default function ManagerDashboardPage() {
             ))}
         </section>
 
+        {dashboardAlerts.length > 0 ? (
+          <section className="grid grid-cols-1 gap-6">
+            <PriorityAlertsPanel alerts={dashboardAlerts} />
+          </section>
+        ) : null}
+
         <section className="grid grid-cols-1 gap-6">
           {isTrendLoading && (
             <div
@@ -501,9 +507,6 @@ export default function ManagerDashboardPage() {
 {!isTrendLoading && !isTrendError && (
   <PerformanceTrendChart data={chartData} filterLabel={chartFilterLabel} />
 )}
-          {dashboardAlerts.length > 0 ? (
-            <PriorityAlertsPanel alerts={dashboardAlerts} />
-          ) : null}
         </section>
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">

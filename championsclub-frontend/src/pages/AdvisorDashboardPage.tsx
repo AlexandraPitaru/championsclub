@@ -60,7 +60,7 @@ export default function AdvisorDashboardPage() {
         <section className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-cyan-100">Welcome back, {currentUserFirstName}!</h1>
-            <p className="mt-2 text-slate-400">
+            <p className="mt-2 text-base text-slate-400 md:text-lg">
              Advisor Dashboard: Personal workspace for account details and self-service progress overview.
             </p>
           </div>
@@ -109,7 +109,21 @@ export default function AdvisorDashboardPage() {
                     : "Advisor Account"}
                 </h2>
                 <p className="text-base text-cyan-200 mb-6 font-mono tracking-wide">{currentUser.email}</p>
-                <div className="grid grid-cols-2 gap-6 w-full mb-4">
+                <div className="rounded-xl border p-6 w-full flex flex-col items-center mb-6" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
+                  <p className="text-base font-semibold uppercase tracking-[0.2em] text-slate-500 mb-1">Next Rank</p>
+                  <p
+                    className="text-2xl font-bold mb-0.5"
+                    style={{
+                      color: overview.dashboard_summary?.is_highest_rank
+                        ? "var(--text-h)"
+                        : getRankColor(overview.dashboard_summary?.next_rank ?? ""),
+                    }}
+                  >
+                    {overview.dashboard_summary?.is_highest_rank ? 'No next rank' : (overview.dashboard_summary?.next_rank || 'N/A')}
+                  </p>
+                  <p className="text-base text-slate-400">Points to next rank: <span className="font-bold text-cyan-200">{overview.dashboard_summary?.is_highest_rank ? '-' : (overview.dashboard_summary?.points_to_next_rank ?? '-')}</span></p>
+                </div>
+                <div className="grid grid-cols-2 gap-6 w-full mb-1">
                   <div className="rounded-xl border p-6 flex flex-col items-center" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-1">Current Points</p>
                     <p className="text-4xl font-extrabold text-cyan-300 drop-shadow-lg">{overview.dashboard_summary?.current_points ?? 'N/A'}</p>
@@ -122,60 +136,56 @@ export default function AdvisorDashboardPage() {
                     </span>
                   </div>
                 </div>
-                <div className="rounded-xl border p-6 w-full flex flex-col items-center mb-2" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-1">Next Rank</p>
-                  <p
-                    className="text-2xl font-bold mb-0.5"
-                    style={{
-                      color: overview.dashboard_summary?.is_highest_rank
-                        ? "var(--text-h)"
-                        : getRankColor(overview.dashboard_summary?.next_rank ?? ""),
-                    }}
-                  >
-                    {overview.dashboard_summary?.is_highest_rank ? 'No next rank' : (overview.dashboard_summary?.next_rank || 'N/A')}
-                  </p>
-                  <p className="text-xs text-slate-400">Points to next rank: <span className="font-bold text-cyan-200">{overview.dashboard_summary?.is_highest_rank ? '-' : (overview.dashboard_summary?.points_to_next_rank ?? '-')}</span></p>
-                </div>
                 {/* AI Coach Section in Advisor Account */}
-                <div className="w-full mt-6 flex flex-col items-center border-t pt-6 rounded-b-2xl" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
-                  <h3 className="text-xl font-bold text-cyan-100 mb-1 tracking-tight">Meet your AI Coach</h3>
-                  <p className="text-base text-slate-300 mb-4">Providing detailed insights regarding improvement possibilities.</p>
-                  <a href="/advisor-ai" className="inline-block px-6 py-3 rounded-lg bg-cyan-500 text-slate-900 font-bold text-lg hover:bg-cyan-400 transition-colors shadow">Go to AI Coach</a>
+                <div
+                  className="mt-0 flex w-full flex-col items-center rounded-xl border px-6 py-4 text-center shadow-sm"
+                  style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}
+                >
+                  <h3 className="mb-2 text-2xl font-bold tracking-tight text-cyan-100">Meet your AI Coach</h3>
+                  <p className="mb-4 max-w-md text-base leading-7 text-slate-300">
+                    Get focused guidance, track improvement opportunities, and see where to push next.
+                  </p>
+                  <a
+                    href="/advisor-ai"
+                    className="inline-flex items-center justify-center rounded-lg bg-cyan-500 px-6 py-3 text-lg font-bold text-slate-900 shadow transition-colors hover:bg-cyan-400"
+                  >
+                    Go to AI Coach
+                  </a>
                 </div>
               </Card>
               {/* Card mare cu cele 3 secțiuni */}
               <Card className="flex flex-col justify-between p-8 shadow-xl rounded-2xl min-h-[420px] h-full" style={{ background: "var(--summary-bg)", borderColor: "var(--card-border)" }}>
                 {/* Rank Progress */}
                 <div className="pb-10 mb-8 border-b mt-2" style={{ borderColor: "var(--panel-border)" }}>
-                  <h3 className="text-lg font-semibold text-cyan-100 mb-2">Rank Progress</h3>
+                  <h3 className="mb-2 text-xl font-semibold text-cyan-100 md:text-2xl">Rank Progress</h3>
                   <div className="flex flex-col gap-2 mb-2">
-                    <div className="flex justify-between text-xs">
+                    <div className="flex justify-between text-base font-semibold">
                       <span style={{ color: getRankColor(overview.rank_progress?.current_rank ?? "") }}>
-                        {overview.rank_progress?.current_rank ?? '-'}
+                        {(overview.rank_progress?.current_rank ?? '-').toUpperCase()}
                       </span>
                       <span style={{ color: getRankColor(overview.rank_progress?.next_rank ?? "") }}>
-                        {overview.rank_progress?.next_rank ?? '-'}
+                        {(overview.rank_progress?.next_rank ?? '-').toUpperCase()}
                       </span>
                     </div>
                     <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: "var(--panel-subtle-bg)" }}>
                       <div className="h-full bg-cyan-400" style={{ width: `${overview.rank_progress?.progress_percentage ?? 0}%` }} />
                     </div>
-                    <div className="flex justify-between text-xs text-slate-400">
+                    <div className="flex justify-between text-sm text-slate-400">
                       <span>{overview.rank_progress?.current_points ?? '-'}</span>
                       <span>{overview.rank_progress?.next_rank_min_points ?? '-'}</span>
                     </div>
                   </div>
                   <div className="flex flex-col gap-1 mt-2">
-                    <span className="text-xs text-slate-400">Progress: <span className="font-bold text-cyan-200">{overview.rank_progress?.progress_percentage ?? '-'}%</span></span>
-                    <span className="text-xs text-slate-400">Points to next rank: <span className="font-bold text-cyan-200">{overview.rank_progress?.points_to_next_rank ?? '-'}</span></span>
+                    <span className="text-m text-slate-400">Progress: <span className="font-bold text-cyan-200">{overview.rank_progress?.progress_percentage ?? '-'}%</span></span>
+                    <span className="text-m text-slate-400">Points to next rank: <span className="font-bold text-cyan-200">{overview.rank_progress?.points_to_next_rank ?? '-'}</span></span>
                   </div>
                 </div>
                 {/* Team Comparison */}
                 <div className="pb-10 mb-8 border-b" style={{ borderColor: "var(--panel-border)" }}>
-                  <h3 className="text-lg font-semibold text-cyan-100 mb-2">Team Comparison</h3>
+                  <h3 className="mb-2 text-xl font-semibold text-cyan-100 md:text-2xl">Team Comparison</h3>
                   <div className="mt-3 space-y-3">
                     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4">
-                      <span className="text-xs text-slate-400">Points vs Team Avg</span>
+                      <span className="text-m text-slate-400">Points vs Team Avg</span>
                       <span className="text-right text-lg font-bold text-cyan-200">
                         {overview.team_comparison?.comparison_to_team_average ? toTitleCase(overview.team_comparison.comparison_to_team_average) : '-'}
                         {typeof overview.team_comparison?.points_difference_from_average === 'number' && (
@@ -190,40 +200,40 @@ export default function AdvisorDashboardPage() {
                       className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 border-t pt-2"
                       style={{ borderColor: "var(--panel-border)" }}
                     >
-                      <span className="text-xs text-slate-400">Team Avg</span>
-                      <span className="text-right text-sm font-bold text-cyan-200">{overview.team_comparison?.team_average_points ?? '-'}</span>
+                      <span className="text-m text-slate-400">Team Avg</span>
+                      <span className="text-right text-base font-bold text-cyan-200">{overview.team_comparison?.team_average_points ?? '-'}</span>
                     </div>
                   </div>
                 </div>
                 {/* Team Position Summary */}
                 <div className="mt-2 flex flex-col items-start text-left">
-                  <h3 className="text-lg font-semibold text-cyan-100 mb-2">Team Position Summary</h3>
+                  <h3 className="mb-2 text-xl font-semibold text-cyan-100 md:text-2xl">Team Position Summary</h3>
                   <div
                     className="w-full overflow-hidden rounded-2xl border"
                     style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}
                   >
                     <div className="grid grid-cols-2 sm:grid-cols-4">
-                      <div className="px-3 py-3 sm:px-4 sm:py-4" style={{ borderRight: "1px solid var(--panel-border)", borderBottom: "1px solid var(--panel-border)" }}>
-                        <p className="text-[11px] font-semibold leading-tight text-slate-400">Your Position</p>
-                        <p className="mt-1 text-2xl font-extrabold leading-none text-cyan-200">
+                      <div className="flex min-h-[110px] flex-col justify-center px-4 py-4 sm:px-5 sm:py-5" style={{ borderRight: "1px solid var(--panel-border)", borderBottom: "1px solid var(--panel-border)" }}>
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">Your Position</p>
+                        <p className="mt-2 text-3xl font-extrabold leading-none text-cyan-200 sm:text-[2rem]">
                           {overview.chart_data && overview.chart_data.team_position_summary && overview.chart_data.team_position_summary.team_position != null ? overview.chart_data.team_position_summary.team_position : '-'}
                         </p>
                       </div>
-                      <div className="px-3 py-3 sm:px-4 sm:py-4" style={{ borderBottom: "1px solid var(--panel-border)" }}>
-                        <p className="text-[11px] font-semibold leading-tight text-slate-400">Total Advisors</p>
-                        <p className="mt-1 text-2xl font-extrabold leading-none text-cyan-200">
+                      <div className="flex min-h-[110px] flex-col justify-center px-4 py-4 sm:px-5 sm:py-5" style={{ borderBottom: "1px solid var(--panel-border)" }}>
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">Total Advisors</p>
+                        <p className="mt-2 text-3xl font-extrabold leading-none text-cyan-200 sm:text-[2rem]">
                           {overview.chart_data && overview.chart_data.team_position_summary && overview.chart_data.team_position_summary.total_sales_advisors != null ? overview.chart_data.team_position_summary.total_sales_advisors : '-'}
                         </p>
                       </div>
-                      <div className="px-3 py-3 sm:px-4 sm:py-4" style={{ borderRight: "1px solid var(--panel-border)" }}>
-                        <p className="text-[11px] font-semibold leading-tight text-slate-400">Advisors Ahead of You</p>
-                        <p className="mt-1 text-2xl font-extrabold leading-none text-cyan-200">
+                      <div className="flex min-h-[110px] flex-col justify-center px-4 py-4 sm:px-5 sm:py-5" style={{ borderRight: "1px solid var(--panel-border)" }}>
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">Advisors Ahead of You</p>
+                        <p className="mt-2 text-3xl font-extrabold leading-none text-cyan-200 sm:text-[2rem]">
                           {overview.chart_data && overview.chart_data.team_position_summary && overview.chart_data.team_position_summary.advisors_ahead != null ? overview.chart_data.team_position_summary.advisors_ahead : '-'}
                         </p>
                       </div>
-                      <div className="px-3 py-3 sm:px-4 sm:py-4">
-                        <p className="text-[11px] font-semibold leading-tight text-slate-400">Advisors Behind You</p>
-                        <p className="mt-1 text-2xl font-extrabold leading-none text-cyan-200">
+                      <div className="flex min-h-[110px] flex-col justify-center px-4 py-4 sm:px-5 sm:py-5">
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">Advisors Behind You</p>
+                        <p className="mt-2 text-3xl font-extrabold leading-none text-cyan-200 sm:text-[2rem]">
                           {overview.chart_data && overview.chart_data.team_position_summary && overview.chart_data.team_position_summary.advisors_behind != null ? overview.chart_data.team_position_summary.advisors_behind : '-'}
                         </p>
                       </div>
@@ -236,8 +246,8 @@ export default function AdvisorDashboardPage() {
             <section className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mt-0">
               {/* Personal Points vs Team Average Chart */}
               <Card className="flex flex-col p-6 shadow-xl rounded-2xl min-h-[340px]" style={{ background: "var(--summary-bg)", borderColor: "var(--card-border)" }}>
-                <h3 className="text-lg font-semibold text-cyan-100 mb-2">Personal Points vs Team Average</h3>
-                <p className="text-sm text-slate-400 mb-4">Personal points trend vs team average</p>
+                <h3 className="mb-2 text-xl font-semibold text-cyan-100 md:text-2xl">Personal Points vs Team Average</h3>
+                <p className="text-md text-slate-400 mb-4">Personal points trend vs team average</p>
                 <div className="flex-1 min-h-[220px]">
                   <PersonalPointsVsTeamAverageChart
                     data={overview.chart_data?.personal_points_vs_team_average ?? []}
@@ -246,8 +256,8 @@ export default function AdvisorDashboardPage() {
               </Card>
               {/* Rank Progress Chart */}
               <Card className="flex flex-col p-6 shadow-xl rounded-2xl min-h-[340px]" style={{ background: "var(--summary-bg)", borderColor: "var(--card-border)" }}>
-                <h3 className="text-lg font-semibold text-cyan-100 mb-2">Rank Progress Chart</h3>
-                <p className="text-sm text-slate-400 mb-4">Progress toward the next rank</p>
+                <h3 className="mb-2 text-xl font-semibold text-cyan-100 md:text-2xl">Rank Progress Chart</h3>
+                <p className="text-md text-slate-400 mb-4">Progress toward the next rank</p>
                 <div className="flex-1 min-h-[220px]">
                   <RankProgressChart
                     data={overview.chart_data?.rank_progress_toward_next_rank!}

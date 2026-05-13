@@ -440,7 +440,12 @@ export default function Sidebar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-2.5 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition hover:opacity-80"
+          style={{
+            borderColor: "var(--panel-border)",
+            background: "var(--panel-soft-bg)",
+            color: "var(--text)",
+          }}
         >
           <LogOut className="h-4 w-4" />
           <span>Logout</span>
