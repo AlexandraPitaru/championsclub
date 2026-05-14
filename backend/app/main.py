@@ -42,6 +42,11 @@ from app.sales_advisor_profile.ai_analysis_router import (
     router as sales_advisor_profile_ai_router,
 )
 from app.sales_advisor_shop.router import router as sales_advisor_shop_router
+from app.sales_simulator.simulator_router import router as sales_simulator_router
+from app.sales_simulator.simulator_scheduler import (
+    start_sales_simulator_scheduler,
+    stop_sales_simulator_scheduler,
+)
 
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -89,6 +94,7 @@ app.include_router(sales_advisor_checkout_router)
 app.include_router(sales_advisor_history_router)
 app.include_router(sales_advisor_profile_ai_router)
 app.include_router(sales_advisor_shop_router)
+app.include_router(sales_simulator_router)
 
 app.include_router(manager_notifications_router)
 from app.sales_advisor_alerts.router import router as sales_advisor_alerts_router
@@ -108,9 +114,15 @@ def seed_database_if_empty() -> None:
 
 
 @app.on_event("startup")
-def on_startup():
+async def on_startup():
     create_db_and_tables()
     seed_database_if_empty()
+    start_sales_simulator_scheduler()
+
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    await stop_sales_simulator_scheduler()
 
 
 @app.get("/health")
