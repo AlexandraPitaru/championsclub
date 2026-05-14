@@ -139,3 +139,36 @@ def get_team_skills_aggregate(
     aggregates = list(aggregated.values())
     aggregates.sort(key=lambda s: s.total_users_with_skill, reverse=True)
     return aggregates
+
+
+def get_team_performance_history(
+    session: Session,
+    manager_user_id: int,
+    interval_start: datetime | None,
+) -> list[tuple[datetime, float, int]]:
+    user_ids = _team_member_ids(session, manager_user_id)
+    if not user_ids:
+        return []
+
+    conditions = [SaleTransaction.user_id.in_(user_ids)]
+    if interval_start is not None:
+        conditions.append(SaleTransaction.transaction_date >= interval_start)
+
+    statement = (
+        select(
+            SaleTransaction.transaction_date,
+            SaleTransaction.amount,
+            SaleTransaction.points_earned,
+        )
+        .where(*conditions)
+        .order_by(SaleTransaction.transaction_date)
+    )
+
+    return [
+        (
+            transaction_date,
+            float(amount or 0),
+            int(points_earned or 0),
+        )
+        for transaction_date, amount, points_earned in session.exec(statement).all()
+    ]
