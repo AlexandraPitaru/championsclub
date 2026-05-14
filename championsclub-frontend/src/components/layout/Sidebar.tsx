@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { getLeaderboard } from "../../services/api/dashboardService";
 import { useTheme } from "../../app/theme/ThemeProvider";
+import BrandLogo from "./BrandLogo";
 
 const navItems = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard, isDynamic: true },
@@ -174,11 +175,7 @@ export default function Sidebar() {
           className="group mx-auto flex w-full max-w-[260px] flex-col items-center gap-0.5 outline-none transition-opacity hover:opacity-95 focus-visible:ring-2 focus-visible:ring-cyan-500/60"
           aria-label="Go to dashboard"
         >
-          <img
-            src="/Logo2.png"
-            alt="ChampionsClub logo"
-            className="h-auto w-full object-contain transition group-hover:scale-[1.02]"
-          />
+          <BrandLogo className="h-[172px] w-full object-contain transition group-hover:scale-[1.02]" />
           <p
             className={[
               "text-center text-sm leading-tight",
