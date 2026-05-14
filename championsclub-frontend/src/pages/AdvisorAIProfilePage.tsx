@@ -160,7 +160,7 @@ const AdvisorAIProfilePage = () => {
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <h2 className="text-2xl font-bold text-rose-400 mb-4">AI Coach unavailable</h2>
-          <p className="text-slate-300 mb-2">We couldn't load your AI analysis or forecast. Please try again later.</p>
+          <p className="mb-2" style={{ color: "var(--text)" }}>We couldn't load your AI analysis or forecast. Please try again later.</p>
         </div>
       </AppShell>
     );
@@ -185,7 +185,7 @@ const AdvisorAIProfilePage = () => {
               Sales Advisor Profile
             </p>
             <h1 className="mt-1 text-3xl font-bold text-cyan-100">AI Coach</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-400">
+            <p className="mt-2 max-w-2xl text-sm" style={{ color: "var(--text-muted)" }}>
               A short guided tour of your performance. No jargon — just what's working,
               what to improve, and what to do next.
             </p>

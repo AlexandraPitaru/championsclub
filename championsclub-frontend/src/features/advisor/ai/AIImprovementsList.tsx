@@ -21,7 +21,7 @@ export default function AIImprovementsList({ items }: Props) {
             className="rounded-2xl border border-amber-400/15 bg-amber-400/[0.04] p-4"
           >
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-sm font-semibold text-slate-50">{imp.title}</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--text-h)" }}>{imp.title}</p>
               <span
                 className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${priorityChipClass(imp.priority)}`}
               >
@@ -38,8 +38,8 @@ export default function AIImprovementsList({ items }: Props) {
                 </span>
               )}
             </div>
-            <p className="mt-1 text-sm text-slate-300">{imp.description}</p>
-            <p className="mt-1 text-xs text-slate-400">{imp.reason}</p>
+            <p className="mt-1 text-sm" style={{ color: "var(--text)" }}>{imp.description}</p>
+            <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>{imp.reason}</p>
             <div className="mt-2 flex items-center gap-2 text-xs text-cyan-200">
               <ArrowRight className="h-3.5 w-3.5" />
               <span>{imp.suggested_next_step}</span>

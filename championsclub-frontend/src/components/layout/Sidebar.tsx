@@ -52,6 +52,7 @@ export default function Sidebar() {
   const [searchInput, setSearchInput] = useState("");
   const [searchError, setSearchError] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<Array<{ user_id: number; first_name: string; last_name: string }>>([]);
 
   const trimmedSearch = useMemo(() => searchInput.trim(), [searchInput]);
   const userRole = useMemo(() => getCurrentUserRole(), []);
@@ -87,6 +88,42 @@ export default function Sidebar() {
   }, [userRole]);
 
   useEffect(() => {
+    if (!trimmedSearch || !canSearchAdvisor || !isSearchOpen) {
+      setSearchResults([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setIsSearching(true);
+        setSearchError("");
+        
+        const response = await getLeaderboard({
+          interval: "all",
+          q: trimmedSearch,
+          sortBy: "first_name",
+          sortDir: "asc",
+          page: 1,
+          pageSize: 3,
+        });
+
+        setSearchResults(response.items.slice(0, 3));
+        
+        if (response.items.length === 0) {
+          setSearchError("No advisors found.");
+        }
+      } catch (error) {
+        setSearchError("Search failed.");
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [trimmedSearch, canSearchAdvisor, isSearchOpen]);
+
+  useEffect(() => {
     if (!isMobileMenuOpen) return;
 
     const originalOverflow = document.body.style.overflow;
@@ -107,6 +144,14 @@ export default function Sidebar() {
     navigate("/login", { replace: true });
   }
 
+  function handleAdvisorClick(userId: number) {
+    setSearchInput("");
+    setSearchResults([]);
+    setIsSearchOpen(false);
+    closeMobileMenu();
+    navigate(`/manager/advisor/${userId}`);
+  }
+
   async function handleAdvisorSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -115,39 +160,8 @@ export default function Sidebar() {
       return;
     }
 
-    setIsSearching(true);
-    setSearchError("");
-
-    try {
-      const response = await getLeaderboard({
-        interval: "all",
-        q: trimmedSearch,
-        sortBy: "first_name",
-        sortDir: "asc",
-        page: 1,
-        pageSize: 20,
-      });
-
-      const normalizedQuery = normalizeName(trimmedSearch);
-      const exactMatch = response.items.find((advisor) => {
-        const fullName = normalizeName(`${advisor.first_name} ${advisor.last_name}`);
-        return fullName === normalizedQuery;
-      });
-      const matchedAdvisor = exactMatch ?? response.items[0];
-
-      if (!matchedAdvisor) {
-        setSearchError("No advisor found.");
-        return;
-      }
-
-      setSearchInput("");
-      setIsSearchOpen(false);
-      closeMobileMenu();
-      navigate(`/manager/advisor/${matchedAdvisor.user_id}`);
-    } catch (error) {
-      setSearchError(error instanceof Error ? error.message : "Advisor search failed.");
-    } finally {
-      setIsSearching(false);
+    if (searchResults.length > 0) {
+      handleAdvisorClick(searchResults[0].user_id);
     }
   }
 
@@ -183,6 +197,8 @@ export default function Sidebar() {
               onClick={() => {
                 setIsSearchOpen((current) => !current);
                 setSearchError("");
+                setSearchResults([]);
+                setSearchInput("");
               }}
               className={[
                 "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
@@ -241,17 +257,49 @@ export default function Sidebar() {
                   background: "var(--sidebar-input-bg)",
                 }}
               />
+              
+              {searchResults.length > 0 && (
+                <div className="mt-3 rounded-lg border divide-y" style={{ borderColor: "var(--sidebar-border)", background: "var(--sidebar-panel-bg)" }}>
+                  {searchResults.map((advisor, index) => (
+                    <button
+                      key={advisor.user_id}
+                      type="button"
+                      onClick={() => handleAdvisorClick(advisor.user_id)}
+                      className={[
+                        "w-full px-3 py-2.5 text-left text-sm font-medium transition hover:bg-cyan-500/10",
+                        index === 0 ? "rounded-t-lg" : "",
+                        index === searchResults.length - 1 ? "rounded-b-lg" : "",
+                        isLight ? "text-slate-700 hover:text-cyan-800" : "text-slate-200 hover:text-cyan-100",
+                      ].join(" ")}
+                      style={{
+                        borderColor: "var(--sidebar-border)",
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={[
+                          "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold",
+                          isLight ? "bg-slate-200 text-slate-700" : "bg-slate-700 text-slate-200"
+                        ].join(" ")}>
+                          {advisor.first_name[0]}{advisor.last_name[0]}
+                        </span>
+                        <span>{advisor.first_name} {advisor.last_name}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={isSearching}
+                disabled={isSearching || searchResults.length === 0}
                 className={[
                   "mt-3 w-full rounded-lg border border-cyan-500/40 bg-cyan-500/15 px-3 py-2 text-sm font-semibold transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-60",
                   isLight ? "text-cyan-800" : "text-cyan-100",
                 ].join(" ")}
               >
-                {isSearching ? "Searching..." : "Go to advisor"}
+                {isSearching ? "Searching..." : searchResults.length > 0 ? "Go to first advisor" : "Go to advisor"}
               </button>
-              {searchError ? <p className="mt-2 text-xs text-rose-300">{searchError}</p> : null}
+              {searchError && !isSearching ? <p className="mt-2 text-xs text-rose-300">{searchError}</p> : null}
             </form>
           ) : null}
 
@@ -440,7 +488,12 @@ export default function Sidebar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-2.5 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition hover:opacity-80"
+          style={{
+            borderColor: "var(--panel-border)",
+            background: "var(--panel-soft-bg)",
+            color: "var(--text)",
+          }}
         >
           <LogOut className="h-4 w-4" />
           <span>Logout</span>

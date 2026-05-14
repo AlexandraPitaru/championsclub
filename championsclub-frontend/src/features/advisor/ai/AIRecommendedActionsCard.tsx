@@ -218,7 +218,7 @@ export default function AIRecommendedActionsCard({ items }: Props) {
             Top recommended actions
           </h3>
         </div>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
           Ordered by priority · max {items.length} items
         </p>
       </div>
@@ -227,7 +227,8 @@ export default function AIRecommendedActionsCard({ items }: Props) {
         {items.map((a, idx) => (
           <li
             key={a.title}
-            className="flex flex-col rounded-2xl border border-[#28415f] bg-[#0a1322] p-4"
+            className="flex flex-col rounded-2xl border p-4"
+            style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}
           >
             <div className="flex items-start justify-between gap-2">
               <span className="text-[11px] font-semibold uppercase tracking-wide text-cyan-300">
@@ -239,9 +240,9 @@ export default function AIRecommendedActionsCard({ items }: Props) {
                 {a.priority}
               </span>
             </div>
-            <p className="mt-2 text-sm font-semibold text-slate-50">{a.title}</p>
-            <p className="mt-1 text-xs text-slate-300">{a.description}</p>
-            <p className="mt-1 text-[11px] text-slate-400">{a.reason}</p>
+            <p className="mt-2 text-sm font-semibold" style={{ color: "var(--text-h)" }}>{a.title}</p>
+            <p className="mt-1 text-xs" style={{ color: "var(--text)" }}>{a.description}</p>
+            <p className="mt-1 text-[11px]" style={{ color: "var(--text-muted)" }}>{a.reason}</p>
 
             <div className="mt-3 flex flex-wrap gap-1.5">
               <span
@@ -255,7 +256,7 @@ export default function AIRecommendedActionsCard({ items }: Props) {
                 </span>
               )}
               {a.time_estimate_minutes != null && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-slate-400/40 bg-slate-500/10 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+                <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold" style={{ borderColor: "var(--panel-border)", background: "var(--panel-subtle-bg)", color: "var(--text)" }}>
                   <Clock className="h-3 w-3" />
                   {a.time_estimate_minutes} min
                 </span>

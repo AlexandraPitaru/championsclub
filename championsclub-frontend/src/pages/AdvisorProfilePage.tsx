@@ -281,7 +281,7 @@ export default function AdvisorProfilePage() {
             <h1 className="mt-3 text-2xl font-bold text-cyan-100 md:text-3xl">
               Advisor Profile
             </h1>
-            <p className="mt-2 text-sm text-slate-400 md:text-base">
+            <p className="mt-2 text-base text-slate-400 md:text-lg">
               Review advisor performance, current standing, and recent activity.
             </p>
           </div>

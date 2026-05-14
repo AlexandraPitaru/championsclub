@@ -23,7 +23,8 @@ export default function AIStepNavigation({
         type="button"
         onClick={onPrev}
         disabled={isFirstStep}
-        className="inline-flex items-center gap-2 rounded-full border border-[#28415f] bg-[#0d1a2b] px-4 py-2 text-xs font-semibold text-slate-300 transition hover:text-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
+        className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition hover:text-cyan-200 disabled:cursor-not-allowed disabled:opacity-40"
+        style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)", color: "var(--text)" }}
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         {prevLabel}
