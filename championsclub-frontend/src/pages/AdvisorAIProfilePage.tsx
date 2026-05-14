@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Lightbulb, Sparkles, Target, TrendingUp } from "lucide-react";
 import AppShell from "../app/layouts/AppShell";
 import AICoachNote from "../features/advisor/ai/AICoachNote";
@@ -20,7 +21,6 @@ import AIWelcomeHero from "../features/advisor/ai/AIWelcomeHero";
 import { useAdvisorAIAnalysis } from "../features/advisor/ai/useAdvisorAIAnalysis";
 import { useAdvisorAIForecast } from "../features/advisor/ai/useAdvisorAIForecast";
 import { refreshAdvisorAIInsights } from "../features/advisor/ai/api";
-import type { AIInterval } from "../features/advisor/ai/types";
 import { useAIRefresh } from "../features/advisor/ai/useAIRefresh";
 
 type StepId =
@@ -108,7 +108,7 @@ const journey: JourneyEntry[] = [
 ];
 
 const AdvisorAIProfilePage = () => {
-  const [interval, setInterval] = useState<AIInterval>("month");
+  const queryClient = useQueryClient();
   const [currentStepId, setCurrentStepId] = useState<StepId>("welcome");
   const [completed, setCompleted] = useState<StepId[]>([]);
 
@@ -122,7 +122,9 @@ const AdvisorAIProfilePage = () => {
 
   // TOATE HOOK-URILE SUS
   const { refreshing, cooldown, refresh } = useAIRefresh(async () => {
-    await refreshAdvisorAIInsights();
+    const refreshed = await refreshAdvisorAIInsights();
+    queryClient.setQueryData(["advisor-ai-analysis"], refreshed.analysis);
+    queryClient.setQueryData(["advisor-ai-forecast"], refreshed.forecast);
   });
   const currentIndex = journey.findIndex((s) => s.id === currentStepId);
   const currentStep = journey[currentIndex];
@@ -190,8 +192,6 @@ const AdvisorAIProfilePage = () => {
           </div>
 
           <AIRefreshControls
-            interval={interval}
-            onIntervalChange={setInterval}
             onRefresh={refresh}
             refreshing={refreshing}
             refreshCooldownSeconds={cooldown}

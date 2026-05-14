@@ -8,8 +8,8 @@ type Props = { items: AIRecommendedTraining[] };
 
 
 const handleTrainingClick = (training: AIRecommendedTraining) => {
-  if (training.cta_target === "training_external_url" && (training as any).external_url) {
-    window.open((training as any).external_url, "_blank");
+  if (training.cta_target === "training_external_url" && training.external_url) {
+    window.open(training.external_url, "_blank", "noopener,noreferrer");
   } else if (training.cta_target === "training_internal") {
     window.location.href = "/trainings";
   } else {

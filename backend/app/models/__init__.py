@@ -15,3 +15,4 @@ from app.models.cart import Cart
 from app.models.cart_item import CartItem
 from app.models.redemption_order import RedemptionOrder
 from app.models.redemption_order_item import RedemptionOrderItem
+from app.models.training import Skill, Training, TrainingSkillLink
