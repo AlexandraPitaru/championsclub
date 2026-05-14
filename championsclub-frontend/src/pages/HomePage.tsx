@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Gift, LogIn, Sparkles, Trophy, UsersRound } from "lucide-react";
+import BrandLogo from "../components/layout/BrandLogo";
 
 const focusAreas = [
   {
@@ -34,11 +35,7 @@ export default function HomePage() {
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-5 py-6 sm:px-8 lg:px-10">
         <header className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3" aria-label="ChampionsClub">
-            <img
-              src="/Logo2.png"
-              alt="ChampionsClub logo"
-              className="h-12 w-auto object-contain sm:h-14"
-            />
+            <BrandLogo className="h-12 w-auto object-contain sm:h-14" />
           </div>
 
           <Link
