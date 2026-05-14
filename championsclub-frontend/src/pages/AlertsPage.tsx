@@ -246,7 +246,7 @@ const alerts = notificationsData?.notifications ?? [];
                 key={alert.alert_id}
                 className={`rounded-xl border ${getSeverityBorder(
                   alert.priority
-                )} p-6 transition`}
+                )} p-6 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg`}
                 style={{
                   borderTopColor: "var(--panel-border)",
                   borderRightColor: "var(--panel-border)",

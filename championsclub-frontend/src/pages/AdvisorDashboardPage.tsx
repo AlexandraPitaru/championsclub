@@ -64,7 +64,7 @@ export default function AdvisorDashboardPage() {
              Advisor Dashboard: Personal workspace for account details and self-service progress overview.
             </p>
           </div>
-          <Card style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
+          <Card className="transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}>
             <p className="text-sm font-semibold text-cyan-100">Session Status</p>
             <p className="mt-2 text-sm text-slate-300">
               {isAdvisor
@@ -99,7 +99,7 @@ export default function AdvisorDashboardPage() {
             {/* Modern Responsive Dashboard Layout */}
             <section className="grid grid-cols-1 xl:grid-cols-2 gap-6 w-full h-full">
               {/* Account Summary - vizual dominant, col 1 */}
-              <Card className="flex flex-col items-center justify-center text-center p-8 shadow-xl rounded-2xl min-h-[420px] h-full" style={{ background: "var(--summary-bg)", borderColor: "var(--card-border)" }}>
+              <Card className="flex flex-col items-center justify-center text-center p-8 shadow-xl rounded-2xl min-h-[420px] h-full transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ background: "var(--summary-bg)", borderColor: "var(--card-border)" }}>
                 <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl border-2 border-cyan-500/40 bg-cyan-500/10 text-cyan-200 mb-5">
                   <UserRound className="h-12 w-12" />
                 </div>
@@ -109,7 +109,7 @@ export default function AdvisorDashboardPage() {
                     : "Advisor Account"}
                 </h2>
                 <p className="text-base text-cyan-200 mb-6 font-mono tracking-wide">{currentUser.email}</p>
-                <div className="rounded-xl border p-6 w-full flex flex-col items-center mb-3" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
+                <div className="rounded-xl border p-6 w-full flex flex-col items-center mb-3 transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:shadow-cyan-500/10" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
                   <p className="text-base font-semibold uppercase tracking-[0.2em] text-slate-500 mb-1">Next Rank</p>
                   <p
                     className="text-2xl font-bold mb-0.5"
@@ -124,11 +124,11 @@ export default function AdvisorDashboardPage() {
                   <p className="text-base text-slate-400">Points to next rank: <span className="font-bold text-cyan-200">{overview.dashboard_summary?.is_highest_rank ? '-' : (overview.dashboard_summary?.points_to_next_rank ?? '-')}</span></p>
                 </div>
                 <div className="grid grid-cols-2 gap-6 w-full mb-4">
-                  <div className="rounded-xl border p-6 flex flex-col items-center" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
+                  <div className="rounded-xl border p-6 flex flex-col items-center transition-all duration-300 hover:scale-[1.05] hover:shadow-lg hover:shadow-cyan-500/10" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-1">Current Points</p>
                     <p className="text-4xl font-extrabold text-cyan-300 drop-shadow-lg">{overview.dashboard_summary?.current_points ?? 'N/A'}</p>
                   </div>
-                  <div className="rounded-xl border p-6 flex flex-col items-center" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
+                  <div className="rounded-xl border p-6 flex flex-col items-center transition-all duration-300 hover:scale-[1.05] hover:shadow-lg hover:shadow-cyan-500/10" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 mb-1">Current Rank</p>
                     <span className="flex items-center justify-center gap-2 text-3xl font-extrabold drop-shadow-lg" style={{ color: getRankColor(overview.dashboard_summary?.current_rank ?? "") }}>
                       <Trophy className="h-7 w-7" />
@@ -136,25 +136,25 @@ export default function AdvisorDashboardPage() {
                     </span>
                   </div>
                 </div>
-                {/* AI Coach Section in Advisor Account */}
+                {/* Sales Coach Section in Advisor Account */}
                 <div
-                  className="mt-2 flex w-full flex-col items-center rounded-xl border px-6 py-4 text-center shadow-sm"
+                  className="mt-2 flex w-full flex-col items-center rounded-xl border px-6 py-4 text-center shadow-sm transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:shadow-cyan-500/10"
                   style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}
                 >
-                  <h3 className="mb-2 text-2xl font-bold tracking-tight text-cyan-100">Meet your AI Coach</h3>
+                  <h3 className="mb-2 text-2xl font-bold tracking-tight text-cyan-100">Meet your Sales Coach!</h3>
                   <p className="mb-4 max-w-md text-base leading-7 text-slate-300">
                     Get focused guidance, track improvement opportunities, and see where to push next.
                   </p>
                   <a
                     href="/advisor-ai"
-                    className="inline-flex items-center justify-center rounded-lg bg-cyan-500 px-6 py-3 text-lg font-bold text-slate-900 shadow transition-colors hover:bg-cyan-400"
+                    className="inline-flex items-center justify-center rounded-lg bg-cyan-500 px-6 py-3 text-lg font-bold text-slate-900 shadow transition-all duration-300 hover:bg-cyan-400 hover:scale-110 hover:shadow-xl hover:shadow-cyan-500/30"
                   >
-                    Go to AI Coach
+                    Go to Sales Coach
                   </a>
                 </div>
               </Card>
               {/* Card mare cu cele 3 secțiuni */}
-              <Card className="flex flex-col justify-between p-8 shadow-xl rounded-2xl min-h-[420px] h-full" style={{ background: "var(--summary-bg)", borderColor: "var(--card-border)" }}>
+              <Card className="flex flex-col justify-between p-8 shadow-xl rounded-2xl min-h-[420px] h-full transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ background: "var(--summary-bg)", borderColor: "var(--card-border)" }}>
                 {/* Rank Progress */}
                 <div className="pb-10 mb-8 border-b mt-2" style={{ borderColor: "var(--panel-border)" }}>
                   <h3 className="mb-2 text-xl font-semibold text-cyan-100 md:text-2xl">Rank Progress</h3>
@@ -209,29 +209,29 @@ export default function AdvisorDashboardPage() {
                 <div className="mt-2 flex flex-col items-start text-left">
                   <h3 className="mb-2 text-xl font-semibold text-cyan-100 md:text-2xl">Team Position Summary</h3>
                   <div
-                    className="w-full overflow-hidden rounded-2xl border"
+                    className="w-full overflow-hidden rounded-2xl border transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
                     style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}
                   >
                     <div className="grid grid-cols-2 sm:grid-cols-4">
-                      <div className="flex min-h-[110px] flex-col justify-center px-4 py-4 sm:px-5 sm:py-5" style={{ borderRight: "1px solid var(--panel-border)", borderBottom: "1px solid var(--panel-border)" }}>
+                      <div className="flex min-h-[110px] flex-col justify-center px-4 py-4 sm:px-5 sm:py-5 transition-all duration-300 hover:bg-cyan-500/5" style={{ borderRight: "1px solid var(--panel-border)", borderBottom: "1px solid var(--panel-border)" }}>
                         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">Your Position</p>
                         <p className="mt-2 text-3xl font-extrabold leading-none text-cyan-200 sm:text-[2rem]">
                           {overview.chart_data && overview.chart_data.team_position_summary && overview.chart_data.team_position_summary.team_position != null ? overview.chart_data.team_position_summary.team_position : '-'}
                         </p>
                       </div>
-                      <div className="flex min-h-[110px] flex-col justify-center px-4 py-4 sm:px-5 sm:py-5" style={{ borderBottom: "1px solid var(--panel-border)" }}>
+                      <div className="flex min-h-[110px] flex-col justify-center px-4 py-4 sm:px-5 sm:py-5 transition-all duration-300 hover:bg-cyan-500/5" style={{ borderBottom: "1px solid var(--panel-border)" }}>
                         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">Total Advisors</p>
                         <p className="mt-2 text-3xl font-extrabold leading-none text-cyan-200 sm:text-[2rem]">
                           {overview.chart_data && overview.chart_data.team_position_summary && overview.chart_data.team_position_summary.total_sales_advisors != null ? overview.chart_data.team_position_summary.total_sales_advisors : '-'}
                         </p>
                       </div>
-                      <div className="flex min-h-[110px] flex-col justify-center px-4 py-4 sm:px-5 sm:py-5" style={{ borderRight: "1px solid var(--panel-border)" }}>
+                      <div className="flex min-h-[110px] flex-col justify-center px-4 py-4 sm:px-5 sm:py-5 transition-all duration-300 hover:bg-cyan-500/5" style={{ borderRight: "1px solid var(--panel-border)" }}>
                         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">Advisors Ahead of You</p>
                         <p className="mt-2 text-3xl font-extrabold leading-none text-cyan-200 sm:text-[2rem]">
                           {overview.chart_data && overview.chart_data.team_position_summary && overview.chart_data.team_position_summary.advisors_ahead != null ? overview.chart_data.team_position_summary.advisors_ahead : '-'}
                         </p>
                       </div>
-                      <div className="flex min-h-[110px] flex-col justify-center px-4 py-4 sm:px-5 sm:py-5">
+                      <div className="flex min-h-[110px] flex-col justify-center px-4 py-4 sm:px-5 sm:py-5 transition-all duration-300 hover:bg-cyan-500/5">
                         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">Advisors Behind You</p>
                         <p className="mt-2 text-3xl font-extrabold leading-none text-cyan-200 sm:text-[2rem]">
                           {overview.chart_data && overview.chart_data.team_position_summary && overview.chart_data.team_position_summary.advisors_behind != null ? overview.chart_data.team_position_summary.advisors_behind : '-'}
@@ -245,7 +245,7 @@ export default function AdvisorDashboardPage() {
             {/* Charts Section */}
             <section className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mt-0">
               {/* Personal Points vs Team Average Chart */}
-              <Card className="flex flex-col p-6 shadow-xl rounded-2xl min-h-[340px]" style={{ background: "var(--summary-bg)", borderColor: "var(--card-border)" }}>
+              <Card className="flex flex-col p-6 shadow-xl rounded-2xl min-h-[340px] transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ background: "var(--summary-bg)", borderColor: "var(--card-border)" }}>
                 <h3 className="mb-2 text-xl font-semibold text-cyan-100 md:text-2xl">Personal Points vs Team Average</h3>
                 <p className="text-md text-slate-400 mb-4">Personal points trend vs team average</p>
                 <div className="flex-1 min-h-[220px]">
@@ -255,7 +255,7 @@ export default function AdvisorDashboardPage() {
                 </div>
               </Card>
               {/* Rank Progress Chart */}
-              <Card className="flex flex-col p-6 shadow-xl rounded-2xl min-h-[340px]" style={{ background: "var(--summary-bg)", borderColor: "var(--card-border)" }}>
+              <Card className="flex flex-col p-6 shadow-xl rounded-2xl min-h-[340px] transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ background: "var(--summary-bg)", borderColor: "var(--card-border)" }}>
                 <h3 className="mb-2 text-xl font-semibold text-cyan-100 md:text-2xl">Rank Progress Chart</h3>
                 <p className="text-md text-slate-400 mb-4">Progress toward the next rank</p>
                 <div className="flex-1 min-h-[220px]">

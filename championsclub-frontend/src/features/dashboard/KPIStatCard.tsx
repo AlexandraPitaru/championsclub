@@ -15,13 +15,13 @@ export default function KPIStatCard({
 }: KPIStatCardProps) {
   const deltaColor =
     status === "positive"
-      ? "text-emerald-400"
+      ? "text-cyan-400"
       : status === "negative"
       ? "text-rose-400"
       : "text-slate-400";
 
   return (
-    <Card className="flex h-full min-h-32 flex-col overflow-hidden">
+    <Card className="flex h-full min-h-32 flex-col overflow-hidden transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:shadow-cyan-500/10">
       <p className="truncate text-sm font-medium" style={{ color: "var(--kpi-title)" }}>{title}</p>
       <h3 className="mt-3 text-2xl font-bold" style={{ color: "var(--kpi-value)" }}>{value}</h3>
       <p className={`mt-2 text-sm font-semibold ${deltaColor}`}>{delta}</p>

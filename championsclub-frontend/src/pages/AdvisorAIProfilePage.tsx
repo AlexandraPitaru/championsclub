@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { BookOpen, Lightbulb, Sparkles, Target, TrendingUp } from "lucide-react";
 import AppShell from "../app/layouts/AppShell";
 import AICoachNote from "../features/advisor/ai/AICoachNote";
@@ -109,6 +110,7 @@ const journey: JourneyEntry[] = [
 
 const AdvisorAIProfilePage = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [currentStepId, setCurrentStepId] = useState<StepId>("welcome");
   const [completed, setCompleted] = useState<StepId[]>([]);
 
@@ -159,7 +161,7 @@ const AdvisorAIProfilePage = () => {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <h2 className="text-2xl font-bold text-rose-400 mb-4">AI Coach unavailable</h2>
+          <h2 className="text-2xl font-bold text-rose-400 mb-4">Sales Coach unavailable</h2>
           <p className="mb-2" style={{ color: "var(--text)" }}>We couldn't load your AI analysis or forecast. Please try again later.</p>
         </div>
       </AppShell>
@@ -184,7 +186,7 @@ const AdvisorAIProfilePage = () => {
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-300/80">
               Sales Advisor Profile
             </p>
-            <h1 className="mt-1 text-3xl font-bold text-cyan-100">AI Coach</h1>
+            <h1 className="mt-1 text-3xl font-bold text-cyan-100">Sales Coach</h1>
             <p className="mt-2 max-w-2xl text-sm" style={{ color: "var(--text-muted)" }}>
               A short guided tour of your performance. No jargon — just what's working,
               what to improve, and what to do next.
@@ -293,7 +295,7 @@ const AdvisorAIProfilePage = () => {
         {currentStepId !== "welcome" && (
           <AIStepNavigation
             onPrev={goPrev}
-            onNext={goNext}
+            onNext={currentIndex === journey.length - 1 ? () => navigate("/advisor-dashboard") : goNext}
             isFirstStep={currentIndex === 0}
             isLastStep={currentIndex === journey.length - 1}
             prevLabel={

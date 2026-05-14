@@ -211,7 +211,7 @@ export default function RedemptionHistoryPage() {
         </section>
 
         <Card
-          className="p-0"
+          className="p-0 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20"
           style={{
             borderColor: "var(--panel-border)",
             background: isLight
@@ -243,7 +243,7 @@ export default function RedemptionHistoryPage() {
           </div>
         </Card>
 
-        <Card style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
+        <Card className="transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px_220px]">
             <div
               className="flex items-center gap-2 rounded-xl border px-3"

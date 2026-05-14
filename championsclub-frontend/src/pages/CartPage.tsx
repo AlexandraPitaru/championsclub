@@ -141,7 +141,7 @@ export default function CartPage() {
     <AppShell>
       <div className="space-y-6">
         <section>
-          <h1 className="text-3xl font-bold text-cyan-100">Your Cart</h1>
+          <h1 className="text-3xl font-bold text-cyan-100">Your Checkout Page</h1>
           <p className="mt-2 text-slate-400">Review your items and redeem your rewards.</p>
         </section>
 
@@ -149,7 +149,7 @@ export default function CartPage() {
           <Card className="border border-rose-500/40 bg-rose-500/10">
             <h2 className="text-lg font-semibold text-rose-200">Session not found</h2>
             <p className="mt-2 text-sm text-rose-100/90">
-              The cart requires an authenticated sales advisor session.
+              The checkout page requires an authenticated sales advisor session.
             </p>
           </Card>
         )}
@@ -168,7 +168,7 @@ export default function CartPage() {
         )}
 
         {hasCheckoutSuccess ? (
-          <Card style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
+          <Card className="transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
             <div
               className="flex items-start gap-3 rounded-xl border p-4"
               style={{
@@ -221,7 +221,7 @@ export default function CartPage() {
               </div>
             </Card>
 
-            <Card className="overflow-hidden p-0" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
+            <Card className="overflow-hidden p-0 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
               <div
                 className="hidden grid-cols-[minmax(0,1fr)_100px_120px_100px_40px] gap-4 border-b px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 md:grid"
                 style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}
@@ -305,7 +305,7 @@ export default function CartPage() {
               )}
             </Card>
 
-            <Card style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
+            <Card className="transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/10" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
               <div
                 className="flex items-start gap-3 rounded-xl border p-3"
                 style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}
@@ -318,7 +318,7 @@ export default function CartPage() {
               </div>
             </Card>
 
-            <Card style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
+            <Card className="transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/10" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <div className="rounded-xl border p-4" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
                   <p className="inline-flex items-center gap-2 text-sm font-semibold text-slate-200">
@@ -346,7 +346,7 @@ export default function CartPage() {
           </div>
 
           <div className="space-y-4">
-            <Card style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
+            <Card className="transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
               <h2 className="text-2xl font-semibold text-slate-100 md:text-xl">Cart Summary</h2>
 
               <div className="mt-5 space-y-3 border-b pb-4" style={{ borderColor: "var(--panel-border)" }}>
@@ -424,7 +424,7 @@ export default function CartPage() {
               </Link>
             </Card>
 
-            <Card style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
+            <Card className="transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/10" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
               <h3 className="text-lg font-semibold text-slate-100">Important</h3>
               <ul className="mt-3 space-y-3 text-sm text-slate-400">
                 <li className="inline-flex items-start gap-2">

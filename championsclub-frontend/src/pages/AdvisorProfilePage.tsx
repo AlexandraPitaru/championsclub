@@ -379,7 +379,7 @@ export default function AdvisorProfilePage() {
         {advisor && !isLoading && !showAccessError && (
           <>
             <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-              <Card style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
+              <Card className="transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
                 <div className="flex flex-col items-center gap-6 text-center">
                   <div className="flex flex-col items-center">
                     <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-200">
@@ -427,7 +427,7 @@ export default function AdvisorProfilePage() {
                 </div>
               </Card>
 
-              <Card style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
+              <Card className="transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
                 <h2 className="text-lg font-semibold text-cyan-100">
                   Profile Snapshot
                 </h2>

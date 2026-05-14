@@ -1,6 +1,7 @@
 import { ArrowUpRight, CheckCircle2, Clock, Target, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import Card from "../../../components/ui/Card";
+import { useTheme } from "../../../app/theme/ThemeProvider";
 import { categoryChipClass, formatCategory, priorityChipClass } from "./chips";
 import type { AIRecommendedAction } from "./types";
 
@@ -202,6 +203,7 @@ const buildActionProgram = (action: AIRecommendedAction): ActionProgramStep[] =>
 };
 
 export default function AIRecommendedActionsCard({ items }: Props) {
+  const { isLight } = useTheme();
   const [selectedAction, setSelectedAction] = useState<AIRecommendedAction | null>(null);
 
   const selectedProgram = useMemo(
@@ -279,25 +281,52 @@ export default function AIRecommendedActionsCard({ items }: Props) {
 
       {selectedAction && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/75 px-4 py-6 backdrop-blur-sm sm:items-center"
+          className={`fixed inset-0 z-50 flex items-end justify-center px-4 py-6 backdrop-blur-sm sm:items-center ${
+            isLight ? "bg-slate-900/60" : "bg-slate-950/75"
+          }`}
           role="dialog"
           aria-modal="true"
           aria-labelledby="action-plan-title"
         >
-          <div className="w-full max-w-2xl rounded-2xl border border-cyan-300/25 bg-[#07111f] p-5 shadow-2xl shadow-cyan-950/50">
+          <div
+            className={`w-full max-w-2xl rounded-2xl border p-5 shadow-2xl ${
+              isLight
+                ? "border-cyan-500/30 bg-white shadow-slate-400/50"
+                : "border-cyan-300/25 bg-[#07111f] shadow-cyan-950/50"
+            }`}
+          >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-300">
+                <p
+                  className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${
+                    isLight ? "text-cyan-700" : "text-cyan-300"
+                  }`}
+                >
                   Step-by-step programme
                 </p>
-                <h4 id="action-plan-title" className="mt-1 text-lg font-semibold text-slate-50">
+                <h4
+                  id="action-plan-title"
+                  className={`mt-1 text-lg font-semibold ${
+                    isLight ? "text-slate-900" : "text-slate-50"
+                  }`}
+                >
                   {selectedAction.title}
                 </h4>
-                <p className="mt-1 text-xs text-slate-400">{selectedAction.reason}</p>
+                <p
+                  className={`mt-1 text-xs ${
+                    isLight ? "text-slate-600" : "text-slate-400"
+                  }`}
+                >
+                  {selectedAction.reason}
+                </p>
               </div>
               <button
                 type="button"
-                className="rounded-full border border-slate-500/50 p-2 text-slate-300 transition hover:border-cyan-300/60 hover:text-cyan-100"
+                className={`rounded-full border p-2 transition ${
+                  isLight
+                    ? "border-slate-300 text-slate-600 hover:border-cyan-500 hover:text-cyan-700"
+                    : "border-slate-500/50 text-slate-300 hover:border-cyan-300/60 hover:text-cyan-100"
+                }`}
                 onClick={() => setSelectedAction(null)}
                 aria-label="Close action plan"
               >
@@ -317,7 +346,13 @@ export default function AIRecommendedActionsCard({ items }: Props) {
                 {formatCategory(selectedAction.category)}
               </span>
               {selectedAction.time_estimate_minutes != null && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-slate-400/40 bg-slate-500/10 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
+                    isLight
+                      ? "border-slate-300 bg-slate-100 text-slate-700"
+                      : "border-slate-400/40 bg-slate-500/10 text-slate-300"
+                  }`}
+                >
                   <Clock className="h-3 w-3" />
                   {selectedAction.time_estimate_minutes} min
                 </span>
@@ -333,20 +368,42 @@ export default function AIRecommendedActionsCard({ items }: Props) {
               {selectedProgram.map((step, index) => (
                 <li
                   key={`${step.title}-${index}`}
-                  className="grid grid-cols-[auto_1fr] gap-3 rounded-xl border border-[#28415f] bg-[#0a1322] p-3"
+                  className={`grid grid-cols-[auto_1fr] gap-3 rounded-xl border p-3 ${
+                    isLight
+                      ? "border-slate-200 bg-slate-50"
+                      : "border-[#28415f] bg-[#0a1322]"
+                  }`}
                 >
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-cyan-400/90 text-xs font-bold text-[#04101e]">
                     {index + 1}
                   </span>
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold text-slate-50">{step.title}</p>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2 py-0.5 text-[10px] font-semibold text-cyan-200">
+                      <p
+                        className={`text-sm font-semibold ${
+                          isLight ? "text-slate-900" : "text-slate-50"
+                        }`}
+                      >
+                        {step.title}
+                      </p>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
+                          isLight
+                            ? "border-cyan-600/30 bg-cyan-100 text-cyan-800"
+                            : "border-cyan-300/30 bg-cyan-400/10 text-cyan-200"
+                        }`}
+                      >
                         <CheckCircle2 className="h-3 w-3" />
                         {step.meta}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-slate-300">{step.body}</p>
+                    <p
+                      className={`mt-1 text-xs ${
+                        isLight ? "text-slate-700" : "text-slate-300"
+                      }`}
+                    >
+                      {step.body}
+                    </p>
                   </div>
                 </li>
               ))}
