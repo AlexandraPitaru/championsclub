@@ -655,6 +655,10 @@ def build_fallback_sales_advisor_ai_analysis(
         improvement_areas=_build_fallback_improvement_areas(payload),
         skills_analysis=_build_fallback_skills_analysis(payload),
         motivational_summary=motivational_summary,
+        generated_at=datetime.now(),
+        model_version="fallback-v1",
+        is_fallback=True,
+        fallback_reason="ai_unavailable" if ai_unavailable else None,
     )
 
 
@@ -678,6 +682,10 @@ def merge_ai_analysis_with_fallback(
         motivational_summary=(
             analysis.motivational_summary.strip() or fallback.motivational_summary
         ),
+        generated_at=datetime.now(),
+        model_version=AI_MODEL,
+        is_fallback=False,
+        fallback_reason=None,
     )
 
 

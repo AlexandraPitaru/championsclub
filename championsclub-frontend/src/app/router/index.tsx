@@ -8,6 +8,7 @@ import LeaderboardPage from "../../pages/LeaderboardPage";
 import AdvisorLeaderboardPage from "../../pages/AdvisorLeaderboardPage";
 import AdvisorDashboardPage from "../../pages/AdvisorDashboardPage";
 import AdvisorAIProfilePage from "../../pages/AdvisorAIProfilePage";
+import ManagerTeamCoachPage from "../../pages/ManagerTeamCoachPage";
 import AlertsPage from "../../pages/AlertsPage";
 import SalesAdvisorAlertsPage from "../../pages/SalesAdvisorAlertsPage";
 import ShopPage from "../../pages/ShopPage";
@@ -29,6 +30,7 @@ export default function AppRouter() {
             <Route path="/cart" element={<CartPage />} />
             <Route path="/redemption-history" element={<RedemptionHistoryPage />} />
             <Route path="/advisor-ai" element={<AdvisorAIProfilePage />} />
+            <Route path="/manager-team-coach" element={<ManagerTeamCoachPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} /> 
             <Route path="/advisor-leaderboard" element={<AdvisorLeaderboardPage />} />
 
