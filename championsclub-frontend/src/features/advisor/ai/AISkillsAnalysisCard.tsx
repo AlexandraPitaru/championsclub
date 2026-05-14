@@ -18,10 +18,10 @@ function SkillBar({
   return (
     <div>
       <div className="flex items-center justify-between text-sm">
-        <span className="text-slate-200">{skill.name}</span>
+        <span style={{ color: "var(--text)" }}>{skill.name}</span>
         <span className={valueColor}>{skill.level_pct}%</span>
       </div>
-      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[#0d1a2b]">
+      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full" style={{ background: "var(--panel-subtle-bg)" }}>
         <div
           className={`h-full rounded-full ${barGradient}`}
           style={{ width: `${skill.level_pct}%` }}
@@ -59,7 +59,7 @@ export default function AISkillsAnalysisCard({ data }: Props) {
             Skills analysis
           </h3>
         </div>
-        <p className="text-xs text-slate-400">{data.summary}</p>
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>{data.summary}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -68,7 +68,7 @@ export default function AISkillsAnalysisCard({ data }: Props) {
             Strong skills
           </p>
           {strongSkills.length === 0 ? (
-            <p className="mt-3 text-xs text-slate-400">No strong skills identified yet.</p>
+            <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>No strong skills identified yet.</p>
           ) : (
             <ul className="mt-3 space-y-3">
               {strongSkills
@@ -89,7 +89,7 @@ export default function AISkillsAnalysisCard({ data }: Props) {
             Skills to develop
           </p>
           {skillsToDevelop.length === 0 ? (
-            <p className="mt-3 text-xs text-slate-400">No skills to develop identified.</p>
+            <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>No skills to develop identified.</p>
           ) : (
             <ul className="mt-3 space-y-3">
               {skillsToDevelop

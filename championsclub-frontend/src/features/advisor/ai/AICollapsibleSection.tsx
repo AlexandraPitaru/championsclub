@@ -32,7 +32,8 @@ export default function AICollapsibleSection({
 
   return (
     <section
-      className={`rounded-[26px] border bg-[#0b1524]/90 shadow-[0_12px_30px_rgba(2,8,20,0.35)] backdrop-blur transition ${accentMap[accent]}`}
+      className={`rounded-[26px] border backdrop-blur transition ${accentMap[accent]}`}
+      style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}
     >
       <button
         type="button"
@@ -42,23 +43,24 @@ export default function AICollapsibleSection({
         {icon && <div className="shrink-0">{icon}</div>}
 
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-slate-50">{title}</p>
+          <p className="text-sm font-semibold" style={{ color: "var(--text-h)" }}>{title}</p>
           {subtitle && (
-            <p className="mt-0.5 text-xs text-slate-400 line-clamp-1">{subtitle}</p>
+            <p className="mt-0.5 text-xs line-clamp-1" style={{ color: "var(--text-muted)" }}>{subtitle}</p>
           )}
         </div>
 
         {badge && <div className="shrink-0">{badge}</div>}
 
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${
+          className={`h-4 w-4 shrink-0 transition-transform ${
             open ? "rotate-180 text-cyan-200" : ""
           }`}
+          style={!open ? { color: "var(--text-muted)" } : undefined}
         />
       </button>
 
       {open && (
-        <div className="border-t border-[#1f3045] px-5 py-5 animate-[fadeIn_0.18s_ease-out]">
+        <div className="border-t px-5 py-5 animate-[fadeIn_0.18s_ease-out]" style={{ borderColor: "var(--panel-border)" }}>
           {children}
         </div>
       )}

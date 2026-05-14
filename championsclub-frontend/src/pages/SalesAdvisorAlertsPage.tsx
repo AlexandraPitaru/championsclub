@@ -71,7 +71,6 @@ export default function SalesAdvisorAlertsPage() {
   });
 
   const alerts = alertsData?.alerts ?? [];
-  const unreadAlertsCount = alertsData?.unread_alerts ?? 0;
 
   const [priorityFilter, setPriorityFilter] = useState<
     "high" | "medium" | "low" | null
@@ -90,6 +89,11 @@ export default function SalesAdvisorAlertsPage() {
     [sortedAlerts, priorityFilter]
   );
 
+  const unreadAlertsCount = useMemo(
+    () => filteredAlerts.length,
+    [filteredAlerts]
+  );
+
   const highPriorityCount = alerts.filter(
     (a) => a.priority === "high"
   ).length;
@@ -98,7 +102,9 @@ export default function SalesAdvisorAlertsPage() {
     (a) => a.priority === "medium"
   ).length;
 
-  const lowPriorityCount = alerts.filter((a) => a.priority === "low").length;
+  const lowPriorityCount = alerts.filter(
+    (a) => a.priority === "low"
+  ).length;
 
   return (
     <AppShell>
@@ -107,11 +113,9 @@ export default function SalesAdvisorAlertsPage() {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold text-cyan-100">Alerts</h1>
-              {unreadAlertsCount > 0 ? (
-                <span className="rounded-full border border-rose-500/50 bg-rose-500/15 px-3 py-1 text-xs font-semibold text-rose-300">
-                  {unreadAlertsCount} unread
-                </span>
-              ) : null}
+              <span className="rounded-full border border-rose-500/50 bg-rose-500/15 px-3 py-1 text-xs font-semibold text-rose-300">
+                {unreadAlertsCount} unread
+              </span>
             </div>
             <p className="mt-2 text-slate-400">
               Review important notifications and messages about your account.
@@ -125,15 +129,14 @@ export default function SalesAdvisorAlertsPage() {
             onClick={() =>
               setPriorityFilter(priorityFilter === "high" ? null : "high")
             }
-            className={`w-full text-left rounded-2xl border-l-4 border-l-rose-500 p-4 transition-all duration-150 focus:outline-none ${
+            className={`w-full text-left rounded-2xl border border-l-4 border-l-rose-500 p-4 transition-all duration-150 focus:outline-none ${
               priorityFilter === "high"
                 ? "ring-2 ring-rose-500/60 shadow-[0_0_16px_rgba(244,63,94,0.25)]"
                 : "ring-1"
             }`}
             style={{
               background: "var(--panel-soft-bg)",
-              borderColor:
-                priorityFilter === "high" ? undefined : "var(--panel-border)",
+              borderColor: "var(--panel-border)",
             }}
           >
             <div className="flex items-center justify-between gap-4">
@@ -163,17 +166,14 @@ export default function SalesAdvisorAlertsPage() {
             onClick={() =>
               setPriorityFilter(priorityFilter === "medium" ? null : "medium")
             }
-            className={`w-full text-left rounded-2xl border-l-4 border-l-amber-500 p-4 transition-all duration-150 focus:outline-none ${
+            className={`w-full text-left rounded-2xl border border-l-4 border-l-amber-500 p-4 transition-all duration-150 focus:outline-none ${
               priorityFilter === "medium"
                 ? "ring-2 ring-amber-500/60 shadow-[0_0_16px_rgba(245,158,11,0.25)]"
                 : "ring-1"
             }`}
             style={{
               background: "var(--panel-soft-bg)",
-              borderColor:
-                priorityFilter === "medium"
-                  ? undefined
-                  : "var(--panel-border)",
+              borderColor: "var(--panel-border)",
             }}
           >
             <div className="flex items-center justify-between gap-4">
@@ -203,15 +203,14 @@ export default function SalesAdvisorAlertsPage() {
             onClick={() =>
               setPriorityFilter(priorityFilter === "low" ? null : "low")
             }
-            className={`w-full text-left rounded-2xl border-l-4 border-l-cyan-500 p-4 transition-all duration-150 focus:outline-none ${
+            className={`w-full text-left rounded-2xl border border-l-4 border-l-cyan-500 p-4 transition-all duration-150 focus:outline-none ${
               priorityFilter === "low"
                 ? "ring-2 ring-cyan-500/60 shadow-[0_0_16px_rgba(6,182,212,0.25)]"
                 : "ring-1"
             }`}
             style={{
               background: "var(--panel-soft-bg)",
-              borderColor:
-                priorityFilter === "low" ? undefined : "var(--panel-border)",
+              borderColor: "var(--panel-border)",
             }}
           >
             <div className="flex items-center justify-between gap-4">

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { BookOpen, Lightbulb, Sparkles, Target, TrendingUp } from "lucide-react";
 import AppShell from "../app/layouts/AppShell";
 import AICoachNote from "../features/advisor/ai/AICoachNote";
@@ -20,7 +21,6 @@ import AIWelcomeHero from "../features/advisor/ai/AIWelcomeHero";
 import { useAdvisorAIAnalysis } from "../features/advisor/ai/useAdvisorAIAnalysis";
 import { useAdvisorAIForecast } from "../features/advisor/ai/useAdvisorAIForecast";
 import { refreshAdvisorAIInsights } from "../features/advisor/ai/api";
-import type { AIInterval } from "../features/advisor/ai/types";
 import { useAIRefresh } from "../features/advisor/ai/useAIRefresh";
 
 type StepId =
@@ -108,7 +108,7 @@ const journey: JourneyEntry[] = [
 ];
 
 const AdvisorAIProfilePage = () => {
-  const [interval, setInterval] = useState<AIInterval>("month");
+  const queryClient = useQueryClient();
   const [currentStepId, setCurrentStepId] = useState<StepId>("welcome");
   const [completed, setCompleted] = useState<StepId[]>([]);
 
@@ -122,7 +122,9 @@ const AdvisorAIProfilePage = () => {
 
   // TOATE HOOK-URILE SUS
   const { refreshing, cooldown, refresh } = useAIRefresh(async () => {
-    await refreshAdvisorAIInsights();
+    const refreshed = await refreshAdvisorAIInsights();
+    queryClient.setQueryData(["advisor-ai-analysis"], refreshed.analysis);
+    queryClient.setQueryData(["advisor-ai-forecast"], refreshed.forecast);
   });
   const currentIndex = journey.findIndex((s) => s.id === currentStepId);
   const currentStep = journey[currentIndex];
@@ -158,7 +160,7 @@ const AdvisorAIProfilePage = () => {
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <h2 className="text-2xl font-bold text-rose-400 mb-4">AI Coach unavailable</h2>
-          <p className="text-slate-300 mb-2">We couldn't load your AI analysis or forecast. Please try again later.</p>
+          <p className="mb-2" style={{ color: "var(--text)" }}>We couldn't load your AI analysis or forecast. Please try again later.</p>
         </div>
       </AppShell>
     );
@@ -183,15 +185,13 @@ const AdvisorAIProfilePage = () => {
               Sales Advisor Profile
             </p>
             <h1 className="mt-1 text-3xl font-bold text-cyan-100">AI Coach</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-400">
+            <p className="mt-2 max-w-2xl text-sm" style={{ color: "var(--text-muted)" }}>
               A short guided tour of your performance. No jargon — just what's working,
               what to improve, and what to do next.
             </p>
           </div>
 
           <AIRefreshControls
-            interval={interval}
-            onIntervalChange={setInterval}
             onRefresh={refresh}
             refreshing={refreshing}
             refreshCooldownSeconds={cooldown}

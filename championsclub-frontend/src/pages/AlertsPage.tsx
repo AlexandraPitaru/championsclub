@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { AlertCircle, Info, TrendingDown } from "lucide-react";
 import AppShell from "../app/layouts/AppShell";
 import Card from "../components/ui/Card";
@@ -54,18 +53,7 @@ const getSeverityBadgeClasses = (severity: string) => {
   return "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30";
 };
 
-const getSeverityButtonClasses = (severity: string) => {
-  if (severity === "high") {
-    return "border border-rose-500/50 text-rose-300 hover:bg-rose-500/10";
-  }
-  if (severity === "medium") {
-    return "border border-amber-500/50 text-amber-300 hover:bg-amber-500/10";
-  }
-  return "border border-cyan-500/50 text-cyan-300 hover:bg-cyan-500/10";
-};
-
 export default function AlertsPage() {
-  const navigate = useNavigate();
 
   const currentUser = useMemo(() => getCurrentUserFromStorage(), []);
 
@@ -84,7 +72,6 @@ const {
 });
 
 const alerts = notificationsData?.notifications ?? [];
-const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
 
   const [priorityFilter, setPriorityFilter] = useState<"high" | "medium" | "low" | null>(null);
 
@@ -99,6 +86,11 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
         ? sortedAlerts
         : sortedAlerts.filter((a) => a.priority === priorityFilter),
     [sortedAlerts, priorityFilter]
+  );
+
+  const unreadAlertsCount = useMemo(
+    () => filteredAlerts.length,
+    [filteredAlerts]
   );
 
    const highPriorityCount = alerts.filter(
@@ -120,11 +112,9 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold text-cyan-100">Alerts</h1>
-              {unreadAlertsCount > 0 ? (
-                <span className="rounded-full border border-rose-500/50 bg-rose-500/15 px-3 py-1 text-xs font-semibold text-rose-300">
-                  {unreadAlertsCount} unread
-                </span>
-              ) : null}
+              <span className="rounded-full border border-rose-500/50 bg-rose-500/15 px-3 py-1 text-xs font-semibold text-rose-300">
+                {unreadAlertsCount} unread
+              </span>
             </div>
             <p className="mt-2 text-slate-400">
               Review dealership and advisor issues that need manager attention.
@@ -136,14 +126,14 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
           <button
             type="button"
             onClick={() => setPriorityFilter(priorityFilter === "high" ? null : "high")}
-            className={`w-full text-left rounded-2xl border-l-4 border-l-rose-500 p-4 transition-all duration-150 focus:outline-none ${
+            className={`w-full text-left rounded-2xl border border-l-4 border-l-rose-500 p-4 transition-all duration-150 focus:outline-none ${
               priorityFilter === "high"
                 ? "ring-2 ring-rose-500/60 shadow-[0_0_16px_rgba(244,63,94,0.25)]"
                 : "ring-1"
             }`}
             style={{
               background: "var(--panel-soft-bg)",
-              borderColor: priorityFilter === "high" ? undefined : "var(--panel-border)",
+              borderColor: "var(--panel-border)",
             }}
           >
             <div className="flex items-center justify-between gap-4">
@@ -163,14 +153,14 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
           <button
             type="button"
             onClick={() => setPriorityFilter(priorityFilter === "medium" ? null : "medium")}
-            className={`w-full text-left rounded-2xl border-l-4 border-l-amber-500 p-4 transition-all duration-150 focus:outline-none ${
+            className={`w-full text-left rounded-2xl border border-l-4 border-l-amber-500 p-4 transition-all duration-150 focus:outline-none ${
               priorityFilter === "medium"
                 ? "ring-2 ring-amber-500/60 shadow-[0_0_16px_rgba(245,158,11,0.25)]"
                 : "ring-1"
             }`}
             style={{
               background: "var(--panel-soft-bg)",
-              borderColor: priorityFilter === "medium" ? undefined : "var(--panel-border)",
+              borderColor: "var(--panel-border)",
             }}
           >
             <div className="flex items-center justify-between gap-4">
@@ -190,14 +180,14 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
           <button
             type="button"
             onClick={() => setPriorityFilter(priorityFilter === "low" ? null : "low")}
-            className={`w-full text-left rounded-2xl border-l-4 border-l-cyan-500 p-4 transition-all duration-150 focus:outline-none ${
+            className={`w-full text-left rounded-2xl border border-l-4 border-l-cyan-500 p-4 transition-all duration-150 focus:outline-none ${
               priorityFilter === "low"
                 ? "ring-2 ring-cyan-500/60 shadow-[0_0_16px_rgba(6,182,212,0.25)]"
                 : "ring-1"
             }`}
             style={{
               background: "var(--panel-soft-bg)",
-              borderColor: priorityFilter === "low" ? undefined : "var(--panel-border)",
+              borderColor: "var(--panel-border)",
             }}
           >
             <div className="flex items-center justify-between gap-4">
@@ -281,26 +271,26 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
                     </p>
 
                     <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                      <div className="flex items-center gap-2 text-sm">
+                      <div className="flex min-w-0 items-center gap-2 text-sm">
                         <img
                           src="/alert-icons/advisor-small.svg"
-                          alt="Advisor"
-                          className="h-4 w-4"
+                          alt="Manager"
+                          className="h-4 w-4 flex-shrink-0"
                         />
-                        <span className="text-slate-400">Advisor</span>
-                        <span className="font-medium text-slate-200">
+                        <span className="flex-shrink-0 text-slate-400">Manager</span>
+                        <span className="min-w-0 truncate font-medium text-slate-200">
                           {alert.employee_name}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2 text-sm">
+                      <div className="flex min-w-0 items-center gap-2 text-sm">
                         <img
                           src="/alert-icons/email-small.svg"
                           alt="Employee email"
-                          className="h-4 w-4"
+                          className="h-4 w-4 flex-shrink-0"
                         />
-                        <span className="text-slate-400">Email</span>
-                        <span className="font-medium text-slate-200">
+                        <span className="flex-shrink-0 text-slate-400">Email</span>
+                        <span className="min-w-0 truncate font-medium text-slate-200">
                           {alert.employee_email}
                         </span>
                       </div>
@@ -316,23 +306,7 @@ const unreadAlertsCount = notificationsData?.unread_alerts ?? 0;
                       {alert.priority}
                     </span>
 
-                    <button
-                      onClick={() =>
-                        navigate(`/manager/advisor/${alert.user_id}`, {
-                          state: {
-                            fromAlert: true,
-                            alertTitle: alert.title,
-                            alertMessage: alert.message,
-                            alertPriority: alert.priority,
-                          },
-                        })
-                      }
-                      className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${getSeverityButtonClasses(
-                        alert.priority
-                      )}`}
-                    >
-                      View advisor
-                    </button>
+
                   </div>
                 </div>
               </div>

@@ -22,15 +22,15 @@ export default function AIRiskAreasCard({ items }: Props) {
           >
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-3.5 w-3.5 text-rose-300" />
-              <p className="text-sm font-semibold text-slate-50">{r.title}</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--text-h)" }}>{r.title}</p>
               <span
                 className={`ml-auto rounded-full border px-2 py-0.5 text-[10px] font-semibold ${priorityChipClass(r.severity)}`}
               >
                 {r.severity}
               </span>
             </div>
-            <p className="mt-1 text-xs text-slate-300">{r.description}</p>
-            <p className="mt-1 text-[11px] text-slate-400">{r.reason}</p>
+            <p className="mt-1 text-xs" style={{ color: "var(--text)" }}>{r.description}</p>
+            <p className="mt-1 text-[11px]" style={{ color: "var(--text-muted)" }}>{r.reason}</p>
             <div className="mt-2 flex items-center gap-2 text-[11px] text-cyan-200">
               <ArrowRight className="h-3 w-3" />
               <span>{r.mitigation_action}</span>

@@ -20,15 +20,15 @@ export default function AIStrengthsList({ strengths }: Props) {
             className="rounded-2xl border border-emerald-400/15 bg-emerald-400/[0.04] p-4"
           >
             <div className="flex items-start justify-between gap-3">
-              <p className="text-sm font-semibold text-slate-50">{s.title}</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--text-h)" }}>{s.title}</p>
               {s.metric_evidence && (
                 <span className="shrink-0 rounded-full border border-emerald-300/40 bg-emerald-400/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-200">
                   {s.metric_evidence}
                 </span>
               )}
             </div>
-            <p className="mt-1 text-sm text-slate-300">{s.description}</p>
-            <p className="mt-1 text-xs text-slate-400">{s.supporting_reason}</p>
+            <p className="mt-1 text-sm" style={{ color: "var(--text)" }}>{s.description}</p>
+            <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>{s.supporting_reason}</p>
           </li>
         ))}
       </ul>

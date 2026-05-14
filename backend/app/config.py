@@ -1,5 +1,9 @@
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 def _get_bool_env(name: str, default: bool = False) -> bool:
     value = os.getenv(name)
@@ -16,6 +20,7 @@ class Settings:
         "postgresql://championsclub:championsclub_dev_password@localhost:5432/championsclub",
     )
     auto_seed: bool = _get_bool_env("AUTO_SEED", False)
+    openai_api_key: str = os.getenv("OPENAI_API_KEY")
 
 
 settings = Settings()

@@ -252,13 +252,6 @@ export default function ShopPage() {
                     <p className="mt-1 text-sm" style={{ color: isLight ? "#475569" : "#94a3b8" }}>
                       Rewards and available credit come directly from the backend. Add items to your cart and checkout when you are ready.
                     </p>
-                    <Link
-                      to="/cart"
-                      className="mt-3 inline-flex items-center gap-1 text-sm font-semibold transition"
-                      style={{ color: isLight ? "#0e7490" : "#67e8f9" }}
-                    >
-                      Go to cart <ChevronRight className="h-4 w-4" />
-                    </Link>
                   </div>
                 </div>
               </Card>
@@ -290,12 +283,15 @@ export default function ShopPage() {
                   <select
                     value={category}
                     onChange={(event) => setCategory(event.target.value as RewardCategory)}
-                    className="h-11 w-full appearance-none bg-transparent pr-6 text-sm text-slate-200 outline-none"
+                    className={`h-11 w-full appearance-none bg-transparent pr-6 text-sm outline-none ${
+                      isLight ? "text-slate-700" : "text-slate-200"
+                    }`}
+                    style={{ colorScheme: isLight ? "light" : "dark" }}
                   >
-                    <option value="all">All Categories</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="cards">Cards</option>
-                    <option value="travel">Travel</option>
+                    <option value="all" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>All Categories</option>
+                    <option value="electronics" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Electronics</option>
+                    <option value="cards" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Cards</option>
+                    <option value="travel" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Travel</option>
                   </select>
                   <ChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400" />
                 </label>
@@ -307,11 +303,14 @@ export default function ShopPage() {
                   <select
                     value={sortBy}
                     onChange={(event) => setSortBy(event.target.value as "featured" | "priceAsc" | "priceDesc")}
-                    className="h-11 w-full appearance-none bg-transparent pr-6 text-sm text-slate-200 outline-none"
+                    className={`h-11 w-full appearance-none bg-transparent pr-6 text-sm outline-none ${
+                      isLight ? "text-slate-700" : "text-slate-200"
+                    }`}
+                    style={{ colorScheme: isLight ? "light" : "dark" }}
                   >
-                    <option value="featured">Sort by: Featured</option>
-                    <option value="priceAsc">Sort by: Price Low-High</option>
-                    <option value="priceDesc">Sort by: Price High-Low</option>
+                    <option value="featured" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Sort by: Featured</option>
+                    <option value="priceAsc" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Sort by: Price Low-High</option>
+                    <option value="priceDesc" style={{ backgroundColor: isLight ? "#ffffff" : "#08203f", color: isLight ? "#0f172a" : "#e2e8f0" }}>Sort by: Price High-Low</option>
                   </select>
                   <ChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-slate-400" />
                 </label>
