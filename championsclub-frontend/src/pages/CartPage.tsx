@@ -22,6 +22,7 @@ import {
   useShopCart,
   useUpdateShopCartItem,
 } from "../services/hooks/useShopCart";
+import { useShopOverview } from "../services/hooks/useShopOverview";
 import type { AvailabilityStatus, ShopCartItem, ShopReward } from "../services/api/shopService";
 
 const CREDIT_EPSILON = 1e-6;
@@ -98,9 +99,25 @@ function getAvailabilityText(status: AvailabilityStatus, stockQuantity: number):
   return `In stock: ${stockQuantity}`;
 }
 
+function resolveStockQuantity(
+  stockQuantity: number | null | undefined,
+  fallbackStockQuantity?: number
+): number {
+  if (typeof stockQuantity === "number" && Number.isFinite(stockQuantity)) {
+    return stockQuantity;
+  }
+
+  if (typeof fallbackStockQuantity === "number" && Number.isFinite(fallbackStockQuantity)) {
+    return fallbackStockQuantity;
+  }
+
+  return 0;
+}
+
 export default function CartPage() {
-  const currentUser = useMemo(getCurrentUserFromStorage, []);
+  const currentUser = useMemo(() => getCurrentUserFromStorage(), []);
   const userId = currentUser?.user_id;
+  const overviewQuery = useShopOverview(userId);
   const cartQuery = useShopCart(userId);
   const updateCartItemMutation = useUpdateShopCartItem(userId);
   const removeCartItemMutation = useRemoveShopCartItem(userId);
@@ -120,6 +137,9 @@ export default function CartPage() {
     getErrorMessage(removeCartItemMutation.error) ||
     getErrorMessage(checkoutMutation.error);
   const hasCheckoutSuccess = checkoutMutation.isSuccess && Boolean(checkoutMutation.data);
+  const rewardById = useMemo(() => {
+    return new Map((overviewQuery.data?.rewards ?? []).map((reward) => [reward.reward_id, reward]));
+  }, [overviewQuery.data?.rewards]);
 
   function updateQuantity(item: ShopCartItem, delta: number) {
     const next = item.quantity + delta;
@@ -241,17 +261,34 @@ export default function CartPage() {
                 <div className="divide-y" style={{ borderColor: "var(--panel-border)" }}>
                   {items.map((item) => (
                     <div key={item.cart_item_id} className="grid grid-cols-1 gap-4 px-4 py-4 md:grid-cols-[minmax(0,1fr)_100px_120px_100px_40px] md:items-center md:px-5">
+                      {(() => {
+                        const fallbackReward = rewardById.get(item.reward_id);
+                        const stockQuantity = resolveStockQuantity(
+                          item.stock_quantity,
+                          fallbackReward?.stock_quantity
+                        );
+
+                        return (
+                          <>
                       <div className="flex min-w-0 items-start gap-3">
-                        <div className={`relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-gradient-to-br text-xs font-extrabold tracking-[0.18em] text-slate-100 ${getRewardAccent(toRewardShape(item))}`} style={{ borderColor: "var(--panel-border)" }}>
+                        <div className={`relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-gradient-to-br text-xs font-extrabold tracking-[0.18em] text-slate-100 ${getRewardAccent({
+                          ...toRewardShape(item),
+                          stock_quantity: stockQuantity,
+                        })}`} style={{ borderColor: "var(--panel-border)" }}>
                           <img src={item.image_url} alt={item.reward_name} className="absolute inset-0 h-full w-full object-cover" />
                           <div className="absolute inset-0 bg-slate-950/30" />
                           <span className="relative z-10">{getRewardMediaLabel(item)}</span>
                         </div>
                         <div className="min-w-0">
-                          <p className="text-lg font-semibold leading-tight text-slate-100 md:text-base">{item.reward_name}</p>
+                          <p
+                            className="text-lg font-semibold leading-tight text-slate-100 md:text-base"
+                            title={item.reward_name}
+                          >
+                            {item.reward_name}
+                          </p>
                           <p className="mt-1 text-sm text-slate-400">Reward selected for redemption.</p>
                           <p className={`mt-2 text-sm font-semibold ${item.availability_status === "out_of_stock" ? "text-rose-300" : item.availability_status === "low_stock" ? "text-amber-300" : "text-emerald-300"}`}>
-                            {getAvailabilityText(item.availability_status, item.stock_quantity)}
+                            {getAvailabilityText(item.availability_status, stockQuantity)}
                           </p>
                         </div>
                       </div>
@@ -275,13 +312,13 @@ export default function CartPage() {
                           <button
                             type="button"
                             onClick={() => updateQuantity(item, 1)}
-                            disabled={updateCartItemMutation.isPending || item.quantity >= item.stock_quantity}
+                            disabled={updateCartItemMutation.isPending || item.quantity >= stockQuantity}
                             className="inline-flex h-8 w-8 items-center justify-center text-slate-300 hover:text-cyan-200 disabled:opacity-40"
                           >
                             <Plus className="h-4 w-4" />
                           </button>
                         </div>
-                        <p className="mt-1 text-xs text-slate-500">Max: {item.stock_quantity}</p>
+                        <p className="mt-1 text-xs text-slate-500">Max: {stockQuantity}</p>
                       </div>
 
                       <div>
@@ -299,6 +336,9 @@ export default function CartPage() {
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   ))}
                 </div>

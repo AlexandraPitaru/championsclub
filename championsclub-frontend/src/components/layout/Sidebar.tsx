@@ -175,7 +175,7 @@ export default function Sidebar() {
         <Link
           to={dashboardRoute}
           onClick={closeMobileMenu}
-          className="group mx-auto flex w-full max-w-[260px] flex-col items-center gap-0.5 outline-none transition-opacity hover:opacity-95 focus-visible:ring-2 focus-visible:ring-cyan-500/60"
+          className="group mx-auto flex w-full max-w-[260px] cursor-default flex-col items-center gap-0.5 outline-none transition-opacity hover:opacity-95 focus-visible:ring-2 focus-visible:ring-cyan-500/60"
           aria-label="Go to dashboard"
         >
           <BrandLogo className="h-[172px] w-full object-contain transition group-hover:scale-[1.02]" />
@@ -201,7 +201,7 @@ export default function Sidebar() {
                 setSearchInput("");
               }}
               className={[
-                "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
+                "flex cursor-default items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
                 isSearchOpen
                   ? [
                       "border border-cyan-500/40 bg-cyan-500/15 shadow-[0_0_22px_rgba(6,182,212,0.18)]",
@@ -267,6 +267,7 @@ export default function Sidebar() {
                       onClick={() => handleAdvisorClick(advisor.user_id)}
                       className={[
                         "w-full px-3 py-2.5 text-left text-sm font-medium transition hover:bg-cyan-500/10",
+                        "cursor-default",
                         index === 0 ? "rounded-t-lg" : "",
                         index === searchResults.length - 1 ? "rounded-b-lg" : "",
                         isLight ? "text-slate-700 hover:text-cyan-800" : "text-slate-200 hover:text-cyan-100",
@@ -294,6 +295,7 @@ export default function Sidebar() {
                 disabled={isSearching || searchResults.length === 0}
                 className={[
                   "mt-3 w-full rounded-lg border border-cyan-500/40 bg-cyan-500/15 px-3 py-2 text-sm font-semibold transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-60",
+                  "cursor-default",
                   isLight ? "text-cyan-800" : "text-cyan-100",
                 ].join(" ")}
               >
@@ -318,7 +320,7 @@ export default function Sidebar() {
                   key={item.label}
                   onClick={handleDashboardClick}
                   className={[
-                    "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
+                    "flex w-full cursor-default items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
                     location.pathname === "/advisor-dashboard" || location.pathname === "/dashboard"
                       ? [
                           "border border-cyan-500/40 bg-cyan-500/15 shadow-[0_0_22px_rgba(6,182,212,0.18)]",
@@ -354,6 +356,7 @@ export default function Sidebar() {
                   className={({ isActive }) =>
                     [
                       "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
+                      "cursor-default",
                       isActive
                         ? [
                             "border border-cyan-500/40 bg-cyan-500/15 shadow-[0_0_22px_rgba(6,182,212,0.18)]",
@@ -392,6 +395,7 @@ export default function Sidebar() {
                 className={({ isActive }) =>
                   [
                     "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
+                    "cursor-default",
                     isActive
                       ? [
                           "border border-cyan-500/40 bg-cyan-500/15 shadow-[0_0_22px_rgba(6,182,212,0.18)]",
@@ -429,7 +433,7 @@ export default function Sidebar() {
           type="button"
           onClick={toggleTheme}
           className={[
-            "mb-3 flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-sm font-semibold transition",
+            "mb-3 flex w-full cursor-default items-center justify-between rounded-xl border px-3 py-2.5 text-sm font-semibold transition",
             isLight
               ? "border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
               : "border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/80",
@@ -488,7 +492,7 @@ export default function Sidebar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition hover:opacity-80"
+          className="mt-3 flex w-full cursor-default items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition hover:opacity-80"
           style={{
             borderColor: "var(--panel-border)",
             background: "var(--panel-soft-bg)",
@@ -538,7 +542,7 @@ export default function Sidebar() {
               type="button"
               onClick={closeMobileMenu}
               aria-label="Close menu"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-cyan-500/35 bg-cyan-500/10 text-cyan-100"
+              className="inline-flex h-9 w-9 cursor-default items-center justify-center rounded-lg border border-cyan-500/35 bg-cyan-500/10 text-cyan-100"
             >
               <X className="h-4 w-4" />
             </button>
