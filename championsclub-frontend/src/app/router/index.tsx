@@ -31,6 +31,7 @@ export default function AppRouter() {
             <Route path="/redemption-history" element={<RedemptionHistoryPage />} />
             <Route path="/advisor-ai" element={<AdvisorAIProfilePage />} />
             <Route path="/manager-team-coach" element={<ManagerTeamCoachPage />} />
+            <Route path="/manager-dashboard" element={<Navigate to="/dashboard" />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} /> 
             <Route path="/advisor-leaderboard" element={<AdvisorLeaderboardPage />} />
 
