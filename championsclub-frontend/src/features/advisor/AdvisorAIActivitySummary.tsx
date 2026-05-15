@@ -54,7 +54,7 @@ export default function AdvisorAIActivitySummary({
   if (isError && !isLoading) {
     return (
       <div
-        className="relative overflow-hidden rounded-[26px] border p-6"
+        className="relative overflow-hidden rounded-[26px] border p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20"
         style={{
           borderColor: "var(--summary-border)",
           background: "var(--summary-bg)",
@@ -86,7 +86,7 @@ export default function AdvisorAIActivitySummary({
 
   return (
     <div
-      className="relative overflow-hidden rounded-[26px] border p-6"
+      className="relative overflow-hidden rounded-[26px] border p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20"
       style={{
         borderColor: "var(--summary-border)",
         background: "var(--summary-bg)",

@@ -78,7 +78,7 @@ export default function PerformanceTrendChart({
 
   if (!data.length) {
     return (
-      <Card className="h-[360px]">
+      <Card className="h-[360px] transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20">
         <div className="mb-4">
           <h3 className="text-lg font-semibold text-cyan-100">
             Performance Trend
@@ -100,7 +100,7 @@ export default function PerformanceTrendChart({
   }
 
   return (
-    <Card className="h-[360px] min-w-0">
+    <Card className="h-[360px] min-w-0 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20">
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-cyan-100">
           Performance Trend

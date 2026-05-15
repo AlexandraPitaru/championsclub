@@ -33,8 +33,7 @@ export default function AIStepNavigation({
       <button
         type="button"
         onClick={onNext}
-        disabled={isLastStep}
-        className="inline-flex items-center gap-2 rounded-full bg-cyan-400 px-5 py-2 text-xs font-bold text-[#04101e] shadow-[0_0_18px_rgba(34,211,238,0.35)] transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
+        className="inline-flex items-center gap-2 rounded-full bg-cyan-400 px-5 py-2 text-xs font-bold text-[#04101e] shadow-[0_0_18px_rgba(34,211,238,0.35)] transition hover:bg-cyan-300"
       >
         {nextLabel}
         <ArrowRight className="h-3.5 w-3.5" />

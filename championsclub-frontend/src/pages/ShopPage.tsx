@@ -99,7 +99,7 @@ function getRewardMediaLabel(reward: ShopReward): string {
 }
 
 function getStatusStyles(status: AvailabilityStatus): string {
-  if (status === "available") return "border-emerald-500/35 bg-emerald-500/15 text-emerald-300";
+  if (status === "available") return "border-cyan-500/35 bg-cyan-500/15 text-cyan-300";
   if (status === "low_stock") return "border-amber-500/35 bg-amber-500/15 text-amber-300";
   return "border-rose-500/35 bg-rose-500/15 text-rose-300";
 }
@@ -200,7 +200,7 @@ export default function ShopPage() {
     <AppShell>
       <div className="space-y-6">
         <section>
-          <h1 className="text-3xl font-bold text-cyan-100">Shop</h1>
+          <h1 className="text-3xl font-bold text-cyan-100">Rewards Hub</h1>
           <p className="mt-2 text-slate-400">Redeem your credits for exclusive rewards.</p>
         </section>
 
@@ -350,7 +350,7 @@ export default function ShopPage() {
                   return (
                     <Card
                       key={reward.reward_id}
-                      className="overflow-hidden p-3"
+                      className="overflow-hidden p-3 transition-all duration-300 hover:scale-[1.05] hover:shadow-xl hover:shadow-cyan-500/20"
                       style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}
                     >
                       <div className="relative mb-3 h-28 overflow-hidden rounded-xl border bg-gradient-to-br" style={{ borderColor: "var(--panel-border)" }}>
@@ -404,7 +404,7 @@ export default function ShopPage() {
             </div>
 
             <div className="space-y-4">
-              <Card style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
+              <Card className="transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
                 <div className="flex items-center justify-between">
                   <h2 className="inline-flex items-center gap-2 text-lg font-semibold text-slate-100">
                     <ShoppingCart className="h-5 w-5 text-cyan-300" />
@@ -512,12 +512,12 @@ export default function ShopPage() {
                   }}
                 >
                   {hasEnoughCredits ? (
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-300" />
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-cyan-300" />
                   ) : (
                     <Clock3 className="mt-0.5 h-4 w-4 text-rose-300" />
                   )}
                   <div>
-                    <p className={`text-sm font-semibold ${hasEnoughCredits ? "text-emerald-300" : "text-rose-300"}`}>
+                    <p className={`text-sm font-semibold ${hasEnoughCredits ? "text-cyan-300" : "text-rose-300"}`}>
                       {hasEnoughCredits ? "You're good to go!" : "Not enough credits"}
                     </p>
                     <p className="text-xs text-slate-400">
@@ -529,7 +529,7 @@ export default function ShopPage() {
                 </div>
               </Card>
 
-              <Card style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
+              <Card className="transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-slate-100">Redemption History</h2>
                   <Link to="/redemption-history" className="text-sm font-semibold text-cyan-300 hover:text-cyan-200">
@@ -573,7 +573,7 @@ function HistoryRow({ item }: { item: RedemptionHistoryRecord }) {
 
       <div className="text-right">
         <p className="font-semibold text-slate-200">-{formatCredits(item.total_credit_spent)}</p>
-        <p className="text-xs font-semibold text-emerald-300">{item.status}</p>
+        <p className="text-xs font-semibold text-cyan-300">{item.status}</p>
       </div>
     </div>
   );

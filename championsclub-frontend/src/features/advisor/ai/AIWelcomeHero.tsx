@@ -10,7 +10,7 @@ type Props = {
 };
 
 /**
- * Friendly hero that introduces the AI Coach in plain language and invites
+ * Friendly hero that introduces the Sales Coach in plain language and invites
  * the user to start the guided journey.
  */
 export default function AIWelcomeHero({
@@ -29,7 +29,7 @@ export default function AIWelcomeHero({
 
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-200">
-            Hi, I'm your AI Coach
+            Hi, I'm your Sales Coach
           </p>
           <h2 className="mt-2 text-2xl font-bold" style={{ color: "var(--text-h)" }}>
             Let's look at your performance together

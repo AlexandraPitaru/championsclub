@@ -37,7 +37,7 @@ export default function AIJourneyStepper({
                   isCurrent
                     ? "border-cyan-300/60 bg-cyan-400/15 text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.3)]"
                     : isDone
-                      ? "border-emerald-300/40 bg-emerald-400/10 text-emerald-200 hover:bg-emerald-400/15"
+                      ? "border-emerald-400/70 bg-emerald-400 text-emerald-950 shadow-[0_0_12px_rgba(52,211,153,0.28)] hover:bg-emerald-300"
                       : ""
                 } ${!isClickable ? "cursor-not-allowed" : "cursor-pointer"}`}
                 style={!isCurrent && !isDone ? { borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)", color: "var(--text-muted)" } : undefined}
@@ -47,7 +47,7 @@ export default function AIJourneyStepper({
                     isCurrent
                       ? "bg-cyan-400 text-[#04101e]"
                       : isDone
-                        ? "bg-emerald-400 text-white"
+                        ? "bg-emerald-700 text-emerald-50"
                         : ""
                   }`}
                   style={!isCurrent && !isDone ? { background: "var(--panel-border)", color: "var(--text-muted)" } : undefined}

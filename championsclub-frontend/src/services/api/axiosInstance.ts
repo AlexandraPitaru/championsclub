@@ -15,10 +15,6 @@ axiosInstance.interceptors.request.use((config) => {
       }
     } catch {}
   }
-  // Fallback pentru development/local: dacă nu există user_id, folosește "1"
-  if (!userId && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
-    userId = "1";
-  }
   if (userId) {
     config.headers = config.headers || {};
     config.headers["X-User-Id"] = userId;

@@ -19,7 +19,7 @@ export default function LeaderboardPreview({
   subtitle = "Top performing advisors",
 }: LeaderboardPreviewProps) {
   return (
-    <Card>
+    <Card className="transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20">
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-cyan-100">
           Leaderboard Preview
@@ -31,7 +31,7 @@ export default function LeaderboardPreview({
         {items.map((item, index) => (
           <div
             key={item.id}
-            className="flex items-center justify-between rounded-xl border p-4"
+            className="flex items-center justify-between rounded-xl border p-4 transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:shadow-cyan-500/10"
             style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}
           >
             <div>

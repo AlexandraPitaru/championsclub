@@ -13,16 +13,15 @@ import AIJourneyStepper, {
 import AIRecommendedActionsCard from "../features/advisor/ai/AIRecommendedActionsCard";
 import AIRecommendedTrainingsCard from "../features/advisor/ai/AIRecommendedTrainingsCard";
 import AIRefreshControls from "../features/advisor/ai/AIRefreshControls";
-import AIRiskAreasCard from "../features/advisor/ai/AIRiskAreasCard";
 import AISkillsAnalysisCard from "../features/advisor/ai/AISkillsAnalysisCard";
 import AIStepNavigation from "../features/advisor/ai/AIStepNavigation";
 import AIStrengthsList from "../features/advisor/ai/AIStrengthsList";
 import AIWelcomeHero from "../features/advisor/ai/AIWelcomeHero";
-// import { mockAnalysis, mockForecast } from "../features/advisor/ai/mockData";
-import { useAdvisorAIAnalysis } from "../features/advisor/ai/useAdvisorAIAnalysis";
-import { useAdvisorAIForecast } from "../features/advisor/ai/useAdvisorAIForecast";
-import { refreshAdvisorAIInsights } from "../features/advisor/ai/api";
+import { useManagerAIAnalysis } from "../features/manager/ai/useManagerAIAnalysis";
+import { useManagerAIForecast } from "../features/manager/ai/useManagerAIForecast";
+import { refreshManagerAIInsights } from "../features/manager/ai/api";
 import { useAIRefresh } from "../features/advisor/ai/useAIRefresh";
+import type { AIForecastResponse } from "../features/advisor/ai/types";
 
 type StepId =
   | "welcome"
@@ -46,106 +45,136 @@ const journey: JourneyEntry[] = [
     id: "welcome",
     label: "Start",
     shortLabel: "Start",
-    description: "Welcome message from your AI Coach.",
-    hint: "This is the entry point of your AI tour. Click 'Start the tour' to begin.",
+    description: "Welcome message from your Team Coach.",
+    hint: "This is the entry point of your team coaching tour. Click 'Start the tour' to begin.",
     accentText: "text-amber-200",
   },
   {
     id: "strengths",
-    label: "Your strengths",
+    label: "Team strengths",
     shortLabel: "Strengths",
-    description: "What you are doing really well.",
-    hint: "Things you already do better than average. Keep doing these — they earn you points and trust.",
+    description: "What your team is doing really well.",
+    hint: "Areas where your team excels. These are the foundations you can build on and share across the team.",
     accentText: "text-emerald-200",
   },
   {
     id: "improvements",
-    label: "What to improve",
+    label: "Growth areas",
     shortLabel: "Improve",
-    description: "Areas where you can grow.",
-    hint: "Not weaknesses — opportunities. Each one tells you the next concrete step you can take.",
+    description: "Where your team can grow together.",
+    hint: "Not weaknesses — opportunities. Each one tells you the next concrete step to coach your team on.",
     accentText: "text-amber-200",
   },
   {
     id: "skills",
-    label: "Your skills",
+    label: "Team skills",
     shortLabel: "Skills",
-    description: "Strong skills vs skills to develop.",
-    hint: "A snapshot of your capabilities. Strong skills are over 70%. Skills to develop are good candidates for training.",
+    description: "Strong skills vs skills to develop across your team.",
+    hint: "A snapshot of your team's capabilities. Strong skills show where you have expertise. Skills to develop are good candidates for team training.",
     accentText: "text-cyan-200",
   },
   {
     id: "forecast",
-    label: "Your forecast",
+    label: "Team forecast",
     shortLabel: "Forecast",
-    description: "Where you are heading at the current pace.",
-    hint: "If you keep doing what you do today, this is what we expect. Confidence tells you how sure the AI is — based on how much data we had.",
+    description: "Where your team is heading at the current pace.",
+    hint: "If your team keeps doing what they do today, this is what we expect. Confidence tells you how sure the AI is — based on how much data we had.",
     accentText: "text-cyan-200",
   },
   {
     id: "actions",
     label: "Top actions",
     shortLabel: "Actions",
-    description: "The most useful things to do this week.",
-    hint: "Ordered by priority. Each action shows how many points you can gain and how long it takes. Click the button to jump to the right place in the app.",
+    description: "The most useful things for your team to do this week.",
+    hint: "Ordered by priority. Each action shows the expected impact and how to implement it across your team.",
     accentText: "text-cyan-200",
   },
   {
     id: "trainings",
     label: "Recommended trainings",
     shortLabel: "Trainings",
-    description: "Trainings that match your skill gaps.",
-    hint: "Picked specifically for the skills you want to develop. 'Recommended now' means the highest impact for you this week.",
+    description: "Trainings that match your team's skill gaps.",
+    hint: "Picked specifically for the skills your team wants to develop. 'Recommended now' means the highest impact for your team this week.",
     accentText: "text-violet-200",
   },
   {
     id: "summary",
     label: "Coach note",
     shortLabel: "Wrap up",
-    description: "A short, motivating wrap-up.",
-    hint: "Final motivational note. Come back tomorrow to see your progress.",
+    description: "A short, motivating wrap-up for your team.",
+    hint: "Final motivational note. Come back tomorrow to see your team's progress.",
     accentText: "text-amber-200",
   },
 ];
 
-const AdvisorAIProfilePage = () => {
+const FORECAST_FALLBACK: AIForecastResponse = {
+  is_fallback: true,
+  fallback_reason: "insufficient_data",
+  generated_at: new Date().toISOString(),
+  model_version: "team-coach-fallback",
+  forecast: {
+    trend: "stable",
+    next_rank_likelihood: { probability_pct: 0, label: "low" },
+    confidence_pct: 35,
+    confidence_label: "low",
+    forecast_summary: "Forecast is temporarily unavailable. You can still explore team analysis and skills insights.",
+    main_factors: [],
+    recommended_focus: "Refresh insights after backend data is available.",
+    projected_points_in_window: 0,
+    projected_points_target: 0,
+    days_window: 30,
+    history_used_days: 90,
+  },
+  risk_areas: [],
+  recommended_actions: [],
+  recommended_trainings: [],
+  recommendation_summary: "No forecast recommendations are available right now.",
+};
+
+const ManagerTeamCoachPage = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [currentStepId, setCurrentStepId] = useState<StepId>("welcome");
   const [completed, setCompleted] = useState<StepId[]>([]);
 
-  const { data: analysisData, isLoading: isLoadingAnalysis, isError: isErrorAnalysis } = useAdvisorAIAnalysis();
-  const { data: forecastData, isLoading: isLoadingForecast, isError: isErrorForecast } = useAdvisorAIForecast();
+  const {
+    data: analysisData,
+    isLoading: isLoadingAnalysis,
+    isError: isErrorAnalysis,
+  } = useManagerAIAnalysis();
+  const { data: forecastData, isLoading: isLoadingForecast, isError: isErrorForecast } = useManagerAIForecast();
 
   const analysis = !isLoadingAnalysis && !isErrorAnalysis && analysisData ? analysisData : undefined;
-  const forecast = !isLoadingForecast && !isErrorForecast && forecastData ? forecastData : undefined;
+  const forecast = !isLoadingForecast && !isErrorForecast && forecastData ? forecastData : FORECAST_FALLBACK;
 
-  // Fallback UI dacă datele lipsesc
-
-  // TOATE HOOK-URILE SUS
   const { refreshing, cooldown, refresh } = useAIRefresh(async () => {
-    const refreshed = await refreshAdvisorAIInsights();
-    queryClient.setQueryData(["advisor-ai-analysis"], refreshed.analysis);
-    queryClient.setQueryData(["advisor-ai-forecast"], refreshed.forecast);
+    const refreshed = await refreshManagerAIInsights();
+    queryClient.setQueryData(["manager-ai-analysis"], refreshed.analysis);
+    queryClient.setQueryData(["manager-ai-forecast"], refreshed.forecast);
   });
+
   const currentIndex = journey.findIndex((s) => s.id === currentStepId);
   const currentStep = journey[currentIndex];
+
   const goTo = (id: StepId) => {
     setCompleted((prev) =>
       prev.includes(currentStepId) ? prev : [...prev, currentStepId],
     );
     setCurrentStepId(id);
   };
+
   const goNext = () => {
     if (currentIndex < journey.length - 1) {
       goTo(journey[currentIndex + 1].id);
     }
   };
+
   const goPrev = () => {
     if (currentIndex > 0) {
       setCurrentStepId(journey[currentIndex - 1].id);
     }
   };
+
   const stepperSteps = useMemo(
     () =>
       journey.map((s) => ({
@@ -157,22 +186,22 @@ const AdvisorAIProfilePage = () => {
   );
 
   // Fallback UI după hook-uri
-  if (isErrorAnalysis || isErrorForecast) {
+  if (isErrorAnalysis && !analysisData) {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <h2 className="text-2xl font-bold text-rose-400 mb-4">Sales Coach unavailable</h2>
-          <p className="mb-2" style={{ color: "var(--text)" }}>We couldn't load your AI analysis or forecast. Please try again later.</p>
+          <h2 className="text-2xl font-bold text-rose-400 mb-4">Team Coach unavailable</h2>
+          <p className="mb-2" style={{ color: "var(--text)" }}>We couldn't load your team's AI analysis. Please try again later.</p>
         </div>
       </AppShell>
     );
   }
 
-  if (!analysis || !forecast) {
+  if (!analysis) {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <h2 className="text-xl font-semibold text-cyan-300 mb-2">Loading AI insights...</h2>
+          <h2 className="text-xl font-semibold text-cyan-300 mb-2">Loading team insights...</h2>
         </div>
       </AppShell>
     );
@@ -181,15 +210,21 @@ const AdvisorAIProfilePage = () => {
   return (
     <AppShell>
       <div className="space-y-6">
+        {isErrorForecast && (
+          <div className="rounded-2xl border border-amber-300/35 bg-amber-300/10 p-4 text-sm text-amber-100">
+            Forecast details are temporarily unavailable. Team analysis is still available.
+          </div>
+        )}
+
         <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-300/80">
-              Sales Advisor Profile
+              Manager Dashboard
             </p>
-            <h1 className="mt-1 text-3xl font-bold text-cyan-100">Sales Coach</h1>
+            <h1 className="mt-1 text-3xl font-bold text-cyan-100">Team Coach</h1>
             <p className="mt-2 max-w-2xl text-sm" style={{ color: "var(--text-muted)" }}>
-              A short guided tour of your performance. No jargon — just what's working,
-              what to improve, and what to do next.
+              A guided tour of your team's performance. No jargon — just what's working,
+              what to improve, and what actions to take next.
             </p>
           </div>
 
@@ -252,9 +287,8 @@ const AdvisorAIProfilePage = () => {
             hint={currentStep.hint}
             icon={<TrendingUp className={`h-5 w-5 ${currentStep.accentText}`} />}
           >
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5">
               <AIForecastCard forecast={forecast.forecast} />
-              <AIRiskAreasCard items={forecast.risk_areas} />
             </div>
           </AIExplainerCard>
         )}
@@ -295,7 +329,7 @@ const AdvisorAIProfilePage = () => {
         {currentStepId !== "welcome" && (
           <AIStepNavigation
             onPrev={goPrev}
-            onNext={currentIndex === journey.length - 1 ? () => navigate("/advisor-dashboard") : goNext}
+            onNext={currentIndex === journey.length - 1 ? () => navigate("/dashboard") : goNext}
             isFirstStep={currentIndex === 0}
             isLastStep={currentIndex === journey.length - 1}
             prevLabel={
@@ -315,4 +349,4 @@ const AdvisorAIProfilePage = () => {
   );
 };
 
-export default AdvisorAIProfilePage;
+export default ManagerTeamCoachPage;

@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime, timedelta, timezone
 
 from sqlmodel import Session
@@ -27,6 +28,76 @@ from app.sales_advisor_dashboard.overview_repository import (
 
 RECENT_PERFORMANCE_DAYS = 30
 AI_MODEL = "gpt-4.1-mini"
+
+logger = logging.getLogger(__name__)
+
+
+def _normalize_ai_payload(parsed: dict) -> dict:
+    """Coerce common AI output variants into our expected schema."""
+    if not isinstance(parsed, dict):
+        return parsed
+
+    def _coerce_skill(item):
+        if isinstance(item, str):
+            return {"name": item, "level_pct": 0}
+        if isinstance(item, dict):
+            name = item.get("name") or item.get("skill_name") or ""
+            level_pct = item.get("level_pct")
+            if level_pct is None:
+                level_pct = item.get("level") or 0
+            try:
+                level_pct = int(level_pct)
+            except Exception:
+                level_pct = 0
+            return {"name": str(name), "level_pct": level_pct}
+        return {"name": str(item), "level_pct": 0}
+
+    skills = parsed.get("skills_analysis")
+    if isinstance(skills, dict):
+        for key in ("strong_skills", "skills_to_develop"):
+            value = skills.get(key)
+            if isinstance(value, list):
+                skills[key] = [_coerce_skill(v) for v in value]
+            else:
+                skills[key] = []
+        if not isinstance(skills.get("summary"), str):
+            skills["summary"] = ""
+    else:
+        parsed["skills_analysis"] = {
+            "strong_skills": [],
+            "skills_to_develop": [],
+            "summary": "",
+        }
+
+    for strength in parsed.get("strengths", []) or []:
+        if isinstance(strength, dict):
+            strength.setdefault("supporting_reason", "")
+            strength.setdefault("metric_evidence", None)
+
+    for area in parsed.get("improvement_areas", []) or []:
+        if isinstance(area, dict):
+            area.setdefault("reason", "")
+            area.setdefault("suggested_next_step", "")
+            priority = str(area.get("priority", "")).lower()
+            if priority not in {"high", "medium", "low"}:
+                area["priority"] = "medium"
+            else:
+                area["priority"] = priority
+            category = str(area.get("category", "")).lower().replace(" ", "_")
+            if category not in {"skills", "activity", "conversion", "follow_up"}:
+                area["category"] = "activity"
+            else:
+                area["category"] = category
+            gain = area.get("expected_points_gain")
+            if gain in ("", None):
+                area["expected_points_gain"] = None
+            else:
+                try:
+                    area["expected_points_gain"] = int(gain)
+                except Exception:
+                    area["expected_points_gain"] = None
+
+    return parsed
 
 
 def _get_recent_performance_start() -> datetime:
@@ -99,7 +170,8 @@ Required JSON structure:
     {{
       "title": "string",
       "description": "string",
-      "supporting_reason": "string"
+            "supporting_reason": "string",
+            "metric_evidence": "string|null"
     }}
   ],
   "improvement_areas": [
@@ -108,7 +180,9 @@ Required JSON structure:
       "description": "string",
       "reason": "string",
       "suggested_next_step": "string",
-      "priority": "high|medium|low"
+            "priority": "high|medium|low",
+            "category": "skills|activity|conversion|follow_up",
+            "expected_points_gain": 0
     }}
   ],
   "skills_analysis": {{
@@ -125,6 +199,8 @@ Rules:
 - Write in an encouraging, constructive tone for a team-coaching context.
 - Be specific when data exists; state clearly when data is missing.
 - Return 1 to 3 strengths and 1 to 3 improvement areas.
+- For each strength include metric_evidence when any concrete metric exists.
+- For each improvement area set category and expected_points_gain when estimable, otherwise set expected_points_gain to null.
 
 Team performance context:
 {json.dumps(data, indent=2)}
@@ -167,6 +243,10 @@ def _fallback_team_strengths(payload: ManagerAiAnalysisContext) -> list[SalesAdv
                     f"{payload.recent_performance.total_products_sold} products sold, and "
                     f"{payload.recent_performance.total_points_earned} points earned."
                 ),
+                metric_evidence=(
+                    f"{payload.recent_performance.total_transactions} tx · "
+                    f"{payload.recent_performance.total_points_earned} pts"
+                ),
             )
         )
 
@@ -190,6 +270,9 @@ def _fallback_team_strengths(payload: ManagerAiAnalysisContext) -> list[SalesAdv
                 supporting_reason=(
                     "These skills have the highest share of advanced records across the team."
                 ),
+                metric_evidence=(
+                    f"Top skills: {', '.join(strong_skill_names)}"
+                ),
             )
         )
 
@@ -203,6 +286,7 @@ def _fallback_team_strengths(payload: ManagerAiAnalysisContext) -> list[SalesAdv
                 supporting_reason=(
                     "Recent activity or skill records are limited or unavailable."
                 ),
+                metric_evidence=None,
             )
         )
 
@@ -226,6 +310,8 @@ def _fallback_team_improvements(payload: ManagerAiAnalysisContext) -> list[Sales
                     "Set a simple weekly activity target (e.g., transactions or points) and review progress in the next team meeting."
                 ),
                 priority="high",
+                category="activity",
+                expected_points_gain=None,
             )
         )
 
@@ -253,6 +339,8 @@ def _fallback_team_improvements(payload: ManagerAiAnalysisContext) -> list[Sales
                     "Select one common skill and organize a short peer-practice or micro-training this week."
                 ),
                 priority="medium",
+                category="skills",
+                expected_points_gain=None,
             )
         )
 
@@ -270,6 +358,8 @@ def _fallback_team_improvements(payload: ManagerAiAnalysisContext) -> list[Sales
                     "Encourage advisors to update skills and log activity so future analysis is more specific."
                 ),
                 priority="low",
+                category="activity",
+                expected_points_gain=None,
             )
         )
 
@@ -372,6 +462,10 @@ def build_fallback_manager_ai_analysis(payload: ManagerAiAnalysisContext, *, ai_
         improvement_areas=_fallback_team_improvements(payload),
         skills_analysis=_fallback_team_skills_analysis(payload),
         motivational_summary=motivational,
+        generated_at=datetime.now(),
+        model_version="fallback-v1",
+        is_fallback=True,
+        fallback_reason="ai_unavailable" if ai_unavailable else None,
     )
 
 
@@ -388,7 +482,7 @@ def generate_manager_ai_analysis_with_ai(
         model=AI_MODEL,
         input=build_manager_ai_prompt(payload),
         temperature=0.4,
-        max_output_tokens=900,
+        max_output_tokens=2200,
     )
 
     response_text = (response.output_text or "").strip()
@@ -396,6 +490,7 @@ def generate_manager_ai_analysis_with_ai(
         raise ValueError("Empty AI response")
 
     parsed = _extract_json_payload(response_text)
+    parsed = _normalize_ai_payload(parsed)
     analysis = SalesAdvisorAiAnalysisResponse.model_validate(parsed)
 
     # We can optionally merge with fallback to ensure minimum content quality
@@ -412,6 +507,10 @@ def generate_manager_ai_analysis_with_ai(
         motivational_summary=(
             analysis.motivational_summary.strip() or fallback.motivational_summary
         ),
+        generated_at=datetime.now(),
+        model_version=AI_MODEL,
+        is_fallback=False,
+        fallback_reason=None,
     )
 
 
@@ -423,5 +522,6 @@ def get_manager_ai_analysis(
 
     try:
         return generate_manager_ai_analysis_with_ai(payload)
-    except Exception:
+    except Exception as exc:
+        logger.exception("Manager AI analysis failed, returning fallback: %s", exc)
         return build_fallback_manager_ai_analysis(payload, ai_unavailable=True)

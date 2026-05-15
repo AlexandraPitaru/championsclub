@@ -11,6 +11,7 @@ import {
   Search,
   ShoppingBag,
   ShoppingCart,
+  Sparkles,
   Sun,
   Trophy,
   X,
@@ -21,8 +22,10 @@ import BrandLogo from "./BrandLogo";
 
 const navItems = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard, isDynamic: true },
-  { label: "Shop", to: "/shop", icon: ShoppingBag },
-  { label: "Cart", to: "/cart", icon: ShoppingCart },
+  { label: "Sales Coach", to: "/advisor-ai", icon: Sparkles, roleRestrict: "sales_advisor" },
+  { label: "Team Coach", to: "/manager-team-coach", icon: Sparkles, roleRestrict: "manager" },
+  { label: "Rewards Hub", to: "/shop", icon: ShoppingBag },
+  { label: "Checkout", to: "/cart", icon: ShoppingCart },
   { label: "Redemption History", to: "/redemption-history", icon: History },
   { label: "Leaderboard", to: "/leaderboard", icon: Trophy, isLeaderboard: true },
   { label: "Alerts", to: "/alerts", icon: Bell, roleRestrict: "manager" },

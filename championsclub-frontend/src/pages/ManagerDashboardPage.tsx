@@ -405,10 +405,10 @@ export default function ManagerDashboardPage() {
       <div className="space-y-6">
         <section className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-cyan-100 md:text-3xl">
+            <h1 className="text-3xl font-bold tracking-tight text-cyan-100">
               Manager Dashboard: Where the Wins Get Loud
             </h1>
-            <p className="mt-2 text-sm text-slate-400 md:text-base">
+            <p className="mt-2 text-base text-slate-400 md:text-lg">
               Track hot streaks, catch red flags before they bite, and spot the next coaching moment before your coffee gets cold.
             </p>
 

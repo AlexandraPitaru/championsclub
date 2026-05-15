@@ -49,7 +49,7 @@ export default function PriorityAlertsPanel({
   };
 
   return (
-    <Card className="h-full" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
+    <Card className="h-full transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/20" style={{ borderColor: "var(--panel-border)", background: "var(--panel-bg)" }}>
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-cyan-100">Priority Alerts</h3>
         <p className="text-sm text-slate-400">
@@ -72,7 +72,7 @@ export default function PriorityAlertsPanel({
             key={alert.id}
             className={`rounded-xl border ${getSeverityBorder(
               alert.severity
-            )} p-6 transition`}
+            )} p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg`}
             style={{
               borderTopColor: "var(--panel-border)",
               borderRightColor: "var(--panel-border)",

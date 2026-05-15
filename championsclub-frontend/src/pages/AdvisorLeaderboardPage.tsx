@@ -179,8 +179,8 @@ export default function AdvisorLeaderboardPage() {
           <>
             <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <Card
-                className="flex items-center gap-4"
-                style={{ background: "var(--summary-bg)", borderColor: "var(--summary-border)" }}
+                className="flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] animate-fade-in"
+                style={{ background: "var(--summary-bg)", borderColor: "var(--summary-border)", animationDelay: "0ms" }}
               >
                 <div className="rounded-full bg-cyan-500/20 p-3 text-cyan-300">
                   <Target className="h-5 w-5" />
@@ -197,8 +197,8 @@ export default function AdvisorLeaderboardPage() {
               </Card>
 
               <Card
-                className="flex items-center gap-4"
-                style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}
+                className="flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] animate-fade-in"
+                style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)", animationDelay: "100ms" }}
               >
                 <div className="rounded-full bg-amber-500/20 p-3 text-amber-400">
                   <Award className="h-5 w-5" />
@@ -213,8 +213,8 @@ export default function AdvisorLeaderboardPage() {
               </Card>
 
               <Card
-                className="flex items-center gap-4"
-                style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}
+                className="flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] animate-fade-in"
+                style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)", animationDelay: "200ms" }}
               >
                 <div className="rounded-full bg-blue-500/20 p-3 text-blue-400">
                   {scope === "team" ? <Users className="h-5 w-5" /> : <Globe2 className="h-5 w-5" />}
@@ -229,8 +229,8 @@ export default function AdvisorLeaderboardPage() {
               </Card>
 
               <Card
-                className="flex items-center gap-4"
-                style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)" }}
+                className="flex items-center gap-4 transition-all duration-300 hover:scale-[1.02] animate-fade-in"
+                style={{ background: "var(--panel-bg)", borderColor: "var(--panel-border)", animationDelay: "300ms" }}
               >
                 <div className="rounded-full bg-violet-500/20 p-3 text-violet-400">
                   <Crown className="h-5 w-5" />
@@ -343,7 +343,7 @@ export default function AdvisorLeaderboardPage() {
                   </div>
                 ) : null}
 
-                {entries.map((entry) => {
+                {entries.map((entry, index) => {
                   const isCurrentUser = entry.position === currentUserPosition;
                   const badgeSrc = getRankBadgeSrc(entry.position);
                   const progressWidth = getProgressWidth(entry.points, maxPoints);
@@ -352,10 +352,14 @@ export default function AdvisorLeaderboardPage() {
                     <div
                       key={`${entry.position}-${entry.first_name}-${entry.last_name}`}
                       className={[
-                        "grid gap-4 p-4 transition sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center",
+                        "grid gap-4 p-4 transition-all duration-300 hover:scale-[1.01] animate-fade-in-up sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center",
                         isCurrentUser ? "bg-cyan-500/10" : "",
+                        entry.position === 1 ? "bg-amber-500/10" : "",
                       ].join(" ")}
-                      style={isCurrentUser ? undefined : { background: "var(--panel-bg)" }}
+                      style={{
+                        ...(isCurrentUser || entry.position === 1 ? undefined : { background: "var(--panel-bg)" }),
+                        animationDelay: `${index * 50}ms`
+                      }}
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-11 w-11 items-center justify-center rounded-full border border-cyan-500/30 bg-cyan-500/10 text-sm font-bold text-cyan-100">
@@ -407,7 +411,7 @@ export default function AdvisorLeaderboardPage() {
 
             {showCurrentUserSpot && currentUserEntry ? (
               <Card
-                className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between transition-all duration-300 hover:scale-[1.02] animate-fade-in"
                 style={{ background: "var(--summary-bg)", borderColor: "var(--summary-border)" }}
               >
                 <div className="flex items-center gap-3">

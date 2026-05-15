@@ -18,12 +18,14 @@ class SalesAdvisorAiSkillsAnalysis(BaseModel):
 
 PriorityLevel = Literal["high", "medium", "low"]
 TeamAverageComparison = Literal["above", "below", "equal"]
+AnalysisCategory = Literal["skills", "activity", "conversion", "follow_up"]
 
 
 class SalesAdvisorAiStrength(BaseModel):
     title: str
     description: str
     supporting_reason: str
+    metric_evidence: str | None = None
 
 
 class SalesAdvisorAiImprovementArea(BaseModel):
@@ -32,16 +34,23 @@ class SalesAdvisorAiImprovementArea(BaseModel):
     reason: str
     suggested_next_step: str
     priority: PriorityLevel
+    category: AnalysisCategory = "activity"
+    expected_points_gain: int | None = None
 
 
 
 
 class SalesAdvisorAiAnalysisResponse(BaseModel):
     ai_summary: str
+    tone: Literal["coaching"] = "coaching"
     strengths: list[SalesAdvisorAiStrength]
     improvement_areas: list[SalesAdvisorAiImprovementArea]
     skills_analysis: SalesAdvisorAiSkillsAnalysis
     motivational_summary: str
+    generated_at: datetime = Field(default_factory=lambda: datetime.now())
+    model_version: str = "gpt-4.1-mini"
+    is_fallback: bool = False
+    fallback_reason: str | None = None
 
 
 class SalesAdvisorProfileContext(BaseModel):
