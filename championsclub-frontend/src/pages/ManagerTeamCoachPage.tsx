@@ -13,7 +13,6 @@ import AIJourneyStepper, {
 import AIRecommendedActionsCard from "../features/advisor/ai/AIRecommendedActionsCard";
 import AIRecommendedTrainingsCard from "../features/advisor/ai/AIRecommendedTrainingsCard";
 import AIRefreshControls from "../features/advisor/ai/AIRefreshControls";
-import AIRiskAreasCard from "../features/advisor/ai/AIRiskAreasCard";
 import AISkillsAnalysisCard from "../features/advisor/ai/AISkillsAnalysisCard";
 import AIStepNavigation from "../features/advisor/ai/AIStepNavigation";
 import AIStrengthsList from "../features/advisor/ai/AIStrengthsList";
@@ -288,9 +287,8 @@ const ManagerTeamCoachPage = () => {
             hint={currentStep.hint}
             icon={<TrendingUp className={`h-5 w-5 ${currentStep.accentText}`} />}
           >
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5">
               <AIForecastCard forecast={forecast.forecast} />
-              <AIRiskAreasCard items={forecast.risk_areas} />
             </div>
           </AIExplainerCard>
         )}
