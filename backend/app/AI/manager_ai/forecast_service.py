@@ -24,6 +24,10 @@ from app.sales_advisor_profile.ai_analysis_schemas import (
     SalesAdvisorRankProgressContext,
     SalesAdvisorProfileContext,
     SalesAdvisorRecentPerformanceContext,
+    SalesAdvisorSkillContext,
+)
+from app.sales_advisor_profile.ai_forecast_recommendations_service import (
+    _build_training_recommendations,
 )
 
 
@@ -170,12 +174,27 @@ def build_manager_ai_forecast_context(
         last_transaction_date=rp.last_transaction_date,
     )
 
+    # Build a synthetic skills list from team aggregates so training recommendations
+    # can reuse the same logic as sales advisor forecast recommendations.
+    now_utc = _now_utc()
+    skills_for_schema: list[SalesAdvisorSkillContext] = []
+    for aggregate in base.skills_aggregate:
+        if aggregate.beginner_count > 0:
+            skills_for_schema.append(
+                SalesAdvisorSkillContext(
+                    skill_name=aggregate.skill_name,
+                    skill_level="beginner",
+                    verified=True,
+                    updated_at=now_utc,
+                )
+            )
+
     return SalesAdvisorForecastRecommendationsContext(
         profile=profile_for_schema,
         recent_performance=recent_for_schema,
         rank_progress=dummy_rank_progress,
         team_comparison=None,
-        skills=[],
+        skills=skills_for_schema,
         performance_history=performance_history,
         missing_data=missing_data,
     )
@@ -197,6 +216,8 @@ def _determine_trend_for_team(
 
 def build_fallback_manager_ai_forecast_recommendations(
     payload: SalesAdvisorForecastRecommendationsContext,
+    *,
+    session: Session | None = None,
 ) -> SalesAdvisorForecastRecommendationsResponse:
     trend = _determine_trend_for_team(payload)
     active_periods = sum(1 for p in payload.performance_history if p.total_points_earned > 0)
@@ -238,11 +259,15 @@ def build_fallback_manager_ai_forecast_recommendations(
         )
     ]
 
-    trainings: list[SalesAdvisorForecastTrainingRecommendation] = []
-
-    recommendation_summary = (
-        "Primary focus: keep weekly targets visible and share quick wins to build momentum."
+    trainings, trainings_note = _build_training_recommendations(
+        payload,
+        trend=trend,  # type: ignore[arg-type]
+        session=session,
     )
+
+    recommendation_summary = "Primary focus: keep weekly targets visible and share quick wins to build momentum."
+    if trainings_note:
+        recommendation_summary = f"{recommendation_summary} {trainings_note}"
 
     return SalesAdvisorForecastRecommendationsResponse(
         forecast=SalesAdvisorForecastSection(
@@ -296,14 +321,22 @@ Baseline response:
 
 def generate_manager_ai_forecast_recommendations_with_ai(
     payload: SalesAdvisorForecastRecommendationsContext,
+    *,
+    session: Session | None = None,
 ) -> SalesAdvisorForecastRecommendationsResponse:
     try:
         from openai import OpenAI
     except Exception as exc:
         # Fallback only
-        return build_fallback_manager_ai_forecast_recommendations(payload)
+        return build_fallback_manager_ai_forecast_recommendations(
+            payload,
+            session=session,
+        )
 
-    baseline = build_fallback_manager_ai_forecast_recommendations(payload)
+    baseline = build_fallback_manager_ai_forecast_recommendations(
+        payload,
+        session=session,
+    )
     client = OpenAI()
     response = client.responses.create(
         model=AI_MODEL,
@@ -330,6 +363,12 @@ def get_manager_ai_forecast_recommendations(
 ) -> SalesAdvisorForecastRecommendationsResponse:
     payload = build_manager_ai_forecast_context(session, current_user)
     try:
-        return generate_manager_ai_forecast_recommendations_with_ai(payload)
+        return generate_manager_ai_forecast_recommendations_with_ai(
+            payload,
+            session=session,
+        )
     except Exception:
-        return build_fallback_manager_ai_forecast_recommendations(payload)
+        return build_fallback_manager_ai_forecast_recommendations(
+            payload,
+            session=session,
+        )
