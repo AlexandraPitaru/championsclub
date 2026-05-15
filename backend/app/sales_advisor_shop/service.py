@@ -330,9 +330,11 @@ def checkout_cart(
         session.commit()
         session.refresh(order)
         session.refresh(current_user)
+
     except Exception as error:
         session.rollback()
-        raise HTTPException(status_code=500, detail="Checkout failed. No changes were applied.") from error
+        # DEV ONLY: Expose the real error for debugging
+        raise HTTPException(status_code=500, detail=f"Checkout failed: {error!r}") from error
 
     return CheckoutResponse(
         checkout_status="success",
