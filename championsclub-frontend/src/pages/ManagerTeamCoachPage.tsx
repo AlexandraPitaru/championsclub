@@ -329,7 +329,7 @@ const ManagerTeamCoachPage = () => {
         {currentStepId !== "welcome" && (
           <AIStepNavigation
             onPrev={goPrev}
-            onNext={currentIndex === journey.length - 1 ? () => navigate("/manager-dashboard") : goNext}
+            onNext={currentIndex === journey.length - 1 ? () => navigate("/dashboard") : goNext}
             isFirstStep={currentIndex === 0}
             isLastStep={currentIndex === journey.length - 1}
             prevLabel={
