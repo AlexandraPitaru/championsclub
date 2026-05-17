@@ -110,6 +110,21 @@ function getStatusLabel(status: AvailabilityStatus): string {
   return "Out of stock";
 }
 
+function resolveStockQuantity(
+  stockQuantity: number | null | undefined,
+  fallbackStockQuantity?: number
+): number {
+  if (typeof stockQuantity === "number" && Number.isFinite(stockQuantity)) {
+    return stockQuantity;
+  }
+
+  if (typeof fallbackStockQuantity === "number" && Number.isFinite(fallbackStockQuantity)) {
+    return fallbackStockQuantity;
+  }
+
+  return 0;
+}
+
 function getErrorMessage(error: unknown): string | null {
   const axiosError = error as AxiosError<{ detail?: string }> | undefined;
   return axiosError?.response?.data?.detail || axiosError?.message || null;
@@ -117,7 +132,7 @@ function getErrorMessage(error: unknown): string | null {
 
 export default function ShopPage() {
   const { isLight } = useTheme();
-  const currentUser = useMemo(getCurrentUserFromStorage, []);
+  const currentUser = useMemo(() => getCurrentUserFromStorage(), []);
   const userId = currentUser?.user_id;
 
   const [query, setQuery] = useState("");
@@ -132,8 +147,8 @@ export default function ShopPage() {
   const updateCartItemMutation = useUpdateShopCartItem(userId);
   const removeCartItemMutation = useRemoveShopCartItem(userId);
 
-  const rewards = overviewQuery.data?.rewards ?? [];
-  const cartItems = cartQuery.data?.items ?? [];
+  const rewards = useMemo(() => overviewQuery.data?.rewards ?? [], [overviewQuery.data?.rewards]);
+  const cartItems = useMemo(() => cartQuery.data?.items ?? [], [cartQuery.data?.items]);
   const totalCost = cartQuery.data?.total_credit_cost ?? 0;
   const availableCredits = overviewQuery.data?.available_credit ?? cartQuery.data?.available_credit ?? 0;
   const remainingCredits = cartQuery.data?.remaining_credit_after_checkout ?? availableCredits;
@@ -144,6 +159,10 @@ export default function ShopPage() {
   const cartItemByRewardId = useMemo(() => {
     return new Map(cartItems.map((item) => [item.reward_id, item]));
   }, [cartItems]);
+
+  const rewardById = useMemo(() => {
+    return new Map(rewards.map((reward) => [reward.reward_id, reward]));
+  }, [rewards]);
 
   const filteredRewards = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -423,13 +442,22 @@ export default function ShopPage() {
                   ) : (
                     cartItems.map((item) => (
                       <div key={item.cart_item_id} className="flex items-start gap-3 rounded-xl border p-3" style={{ borderColor: "var(--panel-border)", background: "var(--panel-soft-bg)" }}>
+                        {(() => {
+                          const fallbackReward = rewardById.get(item.reward_id);
+                          const stockQuantity = resolveStockQuantity(
+                            item.stock_quantity,
+                            fallbackReward?.stock_quantity
+                          );
+
+                          return (
+                            <>
                         <div className={`relative h-12 w-12 overflow-hidden rounded-lg bg-gradient-to-br ${getRewardAccent({
                           reward_id: item.reward_id,
                           name: item.reward_name,
                           description: null,
                           image_url: item.image_url,
                           credit_cost: item.credit_cost_per_item,
-                          stock_quantity: item.stock_quantity,
+                          stock_quantity: stockQuantity,
                           availability_status: item.availability_status,
                         })}`}>
                           <img src={item.image_url} alt={item.reward_name} className="absolute inset-0 h-full w-full object-cover" />
@@ -437,7 +465,12 @@ export default function ShopPage() {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-slate-100">{item.reward_name}</p>
+                          <p
+                            className="truncate text-sm font-semibold text-slate-100"
+                            title={item.reward_name}
+                          >
+                            {item.reward_name}
+                          </p>
                           <p className="text-xs text-slate-400">{formatCredits(item.credit_cost_per_item)} Credits each</p>
                         </div>
 
@@ -454,7 +487,7 @@ export default function ShopPage() {
                           <button
                             type="button"
                             onClick={() => updateQuantity(item, 1)}
-                            disabled={item.quantity >= item.stock_quantity || updateCartItemMutation.isPending}
+                            disabled={item.quantity >= stockQuantity || updateCartItemMutation.isPending}
                             className="inline-flex h-7 w-7 items-center justify-center rounded-md border text-slate-300 disabled:opacity-40"
                             style={{ borderColor: "var(--panel-border)" }}
                           >
@@ -474,6 +507,9 @@ export default function ShopPage() {
                             <X className="h-3 w-3" />
                           </button>
                         </div>
+                            </>
+                          );
+                        })()}
                       </div>
                     ))
                   )}

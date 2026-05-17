@@ -170,12 +170,23 @@ export default function Sidebar() {
   }
 
   const sidebarContent = (
-    <div className="flex h-full flex-col justify-between">
-      <div className="px-6 py-5">
+    <div className="flex h-full min-h-0 flex-col">
+      <style>{`
+        .sidebar-scroll-hidden {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+
+        .sidebar-scroll-hidden::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
+
+      <div className="sidebar-scroll-hidden flex-1 overflow-y-auto px-6 py-5">
         <Link
           to={dashboardRoute}
           onClick={closeMobileMenu}
-          className="group mx-auto flex w-full max-w-[260px] flex-col items-center gap-0.5 outline-none transition-opacity hover:opacity-95 focus-visible:ring-2 focus-visible:ring-cyan-500/60"
+          className="group mx-auto flex w-full max-w-[260px] cursor-default flex-col items-center gap-0.5 outline-none transition-opacity hover:opacity-95 focus-visible:ring-2 focus-visible:ring-cyan-500/60"
           aria-label="Go to dashboard"
         >
           <BrandLogo className="h-[172px] w-full object-contain transition group-hover:scale-[1.02]" />
@@ -201,7 +212,7 @@ export default function Sidebar() {
                 setSearchInput("");
               }}
               className={[
-                "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
+                "flex cursor-default items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
                 isSearchOpen
                   ? [
                       "border border-cyan-500/40 bg-cyan-500/15 shadow-[0_0_22px_rgba(6,182,212,0.18)]",
@@ -267,6 +278,7 @@ export default function Sidebar() {
                       onClick={() => handleAdvisorClick(advisor.user_id)}
                       className={[
                         "w-full px-3 py-2.5 text-left text-sm font-medium transition hover:bg-cyan-500/10",
+                        "cursor-default",
                         index === 0 ? "rounded-t-lg" : "",
                         index === searchResults.length - 1 ? "rounded-b-lg" : "",
                         isLight ? "text-slate-700 hover:text-cyan-800" : "text-slate-200 hover:text-cyan-100",
@@ -294,6 +306,7 @@ export default function Sidebar() {
                 disabled={isSearching || searchResults.length === 0}
                 className={[
                   "mt-3 w-full rounded-lg border border-cyan-500/40 bg-cyan-500/15 px-3 py-2 text-sm font-semibold transition hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-60",
+                  "cursor-default",
                   isLight ? "text-cyan-800" : "text-cyan-100",
                 ].join(" ")}
               >
@@ -318,7 +331,7 @@ export default function Sidebar() {
                   key={item.label}
                   onClick={handleDashboardClick}
                   className={[
-                    "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
+                    "flex w-full cursor-default items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
                     location.pathname === "/advisor-dashboard" || location.pathname === "/dashboard"
                       ? [
                           "border border-cyan-500/40 bg-cyan-500/15 shadow-[0_0_22px_rgba(6,182,212,0.18)]",
@@ -354,6 +367,7 @@ export default function Sidebar() {
                   className={({ isActive }) =>
                     [
                       "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
+                      "cursor-default",
                       isActive
                         ? [
                             "border border-cyan-500/40 bg-cyan-500/15 shadow-[0_0_22px_rgba(6,182,212,0.18)]",
@@ -392,6 +406,7 @@ export default function Sidebar() {
                 className={({ isActive }) =>
                   [
                     "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition",
+                    "cursor-default",
                     isActive
                       ? [
                           "border border-cyan-500/40 bg-cyan-500/15 shadow-[0_0_22px_rgba(6,182,212,0.18)]",
@@ -424,12 +439,12 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      <div className="border-t px-6 py-4" style={{ borderColor: "var(--sidebar-border)" }}>
+      <div className="shrink-0 border-t px-5 py-3" style={{ borderColor: "var(--sidebar-border)" }}>
         <button
           type="button"
           onClick={toggleTheme}
           className={[
-            "mb-3 flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-sm font-semibold transition",
+            "mb-2.5 flex w-full cursor-default items-center justify-between rounded-xl border px-3 py-2 text-xs font-semibold transition",
             isLight
               ? "border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
               : "border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800/80",
@@ -441,22 +456,22 @@ export default function Sidebar() {
             <span>{isLight ? "Light Theme" : "Dark Theme"}</span>
           </span>
           <span
-            className={[
-              "inline-flex h-5 w-10 items-center rounded-full p-1 transition",
-              isLight ? "bg-cyan-200" : "bg-slate-700",
-            ].join(" ")}
+              className={[
+                "inline-flex h-4.5 w-9 items-center rounded-full p-1 transition",
+                isLight ? "bg-cyan-200" : "bg-slate-700",
+              ].join(" ")}
           >
             <span
               className={[
-                "h-3.5 w-3.5 rounded-full bg-white transition",
-                isLight ? "translate-x-5" : "translate-x-0",
+                "h-3 w-3 rounded-full bg-white transition",
+                isLight ? "translate-x-4" : "translate-x-0",
               ].join(" ")}
             />
           </span>
         </button>
 
         <div
-          className="rounded-xl border px-3 py-2.5 shadow-[0_10px_24px_rgba(2,8,23,0.22)]"
+          className="rounded-xl border px-3 py-2 shadow-[0_10px_24px_rgba(2,8,23,0.22)]"
           style={{
             borderColor: "var(--role-card-border)",
             background: "var(--role-card-grad)",
@@ -465,7 +480,7 @@ export default function Sidebar() {
           <div className="flex items-center justify-between gap-3">
             <p
               className={[
-                "text-[11px] font-bold uppercase tracking-[0.2em] leading-tight",
+                "text-[10px] font-bold uppercase tracking-[0.18em] leading-tight",
                 isLight ? "text-cyan-800" : "text-cyan-300",
               ].join(" ")}
             >
@@ -474,7 +489,7 @@ export default function Sidebar() {
 
             <span
               className={[
-                "inline-flex items-center justify-center rounded-lg border px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] shadow-[0_0_16px_rgba(6,182,212,0.22)] whitespace-nowrap",
+                "inline-flex items-center justify-center rounded-lg border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] shadow-[0_0_16px_rgba(6,182,212,0.22)] whitespace-nowrap",
                 isLight
                   ? "border-cyan-600/35 bg-cyan-500/20 text-cyan-950"
                   : "border-cyan-400/35 bg-cyan-500/18 text-cyan-50",
@@ -488,14 +503,14 @@ export default function Sidebar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition hover:opacity-80"
+          className="mt-2.5 flex w-full cursor-default items-center justify-center gap-2 rounded-xl border px-4 py-2 text-xs font-semibold transition hover:opacity-80"
           style={{
             borderColor: "var(--panel-border)",
             background: "var(--panel-soft-bg)",
             color: "var(--text)",
           }}
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-3.5 w-3.5" />
           <span>Logout</span>
         </button>
       </div>
@@ -527,7 +542,7 @@ export default function Sidebar() {
         />
 
         <aside
-          className={`absolute inset-y-0 left-0 flex h-full w-72 max-w-[86vw] flex-col border-r backdrop-blur transition-transform duration-200 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
+          className={`absolute inset-y-0 left-0 flex h-full w-72 max-w-[86vw] flex-col overflow-hidden border-r backdrop-blur transition-transform duration-200 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
           style={{
             borderColor: "var(--sidebar-border)",
             background: "var(--sidebar-bg)",
@@ -538,7 +553,7 @@ export default function Sidebar() {
               type="button"
               onClick={closeMobileMenu}
               aria-label="Close menu"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-cyan-500/35 bg-cyan-500/10 text-cyan-100"
+              className="inline-flex h-9 w-9 cursor-default items-center justify-center rounded-lg border border-cyan-500/35 bg-cyan-500/10 text-cyan-100"
             >
               <X className="h-4 w-4" />
             </button>
@@ -548,7 +563,7 @@ export default function Sidebar() {
       </div>
 
       <aside
-        className="sticky top-0 hidden h-screen w-64 shrink-0 self-start border-r backdrop-blur lg:block"
+        className="sticky top-0 hidden h-screen w-64 shrink-0 self-start overflow-hidden border-r backdrop-blur lg:block"
         style={{
           borderColor: "var(--sidebar-border)",
           background: "var(--sidebar-bg)",
